@@ -1,0 +1,87 @@
+---
+title: "index"
+author: "Assa Yeroslaviz"
+date: '`r format(Sys.time(), "%d %B, %Y")`'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The repository contains a conda-snakemake workflow for the mapping of the concatenated fastq file created at the BCF of the MPIB.
+
+
+This README file for the sequencing center to help them run a preliminary analysis on the sequenced samples
+
+The file will contains instruction on how to create a conda environment with the needed tools for the mapping and will also include snakemake for the automation of the scripts. 
+
+## steps to do
+
+1. get the genomes and the annotations from the FTP server (I am using Ensembl)
+2. unpack them
+3. create an index for each needed mapper (in the snakemake file I am adding STAR, bowtie2, and bwa)
+
+4. map tha samples with the needed parameter.
+
+5. index the fastA file to create a chromSize file for the bigwig files.
+6. convert the bam files to wig and then to bigwig.
+
+points to consider:
+
+1. would it make more sense to take only 50% of the fastq file for a faster analysis / visualization
+2. do they need the bam files also - deleting them would save a lot of storage space
+
+The examples in this document are based on fictive data as well as a fictional project named Project0815. Whe na new project is done, this term must be changed with the proper name of the project, wherever it is mentioned.
+
+## folder structure
+
+each project must be stored in a specific folder struture for the workflow to work properly.
+
+The convention for the naming in the MPIB Seqencing center is as such P01, P02, .. P135, ...
+Therefore the folder structure should be like that:
+
+```
+.
+├── Analysis
+├── rawData
+├── scripts
+└── genome
+```
+
+The only folder which must be created manually is the `rawData` folder where all the fastq files must be then saved.
+
+```{r, engine='bash', eval=FALSE}
+mkdir -p Project0815/{rawData,Analysis,scripts,genome}
+```
+
+The workflow will use a combination of a `conda` environment with the `snakemake` tool (based on python). The advantage of `conda` is that it creates a container, separated from the rest of the tools installed on the system. This give a better menangment and control over the tools used in the workflow, as well as less conflict potentials with other/older version of tools with non-compatible parameters. To learn more about the conda environment and its advantages, take a look at the [conda web site](https://conda.io/en/latest/).
+
+`sankemake` offers a lot of advantages as well. It allows better controls over different steps of the analysis, easier automation of the workflow and reduce running time thorugh parallelization of he steps, just to mention some of them. to learn more about `snakemake` take a look [at the snakemake doc site](https://snakemake.readthedocs.io/en/stable/index.html).
+
+
+### workflow
+
+- [conda](conda.html)
+- [snakemake](snakemake.html)
+
+
+
+TO DO
+
+In this case it would probably be better if the indexed geneomes would already be saved on the server for various organisms, as it doesn't make sense to download one each time. We sort of know which organisms are needed in most cases
+
+1. human
+2. mouse
+3. zebra fish
+4. fruit fly
+5. yeast
+6. worm (C. elegans)
+
+as well as for which mappers we need
+
+1. star
+2. bwa
+3. bowtie2
+
+

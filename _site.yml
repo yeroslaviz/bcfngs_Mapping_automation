@@ -1,0 +1,23 @@
+name: "Assa Yeroslaviz PhD"
+output_dir: "."
+navbar:
+  title: "Seqeucing Core Facility MPI Biochemistry"
+  left:
+    - text: "conda"
+      href: conda.html
+    - text: "snakemake"
+      href: snakemake.html
+  right:
+    - icon: fa-envelope fa-lg
+      href: contact.html
+    - icon: fa-github fa-lg
+      href: http://github.com/frymor
+    - icon: fa-twitter fa-lg
+      href: https://twitter.com/AssaYeroslaviz
+    - icon: fa-linkedin fa-lg
+      href: https://www.linkedin.com/in/ayeroslaviz/
+output:
+  html_document:
+    theme: flatly        
+    highlight: textmate
+    css: 'styles.css'

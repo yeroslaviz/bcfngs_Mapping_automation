@@ -1,0 +1,73 @@
+---
+title: "conda"
+author: "AY"
+date: '`r format(Sys.time(), "%d %B, %Y")`'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## conda - how to
+
+The first step is to create a conda environment, containing the neccessary tools for the required analysis. In this workflow, we use the `snakemake` package to help running the workflow, as well as some mappers. 
+To learn more about the conda environment and its advantages, take a look at the [conda web site](https://conda.io/en/latest/).
+
+Environemnts can be created with the help of a file, e.g. `environment.yaml` using the following command
+
+```{r, engine='bash', eval=FALSE}
+conda env create --name Project0815 --file environment.yaml
+```
+This file would look like that:
+
+```
+name: Project0815
+channels:
+   - bioconda
+   - conda-forge
+   - r
+   - bioinfo
+dependencies:
+   - snakemake-minimal =5.2.4
+   - python =3.6
+   - star =2.7.2c
+   - samtools =1.9
+   - bowtie2 =2.3.5
+   - bwa =0.7.17
+```
+
+The first row of the file contains the name of the project, i.e. the name of the conda environment created. Next are the `channels` listed, from which the conda environment should look for the tools needed for the analysis.
+
+the last part of the environmant file is a list of the needed `dependencies`. Each one of them has its version attached to it. This can be very helpful, when a dataset needes to be reanalyzed to check for problems or conflicts with older/newer results or for debugging purposes.
+In this workflow we will use the `snakemake` package as well as `python` version 3.6. we also install here the mappers `star`, `bwa` and `bowtie2`. WE also need the `samtool` package for the manipulation of the bam files (sorting, filtering, etc.). 
+
+After this was done *one must activate the environment* using the command
+
+```{r, engine='bash', eval=FALSE}
+source activate Project0815
+```
+
+If one look at the command line one can now see this
+
+```
+(Project0815) USER@SERVERNAME:Project0815$ ..
+```
+
+The brackets on the left side must contains the name of the environment. 
+
+If, after the environment was created, new tools must be added, they can just be added to the list of tools in the `environment.yaml` file and than the conda environment must be updated, using the command
+
+```{r, engine='bash', eval=FALSE}	
+conda env update -f environment.yaml 
+```
+
+
+
+
+
+
+
+
+

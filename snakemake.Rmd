@@ -1,0 +1,65 @@
+---
+title: "snakemake"
+author: "AY"
+date: '`r format(Sys.time(), "%d %B, %Y")`'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This part is still work in progress.
+
+`snakemake` relies havealy on a config file, i.e. `config.yaml`, where parameter specific for each analysis are saved. This reduces the number of chagnes needed to be done each time a new project is run.
+
+For this project we are using the following cofig file:
+[config.yaml](config.yaml){target="_blank"}
+
+The `config.yaml` file contains several parts. 
+
+1. The top one contain the nformation about hte organism used in the analysis. This is neccessary as it provides the _prefix_ for both the genome indexing as well as the mapping steps. 
+As an example it contains the genome for *Drosophila Melanogaster*. 
+(In this workflow it is expected that each time, the genomic mapping would be done against just one genome. Therefore there is no needed for an elaboragte strucutre of multiple genomes or reading a list of links from a file)
+
+Below the Organism's name are the links for the genomic sequence in a `fastA` format and the annotation files in a `gtf` (gene transfer file) format. For each one there is a link for the two files separately. For each run, one of the links for each part should be activ.
+
+2. The next part contains parameters for the `STAR` aligner. In this section the parameters can be set globally and be easily called upon, when running multiple versions of the same aligner.
+    + The most important parameter is `gzipped`. This set whether or not the sample files are compressed or not. `STAR` uses an internal decompressing step on the fly, when running the mapping step. 
+    + The `SA` index set the preindex string. bigger genomes can take higher values. It should in general be set to $~log2(GenomeLength)/2-1$. For standard genomes ( _hsa_ or _mmu_) it should be set to 14, for smaller genomes such as _Drosophila_, it shpuld be set to 13. _C. elegans_ genome should be even smaller and be setted at 12. The higher the value, tha faster the indexbuilding, but higher is also the memory requirements. 
+    + The memory can be set with the `RAM` parameter. 
+    
+3. The last part conatin one paramer for the indexing step of the bwa algorithm. This is similar to the above `SA` parameter, but uses a so-called block size for the indexing process. Higher values here would also increases the speed of the indexing, but require more RAM. 
+    
+This config file must be in the same folder as the other files for the same analysis.
+
+The `snakemake` workflow is based on so-called *rules*. This rules are a way to split the workflow into single steps. The advantage here, is that each time the steps can be ran separately. If some parameters are changed to only one step in the analysis `snakemake` can figure out which steps must be re-run and which one don't.
+
+This snakemake protocoll worjs in two steps.
+
+**1. Getting the genome and indexing**
+
+**2. Mapping the samples with the needed mapper and genome**
+
+The first  more general step is to set the working directory. It would be best, if we use as less copying/moving of files as possible. For that reason it might be best, if we can directly work on the `conc.fastq` folder, where the data is created after the demultiplxing. If so, some of the paths in the work flow would have to be changed or maybe adding a gobal `work.dir` parameter to the c`config.yaml` file. 
+(*`work.dir` parameter in config.yaml file must be set*).
+
+### Getting the genome and indexing
+
+`This work is pending the changes when the indexed genomes will be saved on the server permanently`
+
+1. Shouled we have a folder with several genomes already indexed and prepared for the mapping beforehand? 
+2. if so which genomes?
+3. where should they be saved? The paths to the indexed genomes would than needed to be changed accordingly in the second snakemake file for the mapping step. 
+
+The advantage is, that if we have this done, this first script can be spared. 
+
+[Getting and indexing the genome](getGenome_IndexGenome.Snakefile){target="_blank"}
+
+In General the script uses the link and download both the genome and the annotation files forthe given genome. it than automatically and in parallel indexes the genome for the three mappers - `star`, `bwa` and `bowtie2`.
+
+### Mapping the samples with the `STAR`
+
+[mapping the samples](Star.MappingQuant.Snakefile){target="_blank"}
+
+This script contains three (four) steps. in the first step the `fastq` samples are mapped to the indexed genome. Then they are being indexd. and last, after creating an chromosome-size file, the bam files are converted into `bigwig` files for better visualization using the [UCSC browser](http://genome.ucsc.edu/cgi-bin/hgTracks)
