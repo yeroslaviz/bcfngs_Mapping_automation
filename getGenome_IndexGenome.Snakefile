@@ -1,26 +1,26 @@
-### The first version of the script takes one genome at a time and download both the fasta and the gtf files of a single organism. It than index the genome to fit the mapping step using star, bwa and bowtie2.
-
 configfile: "config.yaml"
 
 rule all:
     input:
-        expand("genome/{organisms}/starIndex/", organisms=config['organism']),
-        expand("genome/{organisms}/bwaIndex/", organisms=config['organism']),
-        expand("genome/{organisms}/bowtie2Index/", organisms=config['organism'])
+        expand("genome/{org}/starIndex/", org=config['organism']),
+        expand("genome/{org}/bwaIndex/", org=config['organism']),
+        expand("genome/{org}/bowtie2Index/", org=config['organism'])
 
 #### get reference genomic data for the mapping (fasta and gtf files). Links are added in the config file
 rule get_genome:
    output:
-         fastA="genome/{organism}.fa",
-         gtf="genome/{organism}.gtf"
+         fastA="genome/{org}.fa",
+         gtf="genome/{org}.gtf"
    message:
           "getting {config[organism]} data - fastA and gtf files from Ensembl"
+   params:
+         fasta = lambda wildcards: config['organism'][wildcards.org]['fasta'],
+         gtf   = lambda wildcards: config['organism'][wildcards.org]['gtf']
    shell:
          """
-         wget -nc -O - {config[fastA]} | gunzip -c - > {output.fastA}
-         wget -nc -O - {config[gtf]}   | gunzip -c - > {output.gtf}
+         wget -nc -O - {params.fasta} | gunzip -c - > {output.fastA}
+         wget -nc -O - {params.gtf}   | gunzip -c - > {output.gtf}
          """
-
 ### Indexing the reference genome
 
 rule star_index:
