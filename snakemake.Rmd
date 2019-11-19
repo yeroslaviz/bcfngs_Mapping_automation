@@ -56,7 +56,12 @@ The advantage is, that if we have this done, this first script can be spared.
 
 [Getting and indexing the genome](getGenome_IndexGenome.Snakefile){target="_blank"}
 
-In General the script uses the link and download both the genome and the annotation files forthe given genome. it than automatically and in parallel indexes the genome for the three mappers - `star`, `bwa` and `bowtie2`.
+In General the script uses the link and download both the genome and the annotation files for the given genome. it than automatically and in parallel indexes the genome for the three mappers - `star`, `bwa` and `bowtie2`.
+
+**CHANGES in version 3**
+
+In version 3 of the script, the rule get_genome was changed to accommodate the automatic download of multiple genomes. 
+For thst reason, wildcards were added as params, one for the fasta file and one for the gtf file. This is because snakemake's brackets markup can olnly replace a variable with its string representation, but do not evaluate any codes. so first a string should be set to be passed oer to the wget command in the shell.
 
 ### Mapping the samples with the `STAR`
 

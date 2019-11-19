@@ -319,7 +319,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">snakemake</h1>
 <h4 class="author">AY</h4>
-<h4 class="date">13 November, 2019</h4>
+<h4 class="date">19 November, 2019</h4>
 
 </div>
 
@@ -357,7 +357,9 @@ $(document).ready(function () {
 </ol>
 <p>The advantage is, that if we have this done, this first script can be spared.</p>
 <p><a href="getGenome_IndexGenome.Snakefile" target="_blank">Getting and indexing the genome</a></p>
-<p>In General the script uses the link and download both the genome and the annotation files forthe given genome. it than automatically and in parallel indexes the genome for the three mappers - <code>star</code>, <code>bwa</code> and <code>bowtie2</code>.</p>
+<p>In General the script uses the link and download both the genome and the annotation files for the given genome. it than automatically and in parallel indexes the genome for the three mappers - <code>star</code>, <code>bwa</code> and <code>bowtie2</code>.</p>
+<p><strong>CHANGES in version 3</strong></p>
+<p>In version 3 of the script, the rule get_genome was changed to accommodate the automatic download of multiple genomes. For thst reason, wildcards were added as params, one for the fasta file and one for the gtf file. This is because snakemake’s brackets markup can olnly replace a variable with its string representation, but do not evaluate any codes. so first a string should be set to be passed oer to the wget command in the shell.</p>
 </div>
 <div id="mapping-the-samples-with-the-star" class="section level3">
 <h3>Mapping the samples with the <code>STAR</code></h3>
