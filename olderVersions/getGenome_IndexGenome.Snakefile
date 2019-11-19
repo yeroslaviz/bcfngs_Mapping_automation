@@ -1,16 +1,10 @@
-
 configfile: "config.yaml"
-
-#print(config['organism'])
-#print(config['organism']['Dmel'])
-print(config['organism']['Dmel']['fasta'])
-#print(config['organism']['Dmel'].keys())
 
 rule all:
     input:
         expand("genome/{org}/starIndex/", org=config['organism']),
-#        expand("genome/{org}/bwaIndex/", org=config['organism']),
-#        expand("genome/{org}/bowtie2Index/", org=config['organism'])
+        expand("genome/{org}/bwaIndex/", org=config['organism']),
+        expand("genome/{org}/bowtie2Index/", org=config['organism'])
 
 #### get reference genomic data for the mapping (fasta and gtf files). Links are added in the config file
 rule get_genome:
@@ -27,18 +21,17 @@ rule get_genome:
          wget -nc -O - {params.fasta} | gunzip -c - > {output.fastA}
          wget -nc -O - {params.gtf}   | gunzip -c - > {output.gtf}
          """
-
 ### Indexing the reference genome
 
 rule star_index:
    input:
-          fasta="genome/{org}.fa",
-          gtf="genome/{org}.gtf"
+          fasta="genome/{organism}.fa",
+          gtf="genome/{organism}.gtf"
    output:
-          directory("genome/{org}/starIndex/")
+          directory("genome/{organism}/starIndex/")
    threads: 16
    params:
-         prefix = lambda wildcards: "{org}".format(org=wildcards.org)
+         prefix = {config["organism"]}
    shell:
           "mkdir -p {output} && "
           "STAR --runThreadN {threads} "
@@ -53,11 +46,16 @@ rule star_index:
 
 rule bwa_index:
     input:
-          fasta = "genome/{org}.fa"
+          fasta = "genome/{organism}.fa"
     output:
-          directory("genome/{org}/bwaIndex/")
+          directory("genome/{organism}/bwaIndex/")
     params:
-        prefix = lambda wildcards: "{org}".format(org=wildcards.org)
+        prefix = {config["organism"]}
+
+    message:
+        "Indexing {params.prefix} genome for bwa Mapping"
+#    log:
+#        "log/bwa_index.log"
     shell:
         "bwa index -b {config[blockSize]} -p {output}{params.prefix} {input.fasta} "
 
@@ -65,13 +63,13 @@ rule bwa_index:
 # rule bowtie2_index
 rule bowtie2_index:
     input:
-          fasta = "genome/{org}.fa"
+          fasta = "genome/{organism}.fa"
     output:
-          directory("genome/{org}/bowtie2Index/")
+          directory("genome/{organism}/bowtie2Index/")
     params:
-        prefix = lambda wildcards: "{org}".format(org=wildcards.org)
+        prefix = {config["organism"]}
     message:
-        "Indexing config['organism'] genome for bowtie2 Mapping"
+        "Indexing {params.prefix} genome for bowtie2 Mapping"
 #    log:
 #        "log/bwa_index.log"
     shell:

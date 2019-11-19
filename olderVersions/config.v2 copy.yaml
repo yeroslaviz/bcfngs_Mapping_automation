@@ -8,7 +8,7 @@ organism:
   Dpse:
     fasta: "ftp://ftp.ensemblgenomes.org/pub/current/metazoa/fasta/drosophila_pseudoobscura/dna/Drosophila_pseudoobscura.Dpse_3.0.dna.toplevel.fa.gz"
     gtf: "ftp://ftp.ensemblgenomes.org/pub/current/metazoa/gtf/drosophila_pseudoobscura/Drosophila_pseudoobscura.Dpse_3.0.45.gtf.gz"
-
+    
 
 #fastA:
 ####### D. mel
@@ -32,7 +32,7 @@ gzipped: true
 
 ##############STAR
 ## parameters for bwa indexing
-blockSize:
+blockSize: 
   10000000000 # block size for the bwtsw algorithm, higher values relative to genoem size increases indexing process.
 
 ###############FeatureCounts

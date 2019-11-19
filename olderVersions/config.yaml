@@ -9,16 +9,6 @@ organism:
     fasta: "ftp://ftp.ensemblgenomes.org/pub/current/metazoa/fasta/drosophila_pseudoobscura/dna/Drosophila_pseudoobscura.Dpse_3.0.dna.toplevel.fa.gz"
     gtf: "ftp://ftp.ensemblgenomes.org/pub/current/metazoa/gtf/drosophila_pseudoobscura/Drosophila_pseudoobscura.Dpse_3.0.45.gtf.gz"
 
-
-#fastA:
-####### D. mel
-#  "ftp://ftp.ensembl.org/pub/current_fasta/drosophila_melanogaster/dna/Drosophila_melanogaster.BDGP6.22.dna.toplevel.fa.gz"
-
-#gtf:
-####### D. mel
-#  "ftp://ftp.ensembl.org/pub/current_gtf/drosophila_melanogaster/Drosophila_melanogaster.BDGP6.22.98.gtf.gz"
-
-
 ##############STAR
 ## parameters for STAR indexing
 RAM:
@@ -32,7 +22,7 @@ gzipped: true
 
 ##############STAR
 ## parameters for bwa indexing
-blockSize:
+blockSize: 
   10000000000 # block size for the bwtsw algorithm, higher values relative to genoem size increases indexing process.
 
 ###############FeatureCounts
