@@ -8,13 +8,13 @@ print(config['organism']['Dme.BDGP6.22']['fasta'])
 
 rule all:
     input:
-        expand("genome/{org}/starIndex/", org=config['organism']),
+        expand("{org}/starIndex/", org=config['organism']),
 
 #### get reference genomic data for the mapping (fasta and gtf files). Links are added in the config file
 rule get_genome:
    output:
-         fastA="genome/{org}.fa",
-         gtf="genome/{org}.gtf"
+         fastA="{org}.fa",
+         gtf="{org}.gtf"
    message:
           "getting {config[organism]} data - fastA and gtf files from Ensembl"
    params:
@@ -30,10 +30,10 @@ rule get_genome:
 
 rule star_index:
    input:
-          fasta="genome/{org}.fa",
-          gtf="genome/{org}.gtf"
+          fasta="{org}.fa",
+          gtf="{org}.gtf"
    output:
-          directory("genome/{org}/starIndex/")
+          directory("{org}/starIndex/")
    threads: 16
    params:
          prefix = lambda wildcards: "{org}".format(org=wildcards.org)
