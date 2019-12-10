@@ -19,7 +19,6 @@ rule all:
 rule map_star:
     input:
         R1='rawData/{IDS}.conc.R1.fastq.gz',
-        R2='rawData/{IDS}.conc.R2.fastq.gz',
         index=expand("genome/{organisms}/starIndex/", organisms=config['organism'])
     output:
         bam='Analysis/{organism}/star/bamFiles/{IDS}.bam',
@@ -58,23 +57,23 @@ rule chrom_size:
         chromSize = "genome/{organism}.chromSize"
     shell:
         """
-        samtools faidx {input.fastA} &&  \
+        samtools faidx {input.fastA}
         cut -f 1,2  {output.fai} > {output.chromSize}
         """
 
 rule create_bigwig:
     input:
-        chromSize = "genome/{organism}.chromSize",
         bam = "Analysis/{organism}/star/bamFiles/{sample}.bam",
         bai = "Analysis/{organism}/star/bamFiles/{sample}.bam.bai"
     output:
         bw = "Analysis/{organism}/star/bwig/{sample}.bw"
     params:
+        chromSize = "genome/{organism}.chromSize",
         dir ="Analysis/{organism}/star/bwig",
         prefix ="Analysis/{organism}/star/bwig/{sample}"
     shell:
         """
-        mkdir -p {params.dir} && \
-        bam2wig.py  -i {input.bam} -s {input.chromSize} -o {params.prefix} &> {params.prefix}.log
+        mkdir -p {params.dir}
+        bam2wig.py  -i {input.bam} -s {params.chromSize} -o {params.prefix} &> {params.prefix}.log
         rm -f {wildcards.sample}.wig
         """
