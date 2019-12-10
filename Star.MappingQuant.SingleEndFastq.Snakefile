@@ -1,12 +1,12 @@
 # the mpping file for either paired-end or songle-end mapping step using the STAR aligner.
 ############
-configfile:"config.yaml"
+configfile:"scripts/config.yaml"
 
 gz_command="--readFilesCommand zcat" if config["gzipped"] else ""
 
-path = config['path']
-project = config['project']
-organism = config['org']
+path=config['path']
+project=config['project']
+organism=config['org']
 
 # tsting for reading in a list pf files from a specific folder:
 IDS, = glob_wildcards("rawData/{sample}.conc.R1.fastq.gz")
@@ -17,7 +17,7 @@ rule all:
     input:
         expand('{project}/{organism}/star/bamFiles/{sample}.bam', sample = IDS),
         expand('{project}/{organism}/star/bamFiles/{sample}.bam.bai', sample = IDS),
-#        expand("Analysis/{organism}/star/bwig/{sample}.bw", sample= IDS, organism = config['organism'])
+        expand("{project}/{organism}/star/bwig/{sample}.bw", sample= IDS)
 
 
 rule map_star:
