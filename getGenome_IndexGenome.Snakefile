@@ -1,10 +1,6 @@
 
 configfile: "config.yaml"
 
-#print(config['organism'])
-#print(config['organism']['Dmel'])
-print(config['organism']['Dme.BDGP6.22']['fasta'])
-#print(config['organism']['Dmel'].keys())
 
 rule all:
     input:

@@ -33,3 +33,7 @@ SAindex:
 stranded: false
 ## Are the input files compressed [true, false]
 gzipped: true
+
+######## Project Setting
+# To create a separate project results folder for each run, change the name of the project here.
+project: "P44"
