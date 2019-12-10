@@ -8,7 +8,7 @@ organism:
   Mmu.GrCm38:
     fasta: "ftp://ftp.ensembl.org/pub/release-98/fasta/mus_musculus/dna/Mus_musculus.GRCm38.dna.primary_assembly.fa.gz"
     gtf: "ftp://ftp.ensembl.org/pub/release-98/gtf/mus_musculus/Mus_musculus.GRCm38.98.gtf.gz"
-  Cel.WBcel235:  
+  Cel.WBcel235:
     fasta: "ftp://ftp.ensembl.org/pub/release-98/fasta/caenorhabditis_elegans/dna/Caenorhabditis_elegans.WBcel235.dna.toplevel.fa.gz"
     gtf: "ftp://ftp.ensembl.org/pub/release-98/gtf/caenorhabditis_elegans/Caenorhabditis_elegans.WBcel235.98.gtf.gz"
   Eco.HUSEC2011CHR1:
@@ -33,13 +33,3 @@ SAindex:
 stranded: false
 ## Are the input files compressed [true, false]
 gzipped: true
-
-##############STAR
-## parameters for bwa indexing
-blockSize:
-  10000000000 # block size for the bwtsw algorithm, higher values relative to genoem size increases indexing process.
-
-###############FeatureCounts
-# how many threads:
-FeatureCounts:
-  threads: 5
