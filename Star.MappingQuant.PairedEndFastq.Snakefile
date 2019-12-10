@@ -85,5 +85,4 @@ rule create_bigwig:
         """
         mkdir -p {params.dir}
         bam2wig.py  -i {input.bam} -s {input.chromSize} -o {params.prefix} &> {params.prefix}.log
-        rm *.wig
         """
