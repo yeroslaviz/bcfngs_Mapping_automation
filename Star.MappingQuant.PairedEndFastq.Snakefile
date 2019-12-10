@@ -4,6 +4,10 @@ configfile:"config.yaml"
 
 gz_command="--readFilesCommand zcat" if config["gzipped"] else ""
 
+path = config['path']
+project = config['project']
+organism = config['org']
+
 # tsting for reading in a list pf files from a specific folder:
 IDS, = glob_wildcards("rawData/{sample}.conc.R1.fastq.gz")
 
@@ -11,24 +15,24 @@ print(IDS)
 
 rule all:
     input:
-        expand('Analysis/{organism}/star/bamFiles/{sample}.bam', sample = IDS, organism = config['organism']),
-        expand('Analysis/{organism}/star/bamFiles/{sample}.bam.bai', sample = IDS, organism = config['organism']),
+        expand('{project}/{organism}/star/bamFiles/{sample}.bam', sample = IDS),
+        expand('{project}/{organism}/star/bamFiles/{sample}.bam.bai', sample = IDS),
 #        expand("Analysis/{organism}/star/bwig/{sample}.bw", sample= IDS, organism = config['organism'])
 
 
 rule map_star:
     input:
-        R1='rawData/{IDS}.conc.R1.fastq.gz',
-        R2='rawData/{IDS}.conc.R2.fastq.gz',
-        index=expand("genome/{organisms}/starIndex/", organisms=config['organism'])
+        R1='{path}/{IDS}.conc.R1.fastq.gz',
+        R2='{path}/{IDS}.conc.R2.fastq.gz',
+        index=expand("genome/{organism}/starIndex/")
     output:
-        bam='Analysis/{organism}/star/bamFiles/{IDS}.bam',
-        counts="Analysis/{organism}/star/bamFiles/{IDS}.counts.tab",
-        SJ = "Analysis/{organism}/star/bamFiles/{IDS}SJ.out.tab",
+        bam='{project}/{organism}/star/bamFiles/{IDS}.bam',
+        counts="{project}/{organism}/star/bamFiles/{IDS}.counts.tab",
+        SJ = "{project}/{organism}/star/bamFiles/{IDS}SJ.out.tab",
     benchmark:
-        "Analysis/{organism}/benchmarks/{IDS}.run_rRNA_STAR.txt"
+        "{project}/{organism}/benchmarks/{IDS}.run_rRNA_STAR.txt"
     params:
-        prefix ="Analysis/{organism}/star/bamFiles/{IDS}",
+        prefix ="{project}/{organism}/star/bamFiles/{IDS}",
         gz_support=gz_command
     threads: 16
     shell:
@@ -44,18 +48,18 @@ rule map_star:
 
 rule index:
     input:
-        'Analysis/{organism}/star/bamFiles/{IDS}.bam'
+        '{project}/{organism}/star/bamFiles/{IDS}.bam'
     output:
-        'Analysis/{organism}/star/bamFiles/{IDS}.bam.bai'
+        '{project}/{organism}/star/bamFiles/{IDS}.bam.bai'
     shell:
         'samtools index {input}'
 
 rule chrom_size:
     input:
-        fastA = "genome/{organism}.fa"
+        fastA = "genomes/{organism}.fa"
     output:
-        fai = "genome/{organism}.fa.fai",
-        chromSize = "genome/{organism}.chromSize"
+        fai = "genomes/{organism}.fa.fai",
+        chromSize = "genomes/{organism}.chromSize"
     shell:
         """
         samtools faidx {input.fastA}
@@ -64,14 +68,14 @@ rule chrom_size:
 
 rule create_bigwig:
     input:
-        bam = "Analysis/{organism}/star/bamFiles/{sample}.bam",
-        bai = "Analysis/{organism}/star/bamFiles/{sample}.bam.bai"
+        bam = "{project}/{organism}/star/bamFiles/{IDS}.bam",
+        bai = "{project}/{organism}/star/bamFiles/{IDS}.bam.bai"
     output:
-        bw = "Analysis/{organism}/star/bwig/{sample}.bw"
+        bw = "{project}/{organism}/star/bwig/{IDS}.bw"
     params:
-        chromSize = "genome/{organism}.chromSize",
-        dir ="Analysis/{organism}/star/bwig",
-        prefix ="Analysis/{organism}/star/bwig/{sample}"
+        chromSize = "genomes/{organism}.chromSize",
+        dir ="{project}/{organism}/star/bwig",
+        prefix ="{project}/{organism}/star/bwig/{IDS}"
     shell:
         """
         mkdir -p {params.dir}

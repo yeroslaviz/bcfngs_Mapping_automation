@@ -36,6 +36,8 @@ gzipped: true
 
 ######## Project Setting
 # To create a separate project results folder for each run, change the name of the project here.
-project: "P44"
+project: "P000"
 # this path would point to the raw data in fastq format. This must be changed each time for the correct data to be analyzed.
-path: "/fs/pool/pool-bcfngs/fastq_files/P44/P44_20181015_tRNA_RP/conc.fastq/"
+path: "/fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/"
+# Which organism to map the data to
+org: "Hsp.GRCh38"
