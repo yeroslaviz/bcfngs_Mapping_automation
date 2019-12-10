@@ -5,15 +5,19 @@ configfile:"/fs/pool/pool-bcfngs/scripts/config.yaml"
 gz_command="--readFilesCommand zcat" if config["gzipped"] else ""
 
 path=config['path']
+print("Directory of raw fastq reads:")
 print(path)
-
-project=config['project']
-organism=config['org']
 
 # testing for reading in a list pf files from a specific folder:
 IDS, = glob_wildcards("{sample}.conc.R1.fastq.gz")
 
+print("Sample list:")
 print(IDS)
+
+project=config['project']
+organism=config['org']
+print("Project Number is:" ,project)
+print("Mapping against genome", organism)
 
 rule all:
     input:
@@ -69,17 +73,17 @@ rule chrom_size:
 
 rule create_bigwig:
     input:
+        chromSize = "/fs/pool/pool-bcfngs/genomes/{organism}.chromSize",
         bam = "/fs/pool/pool-bcfngs/{project}/{organism}/star/bamFiles/{IDS}.bam",
         bai = "/fs/pool/pool-bcfngs/{project}/{organism}/star/bamFiles/{IDS}.bam.bai"
     output:
         bw = "/fs/pool/pool-bcfngs/{project}/{organism}/star/bwig/{IDS}.bw"
     params:
-        chromSize = "/fs/pool/pool-bcfngs/genomes/{organism}.chromSize",
         dir ="/fs/pool/pool-bcfngs/{project}/{organism}/star/bwig",
         prefix ="/fs/pool/pool-bcfngs/{project}/{organism}/star/bwig/{IDS}"
     shell:
         """
         mkdir -p {params.dir}
-        bam2wig.py  -i {input.bam} -s {params.chromSize} -o {params.prefix} &> {params.prefix}.log
-        rm -f *.wig
+        bam2wig.py  -i {input.bam} -s {input.chromSize} -o {params.prefix} &> {params.prefix}.log
+        rm *.wig
         """
