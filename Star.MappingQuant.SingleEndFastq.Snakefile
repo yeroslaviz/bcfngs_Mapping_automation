@@ -1,65 +1,69 @@
 # the mpping file for either paired-end or songle-end mapping step using the STAR aligner.
 ############
-configfile:"scripts/config.yaml"
+configfile:"/fs/pool/pool-bcfngs/scripts/config.yaml"
 
 gz_command="--readFilesCommand zcat" if config["gzipped"] else ""
 
 path=config['path']
+print("Directory of raw fastq reads:")
+print(path)
+
+# testing for reading in a list pf files from a specific folder:
+IDS, = glob_wildcards("{sample}.conc.R1.fastq.gz")
+
+print("Sample list:")
+print(IDS)
+
 project=config['project']
 organism=config['org']
-
-# tsting for reading in a list pf files from a specific folder:
-IDS, = glob_wildcards("rawData/{sample}.conc.R1.fastq.gz")
-
-print(IDS)
+print("Project Number is:" ,project)
+print("Mapping against genome", organism)
 
 rule all:
     input:
-        expand('{project}/{organism}/star/bamFiles/{sample}.bam', sample = IDS),
-        expand('{project}/{organism}/star/bamFiles/{sample}.bam.bai', sample = IDS),
-        expand("{project}/{organism}/star/bwig/{sample}.bw", sample= IDS)
-
+        expand('{project}/{organism}/star/{sample}.bam', sample = IDS, organism = config['org'], project = config['project']),
+        expand('{project}/{organism}/star/{sample}.bam.bai', sample = IDS, organism = config['org'], project = config['project']),
+        expand("{project}/{organism}/bwig/{sample}.bw", sample= IDS, organism = config['org'], project = config['project'])
 
 rule map_star:
     input:
-        R1='rawData/{IDS}.conc.R1.fastq.gz',
-#
-        index=expand("genome/{organisms}/starIndex/")
+        R1='{IDS}.conc.R1.fastq.gz'
     output:
-        bam='{project}/{organism}/star/bamFiles/{IDS}.bam',
-        counts="{project}/{organism}/star/bamFiles/{IDS}.counts.tab",
-        SJ = "{project}/{organism}/star/bamFiles/{IDS}SJ.out.tab",
+        bam='{project}/{organism}/star/{IDS}.bam',
+        counts="{project}/{organism}/star/{IDS}.counts.tab",
+        SJ = "{project}/{organism}/star/{IDS}SJ.out.tab",
     benchmark:
-        "{project}/{organism}/benchmarks/{IDS}.run_rRNA_STAR.txt"
+        "{project}/{organism}/star/{IDS}.benchmarks.STAR.txt"
     params:
-        prefix ="{project}/{organism}/star/bamFiles/{IDS}",
-        gz_support=gz_command
+        prefix ="{project}/{organism}/star/{IDS}",
+        gz_support=gz_command,
+        index=expand("/fs/pool/pool-bcfngs/genomes/{organism}/starIndex/", organism = config['org'])
     threads: 16
     shell:
         r'''
 	mkdir -p {params.prefix}
-
-####### for single-end reads samples data set
-        STAR --runThreadN {threads} --genomeDir {input.index} --outFileNamePrefix {params.prefix} --readFilesIn {input.R1} {params.gz_support} --outSAMtype BAM SortedByCoordinate --limitBAMsortRAM {config[RAM]} --quantMode GeneCounts --outReadsUnmapped Fastx
+####### for paired-end reads samples data set
+        STAR --runThreadN {threads} --genomeDir {params.index} --outFileNamePrefix {params.prefix} --readFilesIn {input.R1} {params.gz_support} --outSAMtype BAM SortedByCoordinate --limitBAMsortRAM {config[RAM]} --quantMode GeneCounts --outReadsUnmapped Fastx
         mv {params.prefix}Aligned.sortedByCoord.out.bam {output.bam}
         mv {params.prefix}ReadsPerGene.out.tab {output.counts}
         rmdir {params.prefix}
         '''
 
+
 rule index:
     input:
-        '{project}/{organism}/star/bamFiles/{IDS}.bam'
+        '{project}/{organism}/star/{IDS}.bam'
     output:
-        '{project}/{organism}/star/bamFiles/{IDS}.bam.bai'
+        '{project}/{organism}/star/{IDS}.bam.bai'
     shell:
         'samtools index {input}'
 
 rule chrom_size:
     input:
-        fastA = "genomes/{organism}.fa"
+        fastA = "/fs/pool/pool-bcfngs/genomes/{organism}.fa"
     output:
-        fai = "genomes/{organism}.fa.fai",
-        chromSize = "genome/{organism}.chromSize"
+        fai = "/fs/pool/pool-bcfngs/genomes/{organism}.fa.fai",
+        chromSize = "/fs/pool/pool-bcfngs/genomes/{organism}.chromSize"
     shell:
         """
         samtools faidx {input.fastA}
@@ -68,17 +72,18 @@ rule chrom_size:
 
 rule create_bigwig:
     input:
-        bam = "{project}/{organism}/star/bamFiles/{IDS}.bam",
-        bai = "{project}/{organism}/star/bamFiles/{IDS}.bam.bai"
+        chromSize = "/fs/pool/pool-bcfngs/genomes/{organism}.chromSize",
+        bam = "{project}/{organism}/star/{IDS}.bam",
+        bai = "{project}/{organism}/star/{IDS}.bam.bai"
     output:
-        bw = "{project}/{organism}/star/bwig/{IDS}.bw"
+        bw = "{project}/{organism}/bwig/{IDS}.bw"
     params:
-        chromSize = "genomes/{organism}.chromSize",
-        dir ="{project}/{organism}/star/bwig",
-        prefix ="{project}/{organism}/star/bwig/{sample}"
+        dir ="{project}/{organism}/bwig",
+        prefix ="{project}/{organism}/bwig/{IDS}",
+        wig = "{project}/{organism}/bwig/{IDS}.wig"
     shell:
         """
         mkdir -p {params.dir}
-        bam2wig.py  -i {input.bam} -s {params.chromSize} -o {params.prefix} &> {params.prefix}.log
-        rm -f {wildcards.sample}.wig
+        bam2wig.py  -i {input.bam} -s {input.chromSize} -o {params.prefix} &> {params.prefix}.log
+        rm {params.wig}
         """
