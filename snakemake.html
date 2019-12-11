@@ -340,19 +340,24 @@ $(document).ready(function () {
 <p>For this project we are using the following cofig file: <a href="config.yaml" target="_blank">config.yaml</a></p>
 <p>The <code>config.yaml</code> file contains several parts.</p>
 <ol style="list-style-type: decimal">
-<li>The top one contain the nformation about hte organism used in the analysis. This is neccessary as it provides the <em>prefix</em> for both the genome indexing as well as the mapping steps. As an example it contains the genome for <em>Drosophila Melanogaster</em>. (In this workflow it is expected that each time, the genomic mapping would be done against just one genome. Therefore there is no needed for an elaboragte strucutre of multiple genomes or reading a list of links from a file)</li>
-</ol>
-<p>Below the Organism’s name are the links for the genomic sequence in a <code>fastA</code> format and the annotation files in a <code>gtf</code> (gene transfer file) format. For each one there is a link for the two files separately. For each run, one of the links for each part should be activ.</p>
-<ol start="2" style="list-style-type: decimal">
-<li>The next part contains parameters for the <code>STAR</code> aligner. In this section the parameters can be set globally and be easily called upon, when running multiple versions of the same aligner.
+<li><p>The top one contain the information about hte organism used in the analysis. This is neccessary as it provides the <em>prefix</em> for both the genome indexing as well as the mapping steps.<br />
+The <code>config</code> file contain seven different organisms and should be run only once at the beginning to create the indexed genomes. It must be ran again <strong>only</strong> when new organisms are added or new versions of any genomes are needed. For each genome the prefix would be the three-letter anme of the organism followed by the genome built verion (e.g <em>Hsp.GRCh38</em>, <em>Cel.WBcel2358</em>).<br />
+Below the Organism’s name are the links for the genomic sequence in a <code>fastA</code> format and the annotation files in a <code>gtf</code> (gene transfer file) format. On each first time both files will be downloaded before the genome indexing.</p></li>
+<li><p>The next part contains parameters for the <code>STAR</code> aligner. In this section the parameters can be set globally and be easily called upon, when running multiple versions of the same aligner.</p>
 <ul>
-<li>The most important parameter is <code>gzipped</code>. This set whether or not the sample files are compressed or not. <code>STAR</code> uses an internal decompressing step on the fly, when running the mapping step.</li>
+<li>The most important parameter is <code>gzipped</code>. This set whether or not the sample files are compressed or not. <code>STAR</code> uses an internal decompressing step on the fly, when running the mapping step. As the fastq files from the core facility are usually gzipped, the default here is set to <code>true</code>.</li>
 <li>The <code>SA</code> index set the preindex string. bigger genomes can take higher values. It should in general be set to <span class="math inline">\(~log2(GenomeLength)/2-1\)</span>. For standard genomes ( <em>hsa</em> or <em>mmu</em>) it should be set to 14, for smaller genomes such as <em>Drosophila</em>, it shpuld be set to 13. <em>C. elegans</em> genome should be even smaller and be setted at 12. The higher the value, tha faster the indexbuilding, but higher is also the memory requirements.</li>
 <li>The memory can be set with the <code>RAM</code> parameter.</li>
 </ul></li>
-<li>The last part conatin one paramer for the indexing step of the bwa algorithm. This is similar to the above <code>SA</code> parameter, but uses a so-called block size for the indexing process. Higher values here would also increases the speed of the indexing, but require more RAM.</li>
+<li><p>The third part of the <code>config</code> file is project-related and must be changed with each run. It has three parts</p>
+<ul>
+<li>Project number (e.g. <strong>P000</strong>)</li>
+<li>Path to concatenated fastq files (e.g. <strong>/fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/</strong>).</li>
+<li>the organism to be mapped against (e.g. <strong>Cel.WBcel235</strong>).</li>
+</ul>
+<p>This parameters must be changed each time a new run is done. The run will creates a new folder within this working directory, where it will save the mapping results in form of sorted <code>bam</code> files and the <code>bigwig</code> files for visualiztion purposes.</p></li>
 </ol>
-<p>This config file must be in the same folder as the other files for the same analysis.</p>
+<p>This <code>config</code> file as well as the snakemake scripts are all placed in the <code>scripts/</code> folder and should stay there. The run command will be set to find them there.</p>
 <p>The <code>snakemake</code> workflow is based on so-called <em>rules</em>. This rules are a way to split the workflow into single steps. The advantage here, is that each time the steps can be ran separately. If some parameters are changed to only one step in the analysis <code>snakemake</code> can figure out which steps must be re-run and which one don’t.</p>
 <p>This snakemake protocoll worjs in two steps.</p>
 <p><strong>1. Getting the genome and indexing</strong></p>
@@ -376,6 +381,20 @@ $(document).ready(function () {
 <h3>Mapping the samples with the <code>STAR</code></h3>
 <p><a href="Star.MappingQuant.Snakefile" target="_blank">mapping the samples</a></p>
 <p>This script contains three (four) steps. in the first step the <code>fastq</code> samples are mapped to the indexed genome. Then they are being indexd. and last, after creating an chromosome-size file, the bam files are converted into <code>bigwig</code> files for better visualization using the <a href="http://genome.ucsc.edu/cgi-bin/hgTracks">UCSC browser</a></p>
+<p>We have two separate scripts for single-end and paired-end runs. The PE run looks for both R1 and R2 fastq files, while the SE script will ignore all R2 samples.</p>
+<p>After the environment was created <strong>and activated</strong>, one must change to the directory of the concatenated fast files. E.g.</p>
+<pre class="bash"><code>cd /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/</code></pre>
+<p>To run the script use this command to test/run. The settings are explained below.</p>
+<pre class="bash"><code># for single-end samples
+snakemake -nps /fs/pool/pool-bcfngs/scripts/Star.MappingQuant.SingleEndFastq.Snakefile -j 50
+# for paired-end samples
+snakemake -ps /fs/pool/pool-bcfngs/scripts/Star.MappingQuant.PairedEndFastq.Snakefile -j 50</code></pre>
+<ul>
+<li><code>-n</code> - dry-run. This parameter will only output the command, but execute them. This should be used to test the parameters, but must be removed for the analysis to be done.</li>
+<li><code>-p</code> - Print the commands to be execute.</li>
+<li><code>-s</code> - the name of the snakeake file to be executed.</li>
+<li><code>-j</code> - #cores. How many cores should be used in the run.</li>
+</ul>
 </div>
 
 

@@ -63,6 +63,9 @@ If, after the environment was created, new tools must be added, they can just be
 conda env update -f environment.yaml 
 ```
 
+The conda environment should be created only once, but with each login one must activate it, so that the snakemake script can be run from the correct paths.
+
+
 
 
 

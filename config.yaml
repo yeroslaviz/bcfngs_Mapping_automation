@@ -32,8 +32,6 @@ RAM:
    #  set maximum available RAM (bytes) for genome generation
 SAindex:
   14 # For small genomes, the parameter --genomeSAindexNbases needs to be scaled down (default is 14).
-## Is your library stranded? options are [true, false]
-stranded: false
 ## Are the input files compressed [true, false]
 gzipped: true
 
