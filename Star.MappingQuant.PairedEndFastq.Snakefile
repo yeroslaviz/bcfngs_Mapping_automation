@@ -21,9 +21,9 @@ print("Mapping against genome", organism)
 
 rule all:
     input:
-        expand('/fs/pool/pool-bcfngs/{project}/{organism}/star/bamFiles/{sample}.bam', sample = IDS, organism = config['org'], project = config['project']),
-        expand('/fs/pool/pool-bcfngs/{project}/{organism}/star/bamFiles/{sample}.bam.bai', sample = IDS, organism = config['org'], project = config['project']),
-        expand("/fs/pool/pool-bcfngs/{project}/{organism}/star/bwig/{sample}.bw", sample= IDS, organism = config['org'], project = config['project'])
+        expand('{project}/{organism}/star/{sample}.bam', sample = IDS, organism = config['org'], project = config['project']),
+        expand('{project}/{organism}/star/{sample}.bam.bai', sample = IDS, organism = config['org'], project = config['project']),
+        expand("{project}/{organism}/bwig/{sample}.bw", sample= IDS, organism = config['org'], project = config['project'])
 
 
 rule map_star:
@@ -31,13 +31,13 @@ rule map_star:
         R1='{IDS}.conc.R1.fastq.gz',
         R2='{IDS}.conc.R2.fastq.gz',
     output:
-        bam='/fs/pool/pool-bcfngs/{project}/{organism}/star/bamFiles/{IDS}.bam',
-        counts="/fs/pool/pool-bcfngs/{project}/{organism}/star/bamFiles/{IDS}.counts.tab",
-        SJ = "/fs/pool/pool-bcfngs/{project}/{organism}/star/bamFiles/{IDS}SJ.out.tab",
+        bam='{project}/{organism}/star/{IDS}.bam',
+        counts="{project}/{organism}/star/{IDS}.counts.tab",
+        SJ = "{project}/{organism}/star/{IDS}SJ.out.tab",
     benchmark:
-        "/fs/pool/pool-bcfngs/{project}/{organism}/benchmarks/{IDS}.run_rRNA_STAR.txt"
+        "{project}/{organism}/star/{IDS}.benchmarks.STAR.txt"
     params:
-        prefix ="/fs/pool/pool-bcfngs/{project}/{organism}/star/bamFiles/{IDS}",
+        prefix ="{project}/{organism}/star/{IDS}",
         gz_support=gz_command,
         index=expand("/fs/pool/pool-bcfngs/genomes/{organism}/starIndex/", organism = config['org'])
     threads: 16
@@ -53,9 +53,9 @@ rule map_star:
 
 rule index:
     input:
-        '/fs/pool/pool-bcfngs/{project}/{organism}/star/bamFiles/{IDS}.bam'
+        '{project}/{organism}/star/{IDS}.bam'
     output:
-        '/fs/pool/pool-bcfngs/{project}/{organism}/star/bamFiles/{IDS}.bam.bai'
+        '{project}/{organism}/star/{IDS}.bam.bai'
     shell:
         'samtools index {input}'
 
@@ -74,15 +74,17 @@ rule chrom_size:
 rule create_bigwig:
     input:
         chromSize = "/fs/pool/pool-bcfngs/genomes/{organism}.chromSize",
-        bam = "/fs/pool/pool-bcfngs/{project}/{organism}/star/bamFiles/{IDS}.bam",
-        bai = "/fs/pool/pool-bcfngs/{project}/{organism}/star/bamFiles/{IDS}.bam.bai"
+        bam = "{project}/{organism}/star/{IDS}.bam",
+        bai = "{project}/{organism}/star/{IDS}.bam.bai"
     output:
-        bw = "/fs/pool/pool-bcfngs/{project}/{organism}/star/bwig/{IDS}.bw"
+        bw = "{project}/{organism}/bwig/{IDS}.bw"
     params:
-        dir ="/fs/pool/pool-bcfngs/{project}/{organism}/star/bwig",
-        prefix ="/fs/pool/pool-bcfngs/{project}/{organism}/star/bwig/{IDS}"
+        dir ="{project}/{organism}/bwig",
+        prefix ="{project}/{organism}/bwig/{IDS}",
+        wig = "{project}/{organism}/bwig/{IDS}.wig"
     shell:
         """
         mkdir -p {params.dir}
         bam2wig.py  -i {input.bam} -s {input.chromSize} -o {params.prefix} &> {params.prefix}.log
+        rm {params.wig}
         """
