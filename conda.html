@@ -7,7 +7,6 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
-<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 <meta name="author" content="AY" />
@@ -249,6 +248,18 @@ $(document).ready(function () {
 }
 </style>
 
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
 <!-- code folding -->
 
 
@@ -291,7 +302,7 @@ $(document).ready(function () {
   </a>
 </li>
 <li>
-  <a href="http://github.com/frymor">
+  <a href="https://github.com/yeroslaviz">
     <span class="fa fa-github fa-lg"></span>
      
   </a>
@@ -319,7 +330,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">conda</h1>
 <h4 class="author">AY</h4>
-<h4 class="date">13 November, 2019</h4>
+<h4 class="date">11 December, 2019</h4>
 
 </div>
 
@@ -327,7 +338,7 @@ $(document).ready(function () {
 <div id="conda---how-to" class="section level2">
 <h2>conda - how to</h2>
 <p>The first step is to create a conda environment, containing the neccessary tools for the required analysis. In this workflow, we use the <code>snakemake</code> package to help running the workflow, as well as some mappers. To learn more about the conda environment and its advantages, take a look at the <a href="https://conda.io/en/latest/">conda web site</a>.</p>
-<p>Environemnts can be created with the help of a file, e.g. <code>environment.yaml</code> using the following command</p>
+<p>Environemnts can be created with the help of a file, e.g. <code>environment.yaml</code> using the following command</p>
 <pre class="bash"><code>conda env create --name Project0815 --file environment.yaml</code></pre>
 <p>This file would look like that:</p>
 <pre><code>name: Project0815
@@ -371,23 +382,6 @@ $(document).ready(function () {
 
 
 </script>
-
-<!-- tabsets -->
-
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
-
-<!-- code folding -->
-
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

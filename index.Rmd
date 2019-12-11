@@ -84,4 +84,15 @@ as well as for which mappers we need
 2. bwa
 3. bowtie2
 
+# CHANGES
+
+### 11.12.2019
+
+The workflow now should work on the hpcl cluster of the MPI. For that reason some changes were made to the folder structure and the depth of the analysis
+
+1. the mappers `bowtie2` and `bwa` were removed from the analysis. It will done from now on only with `STAR`.
+2. the working directory of the analysis should be the `conc.fastq` folder in the pool-bcfngs pool folder of the Sequencing core facility.
+3. The workflow will create a new folder with the structure `ProjectNumber/Organism/` were it will save two new folders for the star mapping results and the bigwig files.
+4. the first script to get the genomes should be only run once, or when the genome version must be updated.
+5. The second script was splitted into single-end and paired-end version and should be run accordingly. 
 
