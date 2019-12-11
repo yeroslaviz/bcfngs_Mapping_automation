@@ -1,5 +1,5 @@
 
-configfile: "config.yaml"
+configfile: "/fs/pool/pool-bcfngs/scripts/config.yaml"
 
 
 rule all:
