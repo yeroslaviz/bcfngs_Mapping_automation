@@ -65,6 +65,12 @@ The workflow will use a combination of a `conda` environment with the `snakemake
 - [conda](conda.html)
 - [snakemake](snakemake.html)
 
+### wigToBigwig
+
+First the `bam` files are converted into `wig` files. This is done using the `bam2wig.py` script from the `rseqc`-software package.  
+In order for the automatic conversion of `wig` to `bigwig` files to work, one must have the tool `wigToBigwig` from the UCSC repository installed and **in the path**.
+As we are working with conda, the easiest plce to put it is the the path of the environment. In out case, as we are working with `miniconda` the path would be under `/fs/home/USERNAME/miniconda3/envs/ENVNAME/bin/`.
+Sofar I have copied the file manually to the folder, but I have now added it to the environment.yaml file, which is ran during the environment creation step. This was not tested yet!.
 
 
 TO DO
