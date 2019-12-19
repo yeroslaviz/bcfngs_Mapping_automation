@@ -5,6 +5,7 @@ configfile: "/fs/pool/pool-bcfngs/scripts/config.yaml"
 rule all:
     input:
         expand("{org}/starIndex/", org=config['organism']),
+        expand("{org}.chromSize", org=config['organism'])
 
 #### get reference genomic data for the mapping (fasta and gtf files). Links are added in the config file
 rule get_genome:
@@ -44,3 +45,15 @@ rule star_index:
           "--genomeFastaFiles {input.fasta} "
           "--sjdbGTFfile {input.gtf} "
           "--sjdbOverhang 100"
+
+rule chrom_size:
+    input:
+        fastA = "{org}.fa"
+    output:
+        fai = "{org}.fa.fai",
+        chromSize = "{org}.chromSize"
+    shell:
+        """
+        samtools faidx {input.fastA}
+        cut -f 1,2  {output.fai} > {output.chromSize}
+        """
