@@ -85,6 +85,11 @@ as well as for which mappers we need
 
 # CHANGES
 
+### 13.01.2020
+
+- a short [`HOWTO`](HOWTO.html) was added. This serves as a fast introduction, if `conda` and `snakemake` are already installed and set for the mapping. 
+- the genome of _D. pseudoobscura_ was added to the `config.yaml` file.
+
 ### 11.12.2019
 
 The workflow now should work on the hpcl cluster of the MPI. For that reason some changes were made to the folder structure and the depth of the analysis
@@ -94,4 +99,6 @@ The workflow now should work on the hpcl cluster of the MPI. For that reason som
 3. The workflow will create a new folder with the structure `ProjectNumber/Organism/` were it will save two new folders for the star mapping results and the bigwig files.
 4. the first script to get the genomes should be only run once, or when the genome version must be updated.
 5. The second script was splitted into single-end and paired-end version and should be run accordingly. 
+
+
 

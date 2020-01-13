@@ -10,10 +10,10 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Assa Yeroslaviz" />
+<meta name="author" content="AY" />
 
 
-<title>index</title>
+<title>HOWTO</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -317,96 +317,57 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">index</h1>
-<h4 class="author">Assa Yeroslaviz</h4>
-<h4 class="date"><strong>last update</strong> - 13 January, 2020</h4>
+<h1 class="title toc-ignore">HOWTO</h1>
+<h4 class="author">AY</h4>
+<h4 class="date">1/13/2020</h4>
 
 </div>
 
 
-<p>The repository contains a conda-snakemake workflow for the mapping of the concatenated fastq file created at the BCF of the MPIB.</p>
-<p>This README file for the sequencing center to help them run a preliminary analysis on the sequenced samples</p>
-<p>The file will contains instruction on how to create a conda environment with the needed tools for the mapping and will also include snakemake for the automation of the scripts.</p>
-<div id="steps-to-do" class="section level2">
-<h2>steps to do</h2>
-<p><strong>Preparing the genomes for mapping</strong></p>
+<p>This is an internal how to for the workflow of the automation for the bcfngs.</p>
+<div id="genome-indexing" class="section level2">
+<h2>genome indexing</h2>
+<p>This steps needs to be run onyl once. <strong>unless</strong> new genomes are added.</p>
+<p>this is all run on the <code>hpcl5002</code>.</p>
 <ol style="list-style-type: decimal">
-<li>Download the genomes and the annotations from the FTP server (Ensembl genome builds are used here.)</li>
-<li>For each genome, an index for the <code>star</code> aligner is created.</li>
+<li>log-in to the server.</li>
+<li>If not done before, activate the conda environment inside a <code>screen</code>, so that one can log out from the server and still run the workflow in the background. More information about the is in the github web site.</li>
+<li>open the <code>config.yaml</code> file, e.g. <code>vi /fs/pool/pool-bcfngs/scripts/config.yaml</code> and add the genome links from the ensembl FTP site in this format:</li>
 </ol>
-<p>This two steps are done only once, when the workflow was set-up. It only needs to be re-run, when a new organism is beinf added, or when newer version of exiting organisms are needed.</p>
-<p><strong>Mapping step</strong></p>
-<ol start="3" style="list-style-type: decimal">
-<li>Map tha samples with the needed parameter.</li>
-<li>Index the fastA file to create a <code>chromSize</code> file for the <code>bigwig</code> conversion.</li>
-<li>Convert the <code>bam</code> files to <code>wig</code> and then to <code>bigwig</code>.</li>
-</ol>
-<p>points to consider: If this is only a preliminary analysis -</p>
-<ol style="list-style-type: decimal">
-<li>Would it make more sense to take only 50% of the fastq file for a faster analysis / visualization</li>
-<li>Do they need the bam files also - deleting them would save a lot of storage space</li>
-</ol>
-<p>The examples in this document are based on fictive data as well as a fictional project named <em>Project0815</em>. When a new project is done, this term must be changed with the proper name of the project, wherever it is mentioned.</p>
-</div>
-<div id="folder-structure" class="section level2">
-<h2>folder structure</h2>
-<p>The workflow works from within the folder of the concatenated <code>fastq</code> files created after running the <code>bcl2fastq</code> script from the project management website.</p>
-<ul>
-<li>A <code>config</code> file is saved under <code>&quot;/fs/pool/pool-bcfngs/scripts/config.yaml&quot;</code>, where all the mapping and genome parameters are saved.</li>
-<li>The genome indexing step is run only once and creates a folder named <code>genomes/</code> on the <code>&quot;/fs/pool/pool-bcfngs/&quot;</code>. Within this folder all the <code>fastA</code> and the <code>gtf</code> files are saved as well as a folder for each organims, containing the <code>star</code>-indexed files.</li>
-<li>The mapping step expect to find within the working directory the files with the pattern <em>.conc.R1.fastq.gz</em> (As this is the current pattern given by the sequencing facility. If, in the future, this will be changed, the search pattern must be changed as well).</li>
-</ul>
-<p>There are two seperate files for single-ended and paired-ended data sets. The single-ended one expects to find only <em>.conc.R1.fastq.gz</em> , while the paired-end data set must also contain <em>.conc.R2.fastq.gz</em> files.</p>
-</div>
-<div id="workflow" class="section level2">
-<h2>Workflow</h2>
-<p>The workflow uses a combination of a <code>conda</code> environment with the <code>snakemake</code> tool (based on python). The advantage of <code>conda</code> is that it creates a container, separated from the rest of the tools installed on the system. This gives a better manangement and control over the tools used in the workflow, as well as less conflict potentials with other/older version of tools with non-compatible parameters. To learn more about the conda environment and its advantages, take a look at the <a href="https://conda.io/en/latest/">conda web site</a>.</p>
-<p><code>snakemake</code> offers a lot of advantages as well. It allows better controls over different steps of the analysis, easier automation of the workflow and reduce running time thorugh parallelization of the steps, just to mention some of them. to learn more about <code>snakemake</code> take a look at <a href="https://snakemake.readthedocs.io/en/stable/index.html">the snakemake doc site</a>.</p>
-<ul>
-<li><a href="conda.html">conda</a></li>
-<li><a href="snakemake.html">snakemake</a></li>
-</ul>
-<div id="wigtobigwig" class="section level3">
-<h3>wigToBigwig</h3>
-<p>First the <code>bam</code> files are converted into <code>wig</code> files. This is done using the <code>bam2wig.py</code> script from the <code>rseqc</code>-software package.<br />
-In order for the automatic conversion of <code>wig</code> to <code>bigwig</code> files to work, one must have the tool <code>wigToBigwig</code> from the UCSC repository installed and <strong>in the path</strong>. As we are working with conda, the easiest plce to put it is the the path of the environment. In out case, as we are working with <code>miniconda</code> the path would be under <code>/fs/home/USERNAME/miniconda3/envs/ENVNAME/bin/</code>. So far I have copied the file manually to the folder, but I have now added it to the environment.yaml file, which is ran during the environment creation step. This was not tested yet!.</p>
-<p>TO DO</p>
-<p>In this case it would probably be better if the indexed geneomes would already be saved on the server for various organisms, as it doesn’t make sense to download one each time. We sort of know which organisms are needed in most cases</p>
-<ol style="list-style-type: decimal">
-<li>human</li>
-<li>mouse</li>
-<li>zebra fish</li>
-<li>fruit fly</li>
-<li>yeast</li>
-<li>worm (C. elegans)</li>
-</ol>
-<p>as well as for which mappers we need</p>
-<ol style="list-style-type: decimal">
-<li>star</li>
-<li>bwa</li>
-<li>bowtie2</li>
+<pre><code>  Dps.3.0.45:
+    fasta: &quot;ftp://ftp.ensemblgenomes.org/pub/metazoa/release-45/fasta/drosophila_pseudoobscura/dna/Drosophila_pseudoobscura.Dpse_3.0.dna.toplevel.fa.gz&quot;
+    gtf: &quot;ftp://ftp.ensemblgenomes.org/pub/metazoa/release-45/gtf/drosophila_pseudoobscura/Drosophila_pseudoobscura.Dpse_3.0.45.gtf.gz&quot;</code></pre>
+<ol start="4" style="list-style-type: decimal">
+<li>run the command <code>snakemake -nps ../scripts/getGenome_IndexGenome.Snakefile</code> to check that the new genome is added to the workflow (the <code>-n</code> is a dry-run which just output the command without performiong it.)</li>
+<li>run the same command without the <code>-n</code> - <code>snakemake -ps ../scripts/getGenome_IndexGenome.Snakefile</code>. This will download the fastA and gtf files from the given links and create the index files for them as well.</li>
 </ol>
 </div>
+<div id="mapping" class="section level2">
+<h2>Mapping</h2>
+<p>Mapping woill be done with the <code>STAR</code> aligner for a specific genome either in a paired-end or singel-end format.</p>
+<div id="changing-parameters-before-mapping" class="section level3">
+<h3>Changing parameters before mapping</h3>
+<p>The following settng must be adjusted before running the script:</p>
+<pre><code>######## Project Setting
+# To create a separate project results folder for each run, change the name of the project here.
+project: &quot;P152&quot;
+# this path would point to the raw data in fastq format. This must be changed each time for the correct data to be analyzed.
+path: &quot;/fs/pool/pool-bcfngs/fastq_files/P146/P152_ChIP_Asx_5_6/conc.fastq&quot;
+# Which organism to map the data to
+org: &quot;Dme.BDGP6.22&quot;</code></pre>
+<p>The <code>project</code> and the <code>path</code> should point to the current project which is being mapped.</p>
+<p>the <code>org</code> must be the organism the data is mapped against. The term must be identical to the term in the list of organisms from the config files.</p>
 </div>
-<div id="changes" class="section level1">
-<h1>CHANGES</h1>
-<div id="section" class="section level3">
-<h3>13.01.2020</h3>
-<ul>
-<li>a short <a href="HOWTO.html"><code>HOWTO</code></a> was added. This serves as a fast introduction, if <code>conda</code> and <code>snakemake</code> are already installed and set for the mapping.</li>
-<li>the genome of <em>D. pseudoobscura</em> was added to the <code>config.yaml</code> file.</li>
-</ul>
-</div>
-<div id="section-1" class="section level3">
-<h3>11.12.2019</h3>
-<p>The workflow now should work on the hpcl cluster of the MPI. For that reason some changes were made to the folder structure and the depth of the analysis</p>
-<ol style="list-style-type: decimal">
-<li>the mappers <code>bowtie2</code> and <code>bwa</code> were removed from the analysis. It will done from now on only with <code>STAR</code>.</li>
-<li>the working directory of the analysis should be the <code>conc.fastq</code> folder in the pool-bcfngs pool folder of the Sequencing core facility.</li>
-<li>The workflow will create a new folder with the structure <code>ProjectNumber/Organism/</code> were it will save two new folders for the star mapping results and the bigwig files.</li>
-<li>the first script to get the genomes should be only run once, or when the genome version must be updated.</li>
-<li>The second script was splitted into single-end and paired-end version and should be run accordingly.</li>
-</ol>
+<div id="running-the-star-mapping-step." class="section level3">
+<h3>running the <code>star</code> mapping step.</h3>
+<p>first change the working directory to the path of the actual project on the pool-bcfngs. e.g.</p>
+<pre><code>cd /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/</code></pre>
+<p>Next run the snakemake script first as a dry-run (<code>-n</code>) and if all seems well than for real.</p>
+<p>e.g.</p>
+<pre><code># for single-end samples
+snakemake -nps /fs/pool/pool-bcfngs/scripts/Star.MappingQuant.SingleEndFastq.Snakefile -j 50
+# for paired-end samples
+snakemake -ps /fs/pool/pool-bcfngs/scripts/Star.MappingQuant.PairedEndFastq.Snakefile -j 50</code></pre>
 </div>
 </div>
 

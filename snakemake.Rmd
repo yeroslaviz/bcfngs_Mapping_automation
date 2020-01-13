@@ -68,7 +68,7 @@ For thst reason, wildcards were added as params, one for the fasta file and one 
 
 ### Mapping the samples with the `STAR`
 
-[mapping the samples](Star.MappingQuant.Snakefile){target="_blank"}
+[mapping the samples in a paired-end format](Star.MappingQuant.PairedEndFastq.Snakefile){target="_blank"}
 
 This script contains three (four) steps. in the first step the `fastq` samples are mapped to the indexed genome. Then they are being indexd. and last, after creating an chromosome-size file, the bam files are converted into `bigwig` files for better visualization using the [UCSC browser](http://genome.ucsc.edu/cgi-bin/hgTracks)
 
