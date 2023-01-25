@@ -9,16 +9,16 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-This is an internal how to for the workflow of the automation for the bcfngs.
+This is an internal HOWTO for the workflow of the automation for the bcfngs core facility.
 
 ## genome indexing
 
-This steps needs to be run onyl once. **unless** new genomes are added. 
+This steps needs to be run only once. **unless** new genomes are added. 
 
-this is all run on the `hpcl5002`.
+This is all run on the `hpcl5002`.
 
 1. log-in to the server.
-2. If not done before, activate the conda environment inside a `screen`, so that one can log out from the server and still run the workflow in the background. More information about the is in the github web site.
+2. If not done before, activate the conda environment inside a `screen`, so that one can log out from the server and still run the workflow in the background. More information about the is on the github web site.
 3. open the `config.yaml` file, e.g. ` vi /fs/pool/pool-bcfngs/scripts/config.yaml` and add the genome links from the ensembl FTP site in this format:
 
 ```
@@ -27,17 +27,17 @@ this is all run on the `hpcl5002`.
     gtf: "ftp://ftp.ensemblgenomes.org/pub/metazoa/release-45/gtf/drosophila_pseudoobscura/Drosophila_pseudoobscura.Dpse_3.0.45.gtf.gz"
 ```
 
-4. run the command `snakemake -nps ../scripts/getGenome_IndexGenome.Snakefile` to check that the new genome is added to the workflow (the `-n` is a dry-run which just output the command without performiong it.)
-5. run the same command without the `-n` - `snakemake -ps ../scripts/getGenome_IndexGenome.Snakefile`. This will download the fastA and gtf files from the given links and create the index files for them as well. 
+4. run the command `snakemake -nps ../scripts/getGenome_IndexGenome.Snakefile` to check that the new genome is added to the workflow (the `-n` is a dry-run which just output the command without performing the tasks.)
+5. run the same command without the `-n` - `snakemake -ps ../scripts/getGenome_IndexGenome.Snakefile -j 12`. This will download the fastA and gtf files from the given links and create the index files for them as well. The parameter `-j` set the number pf cores used in the snakemake run. If the number of cores is smaller then the one sets for e.g. STAR, only this numner of cores will be used. 
 
 
 ## Mapping
 
-Mapping woill be done with the `STAR` aligner for a specific genome either in a paired-end or singel-end format. 
+Mapping will be done with the `STAR` aligner for a specific genome either in a paired-end or single-end format. 
 
 ### Changing parameters before mapping
 
-The following settng must be adjusted before running the script:
+The following setting must be adjusted before running the script:
 
 ```
 ######## Project Setting
