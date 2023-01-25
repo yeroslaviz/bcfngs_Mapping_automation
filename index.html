@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
@@ -15,24 +14,38 @@
 
 <title>index</title>
 
-<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<script src="site_libs/header-attrs-2.19/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
 
-<style type="text/css">code{white-space: pre;}</style>
 <style type="text/css">
-  pre:not([class]) {
-    background-color: white;
-  }
-</style>
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
 <script type="text/javascript">
 if (window.hljs) {
   hljs.configure({languages: []});
@@ -45,32 +58,8 @@ if (window.hljs) {
 
 
 
-<style type="text/css">
-h1 {
-  font-size: 34px;
-}
-h1.title {
-  font-size: 38px;
-}
-h2 {
-  font-size: 30px;
-}
-h3 {
-  font-size: 24px;
-}
-h4 {
-  font-size: 18px;
-}
-h5 {
-  font-size: 16px;
-}
-h6 {
-  font-size: 12px;
-}
-.table th:not([align]) {
-  text-align: left;
-}
-</style>
+
+
 
 <link rel="stylesheet" href="styles.css" type="text/css" />
 
@@ -82,13 +71,8 @@ h6 {
   margin-left: auto;
   margin-right: auto;
 }
-code {
-  color: inherit;
-  background-color: rgba(0, 0, 0, 0.04);
-}
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -102,40 +86,16 @@ button.code-folding-btn:focus {
 summary {
   display: list-item;
 }
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
 </style>
 
 
 <style type="text/css">
-/* padding for bootstrap navbar */
-body {
-  padding-top: 60px;
-  padding-bottom: 40px;
-}
-/* offset scroll position for anchor links (for fixed navbar)  */
-.section h1 {
-  padding-top: 65px;
-  margin-top: -65px;
-}
-.section h2 {
-  padding-top: 65px;
-  margin-top: -65px;
-}
-.section h3 {
-  padding-top: 65px;
-  margin-top: -65px;
-}
-.section h4 {
-  padding-top: 65px;
-  margin-top: -65px;
-}
-.section h5 {
-  padding-top: 65px;
-  margin-top: -65px;
-}
-.section h6 {
-  padding-top: 65px;
-  margin-top: -65px;
-}
 .dropdown-submenu {
   position: relative;
 }
@@ -163,7 +123,7 @@ body {
   margin-right: -10px;
 }
 .dropdown-submenu:hover>a:after {
-  border-left-color: #ffffff;
+  border-left-color: #adb5bd;
 }
 .dropdown-submenu.pull-left {
   float: none;
@@ -175,7 +135,7 @@ body {
 }
 </style>
 
-<script>
+<script type="text/javascript">
 // manage active state of menu based on current page
 $(document).ready(function () {
   // active menu anchor
@@ -185,11 +145,28 @@ $(document).ready(function () {
     href = "index.html";
   var menuAnchor = $('a[href="' + href + '"]');
 
-  // mark it active
-  menuAnchor.parent().addClass('active');
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
 
-  // if it's got a parent navbar menu mark it active as well
-  menuAnchor.closest('li.dropdown').addClass('active');
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
 });
 </script>
 
@@ -201,13 +178,12 @@ $(document).ready(function () {
   max-height: 500px;
   min-height: 44px;
   overflow-y: auto;
-  background: white;
   border: 1px solid #ddd;
   border-radius: 4px;
 }
 
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
   font-family: 'Glyphicons Halflings';
   display: inline-block;
   padding: 10px;
@@ -215,16 +191,9 @@ $(document).ready(function () {
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "&#xe258;";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
+  content: "\e258";
   font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
+  border: none;
 }
 
 .tabset-dropdown > .nav-tabs > li.active {
@@ -237,6 +206,7 @@ $(document).ready(function () {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -267,7 +237,7 @@ $(document).ready(function () {
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
@@ -313,65 +283,126 @@ $(document).ready(function () {
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-<div class="fluid-row" id="header">
+<div id="header">
 
 
 
 <h1 class="title toc-ignore">index</h1>
 <h4 class="author">Assa Yeroslaviz</h4>
-<h4 class="date"><strong>last update</strong> - 13 January, 2020</h4>
+<h4 class="date"><strong>last update</strong> - 25 January, 2023</h4>
 
 </div>
 
 
-<p>The repository contains a conda-snakemake workflow for the mapping of the concatenated fastq file created at the BCF of the MPIB.</p>
-<p>This README file for the sequencing center to help them run a preliminary analysis on the sequenced samples</p>
-<p>The file will contains instruction on how to create a conda environment with the needed tools for the mapping and will also include snakemake for the automation of the scripts.</p>
+<p>The repository contains a conda-snakemake workflow for the mapping of
+the concatenated fastq file created at the BCF of the MPIB.</p>
+<p>This README file for the sequencing center to help them run a
+preliminary analysis on the sequenced samples</p>
+<p>The file will contains instruction on how to create a conda
+environment with the needed tools for the mapping and will also include
+snakemake for the automation of the scripts.</p>
 <div id="steps-to-do" class="section level2">
 <h2>steps to do</h2>
 <p><strong>Preparing the genomes for mapping</strong></p>
 <ol style="list-style-type: decimal">
-<li>Download the genomes and the annotations from the FTP server (Ensembl genome builds are used here.)</li>
-<li>For each genome, an index for the <code>star</code> aligner is created.</li>
+<li>Download the genomes and the annotations from the FTP server
+(Ensembl genome builds are used here.)</li>
+<li>For each genome, an index for the <code>star</code> aligner is
+created.</li>
 </ol>
-<p>This two steps are done only once, when the workflow was set-up. It only needs to be re-run, when a new organism is beinf added, or when newer version of exiting organisms are needed.</p>
+<p>This two steps should be done only once, when the workflow was set
+up. It only needs to be re-run, when a new organism is being added, or
+when newer genome build of exiting organisms or a newer version of the
+STAR mapping tool are needed.</p>
 <p><strong>Mapping step</strong></p>
 <ol start="3" style="list-style-type: decimal">
-<li>Map tha samples with the needed parameter.</li>
-<li>Index the fastA file to create a <code>chromSize</code> file for the <code>bigwig</code> conversion.</li>
-<li>Convert the <code>bam</code> files to <code>wig</code> and then to <code>bigwig</code>.</li>
+<li>Map the samples with the needed parameter.</li>
+<li>Index the fastA file to create a <code>chromSize</code> file for the
+<code>bigwig</code> conversion.</li>
+<li>Convert the <code>bam</code> files to <code>wig</code> and then to
+<code>bigwig</code>.</li>
 </ol>
 <p>points to consider: If this is only a preliminary analysis -</p>
 <ol style="list-style-type: decimal">
-<li>Would it make more sense to take only 50% of the fastq file for a faster analysis / visualization</li>
-<li>Do they need the bam files also - deleting them would save a lot of storage space</li>
+<li>Would it make more sense to take only 50% of the fastq file for a
+faster analysis / visualization</li>
+<li>Do they need the bam files also - deleting them would save a lot of
+storage space</li>
 </ol>
-<p>The examples in this document are based on fictive data as well as a fictional project named <em>Project0815</em>. When a new project is done, this term must be changed with the proper name of the project, wherever it is mentioned.</p>
+<p>The examples in this document are based on fictive data as well as a
+fictional project named <em>Project0815</em>. When a new project is
+done, this term must be changed with the proper name of the project,
+wherever it is mentioned.</p>
 </div>
 <div id="folder-structure" class="section level2">
 <h2>folder structure</h2>
-<p>The workflow works from within the folder of the concatenated <code>fastq</code> files created after running the <code>bcl2fastq</code> script from the project management website.</p>
+<p>The workflow works from within the folder of the concatenated
+<code>fastq</code> files created after running the
+<code>bcl2fastq</code> script from the project management website (in
+the core facility here, this folder is called
+<code>conc.fastq</code>).</p>
 <ul>
-<li>A <code>config</code> file is saved under <code>&quot;/fs/pool/pool-bcfngs/scripts/config.yaml&quot;</code>, where all the mapping and genome parameters are saved.</li>
-<li>The genome indexing step is run only once and creates a folder named <code>genomes/</code> on the <code>&quot;/fs/pool/pool-bcfngs/&quot;</code>. Within this folder all the <code>fastA</code> and the <code>gtf</code> files are saved as well as a folder for each organims, containing the <code>star</code>-indexed files.</li>
-<li>The mapping step expect to find within the working directory the files with the pattern <em>.conc.R1.fastq.gz</em> (As this is the current pattern given by the sequencing facility. If, in the future, this will be changed, the search pattern must be changed as well).</li>
+<li>A <code>config</code> file is saved under
+<code>/fs/pool/pool-bcfngs/scripts/config.yaml</code>, where all the
+mapping and genome parameters are saved.</li>
+<li>The genome indexing step will run only once and creates a folder
+named <code>genomes/</code> on the <code>/fs/pool/pool-bcfngs/</code>.
+Within this folder all the <code>fastA</code> and the <code>gtf</code>
+files are saved as well as a folder for each organism, containing the
+<code>star</code>-indexed files.</li>
+<li>The mapping step expect to find within the working directory the
+files with the pattern <em>.conc.R1.fastq.gz</em>, as this is the
+current pattern given by the sequencing facility. (<strong>If, in the
+future, this will be changed, the search pattern must be changed as
+well</strong>).</li>
 </ul>
-<p>There are two seperate files for single-ended and paired-ended data sets. The single-ended one expects to find only <em>.conc.R1.fastq.gz</em> , while the paired-end data set must also contain <em>.conc.R2.fastq.gz</em> files.</p>
+<p>There are two separate files for single-ended and paired-ended data
+sets. The single-ended one expects to find only
+<em>.conc.R1.fastq.gz</em>, while the paired-end data set must also
+contain <em>.conc.R2.fastq.gz</em> files.</p>
 </div>
 <div id="workflow" class="section level2">
 <h2>Workflow</h2>
-<p>The workflow uses a combination of a <code>conda</code> environment with the <code>snakemake</code> tool (based on python). The advantage of <code>conda</code> is that it creates a container, separated from the rest of the tools installed on the system. This gives a better manangement and control over the tools used in the workflow, as well as less conflict potentials with other/older version of tools with non-compatible parameters. To learn more about the conda environment and its advantages, take a look at the <a href="https://conda.io/en/latest/">conda web site</a>.</p>
-<p><code>snakemake</code> offers a lot of advantages as well. It allows better controls over different steps of the analysis, easier automation of the workflow and reduce running time thorugh parallelization of the steps, just to mention some of them. to learn more about <code>snakemake</code> take a look at <a href="https://snakemake.readthedocs.io/en/stable/index.html">the snakemake doc site</a>.</p>
+<p>The workflow uses a combination of a <code>conda</code> environment
+with the <code>snakemake</code> tool (based on python). The advantage of
+<code>conda</code> is that it creates a container, separated from the
+rest of the tools installed on the system. This gives a better
+management and control over the tools used in the workflow, as well as
+less conflict potentials with other/older version of tools with
+non-compatible parameters. To learn more about the conda environment and
+its advantages, take a look at the <a
+href="https://conda.io/en/latest/">conda web site</a>.</p>
+<p><code>snakemake</code> offers a lot of advantages as well. It allows
+better controls over different steps of the analysis, easier automation
+of the workflow and reduce running time through parallelization of the
+steps, just to mention some of them. to learn more about
+<code>snakemake</code> take a look at <a
+href="https://snakemake.readthedocs.io/en/stable/index.html">the
+snakemake doc site</a>.</p>
 <ul>
 <li><a href="conda.html">conda</a></li>
 <li><a href="snakemake.html">snakemake</a></li>
 </ul>
 <div id="wigtobigwig" class="section level3">
 <h3>wigToBigwig</h3>
-<p>First the <code>bam</code> files are converted into <code>wig</code> files. This is done using the <code>bam2wig.py</code> script from the <code>rseqc</code>-software package.<br />
-In order for the automatic conversion of <code>wig</code> to <code>bigwig</code> files to work, one must have the tool <code>wigToBigwig</code> from the UCSC repository installed and <strong>in the path</strong>. As we are working with conda, the easiest plce to put it is the the path of the environment. In out case, as we are working with <code>miniconda</code> the path would be under <code>/fs/home/USERNAME/miniconda3/envs/ENVNAME/bin/</code>. So far I have copied the file manually to the folder, but I have now added it to the environment.yaml file, which is ran during the environment creation step. This was not tested yet!.</p>
+<p>First the <code>bam</code> files are converted into <code>wig</code>
+files. This is done using the <code>bam2wig.py</code> script from the
+<code>rseqc</code>-software package.<br />
+In order for the automatic conversion of <code>wig</code> to
+<code>bigwig</code> files to work, one must have the tool
+<code>wigToBigwig</code> from the UCSC repository installed and
+<strong>in the path</strong>. As we are working with <code>conda</code>,
+the easiest place to put it is the the path of the environment. In this
+case, as we are working with <code>miniconda</code> the path would be
+under <code>/fs/home/USERNAME/miniconda3/envs/ENVNAME/bin/</code>. So
+far I have copied the file manually to the folder, but I have now added
+it to the <code>environment.yaml</code> file, which is ran during the
+environment creation step. This was not tested yet!.</p>
 <p>TO DO</p>
-<p>In this case it would probably be better if the indexed geneomes would already be saved on the server for various organisms, as it doesn’t make sense to download one each time. We sort of know which organisms are needed in most cases</p>
+<p>In this case it would probably be better if the indexed genomes would
+already be saved on the server for various organisms, as it doesn’t make
+sense to download one each time. We sort of know which organisms are
+needed in most cases.</p>
 <ol style="list-style-type: decimal">
 <li>human</li>
 <li>mouse</li>
@@ -380,7 +411,7 @@ In order for the automatic conversion of <code>wig</code> to <code>bigwig</code>
 <li>yeast</li>
 <li>worm (C. elegans)</li>
 </ol>
-<p>as well as for which mappers we need</p>
+<p>as well as which mappers we need</p>
 <ol style="list-style-type: decimal">
 <li>star</li>
 <li>bwa</li>
@@ -391,21 +422,45 @@ In order for the automatic conversion of <code>wig</code> to <code>bigwig</code>
 <div id="changes" class="section level1">
 <h1>CHANGES</h1>
 <div id="section" class="section level3">
-<h3>13.01.2020</h3>
+<h3>27.06.2022</h3>
+<p>new genome built were added to the workflow</p>
 <ul>
-<li>a short <a href="HOWTO.html"><code>HOWTO</code></a> was added. This serves as a fast introduction, if <code>conda</code> and <code>snakemake</code> are already installed and set for the mapping.</li>
-<li>the genome of <em>D. pseudoobscura</em> was added to the <code>config.yaml</code> file.</li>
+<li><em>D. melanogaster</em> - <code>BDGP6.28</code></li>
+<li><em>E. coli</em> - HUSEC2011CHR1</li>
+<li><em>D. pseudoobscura</em> - <code>3.0.49</code></li>
+<li><em>C. elegans</em> - <code>WBcel 2.35</code></li>
 </ul>
 </div>
 <div id="section-1" class="section level3">
+<h3>13.01.2020</h3>
+<ul>
+<li>a short <a href="HOWTO.html"><code>HOWTO</code></a> was added. This
+serves as a fast introduction, if <code>conda</code> and
+<code>snakemake</code> are already installed and set for the
+mapping.</li>
+<li>the genome of <em>D. pseudoobscura</em> was added to the
+<code>config.yaml</code> file.</li>
+</ul>
+</div>
+<div id="section-2" class="section level3">
 <h3>11.12.2019</h3>
-<p>The workflow now should work on the hpcl cluster of the MPI. For that reason some changes were made to the folder structure and the depth of the analysis</p>
+<p>The workflow now should work on the hpcl cluster of the MPI. For that
+reason some changes were made to the folder structure and the depth of
+the analysis</p>
 <ol style="list-style-type: decimal">
-<li>the mappers <code>bowtie2</code> and <code>bwa</code> were removed from the analysis. It will done from now on only with <code>STAR</code>.</li>
-<li>the working directory of the analysis should be the <code>conc.fastq</code> folder in the pool-bcfngs pool folder of the Sequencing core facility.</li>
-<li>The workflow will create a new folder with the structure <code>ProjectNumber/Organism/</code> were it will save two new folders for the star mapping results and the bigwig files.</li>
-<li>the first script to get the genomes should be only run once, or when the genome version must be updated.</li>
-<li>The second script was splitted into single-end and paired-end version and should be run accordingly.</li>
+<li>the mappers <code>bowtie2</code> and <code>bwa</code> were removed
+from the analysis. It will done from now on only with
+<code>STAR</code>.</li>
+<li>the working directory of the analysis should be the
+<code>conc.fastq</code> folder in the pool-bcfngs pool folder of the
+Sequencing core facility.</li>
+<li>The workflow will create a new folder with the structure
+<code>ProjectNumber/Organism/</code> were it will save two new folders
+for the star mapping results and the bigwig files.</li>
+<li>the first script to get the genomes should be only run once, or when
+the genome version must be updated.</li>
+<li>The second script was splitted into single-end and paired-end
+version and should be run accordingly.</li>
 </ol>
 </div>
 </div>
@@ -419,7 +474,7 @@ In order for the automatic conversion of <code>wig</code> to <code>bigwig</code>
 
 // add bootstrap table styles to pandoc tables
 function bootstrapStylePandocTables() {
-  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
 }
 $(document).ready(function () {
   bootstrapStylePandocTables();
@@ -437,7 +492,7 @@ $(document).ready(function () {
 
 $(document).ready(function () {
   $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
+    $(this).parent().toggleClass('nav-tabs-open');
   });
 });
 </script>

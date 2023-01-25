@@ -294,7 +294,7 @@ $(document).ready(function () {
 </div>
 
 
-<p>This is an internal HOWTO for the workflow of the automation for the
+<p>This is an internal HOW-TO for the workflow of the automation for the
 bcfngs core facility.</p>
 <div id="genome-indexing" class="section level2">
 <h2>genome indexing</h2>
@@ -324,7 +324,7 @@ performing the tasks.)</li>
 <code>snakemake -ps ../scripts/getGenome_IndexGenome.Snakefile -j 12</code>.
 This will download the fastA and gtf files from the given links and
 create the index files for them as well. The parameter <code>-j</code>
-set the number pf cores used in the snakemake run. If the number of
+sets the number pf cores used in the snakemake run. If the number of
 cores is smaller then the one sets for e.g. STAR, only this numner of
 cores will be used.</li>
 </ol>
@@ -351,11 +351,11 @@ config files.</p>
 </div>
 <div id="running-the-star-mapping-step." class="section level3">
 <h3>running the <code>star</code> mapping step.</h3>
-<p>first change the working directory to the path of the actual project
+<p>first, change the working directory to the path of the actual project
 on the pool-bcfngs. e.g.</p>
 <pre><code>cd /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/</code></pre>
 <p>Next run the snakemake script first as a dry-run (<code>-n</code>)
-and if all seems well than for real.</p>
+and if all seems well than run it for real.</p>
 <p>e.g. </p>
 <pre><code># for single-end samples
 snakemake -nps /fs/pool/pool-bcfngs/scripts/Star.MappingQuant.SingleEndFastq.Snakefile -j 50

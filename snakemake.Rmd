@@ -11,47 +11,47 @@ knitr::opts_chunk$set(echo = TRUE)
 
 This part is still work in progress.
 
-`snakemake` relies havealy on a config file, i.e. `config.yaml`, where parameter specific for each analysis are saved. This reduces the number of chagnes needed to be done each time a new project is run.
+`snakemake` relies heavily on a `config` file, i.e. `config.yaml`, where parameter specific for each analysis are saved. This reduces the number of changes needed to be done each time a new project is run.
 
-For this project we are using the following cofig file:
+For this project we are using the following `config` file:
 [config.yaml](config.yaml){target="_blank"}
 
 The `config.yaml` file contains several parts. 
 
-1. The top one contain the information about hte organism used in the analysis. This is neccessary as it provides the _prefix_ for both the genome indexing as well as the mapping steps. \
-   The `config` file contain seven different organisms and should be run only once at the beginning to create the indexed genomes. It must be ran again **only** when new organisms are added or new versions of any genomes are needed. For each genome the prefix would be the three-letter anme of the organism followed by the genome built verion (e.g *Hsp.GRCh38*, *Cel.WBcel2358*). \
-   Below the Organism's name are the links for the genomic sequence in a `fastA` format and the annotation files in a `gtf` (gene transfer file) format. On each first time both files will be downloaded before the genome indexing.
+1. The top one contain the information about the organism used in the analysis. This is necessary as it provides the _prefix_ for both the genome indexing as well as the mapping steps. \
+   + The `config` file contain seven different organisms and should be run only once at the beginning to create the indexed genomes. It must be ran again **only** when new organisms are added or new versions of any genomes (or of tools) are needed. For each genome the prefix would be the three-letter name of the organism followed by the genome built version (e.g *Hsp.GRCh38*, *Cel.WBcel2358*). \
+   + Below the Organism's name are the links for the genomic sequence in a `fastA` format and the annotation files in a `gtf` (gene transfer file) format. On each first time both files will be downloaded before the genome indexing.
 
 2. The next part contains parameters for the `STAR` aligner. In this section the parameters can be set globally and be easily called upon, when running multiple versions of the same aligner.
-    + The most important parameter is `gzipped`. This set whether or not the sample files are compressed or not. `STAR` uses an internal decompressing step on the fly, when running the mapping step. As the fastq files from the core facility are usually gzipped, the default here is set to `true`.
-    + The `SA` index set the preindex string. bigger genomes can take higher values. It should in general be set to $~log2(GenomeLength)/2-1$. For standard genomes ( _hsa_ or _mmu_) it should be set to 14, for smaller genomes such as _Drosophila_, it shpuld be set to 13. _C. elegans_ genome should be even smaller and be setted at 12. The higher the value, tha faster the indexbuilding, but higher is also the memory requirements. 
+    + The most important parameter is `gzipped`. This set whether or not the sample files are compressed or not. `STAR` uses an internal decompressing step on the fly, when running the mapping step. As the fastq files from the core facility are usually `gzipped`, the default here is set to `true`.
+    + The `SA` index set the `preindex` string. Bigger genomes take higher values. It should in general be set to $~log2(GenomeLength)/2-1$. For standard genomes ( _hsa_ or _mmu_) it should be set to 14, for smaller genomes such as _Drosophila_, it should be set to 13. _C. elegans_ genome should be even smaller and be setted at 12. The higher the value, the faster the index building, but higher is also the memory requirements. 
     + The memory can be set with the `RAM` parameter. 
     
-3. The third part of the `config` file is project-related and must be changed with each run. It has three parts
+3. The third part of the `config` file is project-related and must be changed with each run. It has three parts:
     + Project number (e.g. **P000**)
     + Path to concatenated fastq files (e.g. **/fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/**).
     + the organism to be mapped against (e.g. **Cel.WBcel235**).
     
-    This parameters must be changed each time a new run is done. The run will creates a new folder within this working directory, where it will save the mapping results in form of sorted `bam` files and the `bigwig` files for visualiztion purposes.
+    This parameters must be changed each time a new run is done. The run will create a new folder within this working directory, where it will save the mapping results in form of sorted `bam` files and the `bigwig` files for visualiztion purposes.
     
 This `config` file as well as the snakemake scripts are all placed in the `scripts/` folder and should stay there. The run command will be set to find them there. 
 
 The `snakemake` workflow is based on so-called *rules*. This rules are a way to split the workflow into single steps. The advantage here, is that each time the steps can be ran separately. If some parameters are changed to only one step in the analysis `snakemake` can figure out which steps must be re-run and which one don't.
 
-This snakemake protocoll worjs in two steps.
+This snakemake protocol works in two steps.
 
 **1. Getting the genome and indexing**
 
 **2. Mapping the samples with the needed mapper and genome**
 
-The first  more general step is to set the working directory. It would be best, if we use as less copying/moving of files as possible. For that reason it might be best, if we can directly work on the `conc.fastq` folder, where the data is created after the demultiplxing. If so, some of the paths in the work flow would have to be changed or maybe adding a gobal `work.dir` parameter to the c`config.yaml` file. 
+The first  more general step is to set the working directory. It would be best, if we use as less copying/moving of files as possible. For that reason it might be best, if we can directly work inside the `conc.fastq` folder, where the data is created after the demultiplxing. If so, some of the paths in the work flow would have to be changed or maybe adding a global `work.dir` parameter to the `config.yaml` file. 
 (*`work.dir` parameter in config.yaml file must be set*).
 
 ### Getting the genome and indexing
 
 `This work is pending the changes when the indexed genomes will be saved on the server permanently`
 
-1. Shouled we have a folder with several genomes already indexed and prepared for the mapping beforehand? 
+1. Should we have a folder with several genomes already indexed and prepared for the mapping beforehand? 
 2. if so which genomes?
 3. where should they be saved? The paths to the indexed genomes would than needed to be changed accordingly in the second snakemake file for the mapping step. 
 
@@ -63,14 +63,14 @@ In General the script uses the link and download both the genome and the annotat
 
 **CHANGES in version 3**
 
-In version 3 of the script, the rule get_genome was changed to accommodate the automatic download of multiple genomes. 
-For thst reason, wildcards were added as params, one for the fasta file and one for the gtf file. This is because snakemake's brackets markup can olnly replace a variable with its string representation, but do not evaluate any codes. so first a string should be set to be passed oer to the wget command in the shell.
+In version 3 of the script, the rule `get_genome` was changed to accommodate the automatic download of multiple genomes. 
+For that reason, wildcards were added as `params`, one for the `fastA` file and one for the `gtf` file. This is because snakemake's brackets markup can only replace a variable with its string representation, but do not evaluate any codes. so first a string should be set to be passed over to the `wget` command in the shell.
 
 ### Mapping the samples with the `STAR`
 
 [mapping the samples in a paired-end format](Star.MappingQuant.PairedEndFastq.Snakefile){target="_blank"}
 
-This script contains three (four) steps. in the first step the `fastq` samples are mapped to the indexed genome. Then they are being indexd. and last, after creating an chromosome-size file, the bam files are converted into `bigwig` files for better visualization using the [UCSC browser](http://genome.ucsc.edu/cgi-bin/hgTracks)
+This script contains three (four) steps. in the first step the `fastq` samples are mapped to the indexed genome. Then, they are being indexed. Last, after creating a chromosome-size file, the `bam` files are converted into `bigwig` files for better visualization using the [UCSC browser](http://genome.ucsc.edu/cgi-bin/hgTracks).
 
 We have two separate scripts for single-end and paired-end runs. The PE run looks for both R1 and R2 fastq files, while the SE script will ignore all R2 samples. 
 

@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-This is an internal HOWTO for the workflow of the automation for the bcfngs core facility.
+This is an internal HOW-TO for the workflow of the automation for the bcfngs core facility.
 
 ## genome indexing
 
@@ -28,7 +28,7 @@ This is all run on the `hpcl5002`.
 ```
 
 4. run the command `snakemake -nps ../scripts/getGenome_IndexGenome.Snakefile` to check that the new genome is added to the workflow (the `-n` is a dry-run which just output the command without performing the tasks.)
-5. run the same command without the `-n` - `snakemake -ps ../scripts/getGenome_IndexGenome.Snakefile -j 12`. This will download the fastA and gtf files from the given links and create the index files for them as well. The parameter `-j` set the number pf cores used in the snakemake run. If the number of cores is smaller then the one sets for e.g. STAR, only this numner of cores will be used. 
+5. run the same command without the `-n` - `snakemake -ps ../scripts/getGenome_IndexGenome.Snakefile -j 12`. This will download the fastA and gtf files from the given links and create the index files for them as well. The parameter `-j` sets the number pf cores used in the snakemake run. If the number of cores is smaller then the one sets for e.g. STAR, only this numner of cores will be used. 
 
 
 ## Mapping
@@ -55,13 +55,13 @@ the `org` must be the organism the data is mapped against. The term must be iden
 
 ### running the `star` mapping step. 
 
-first change the working directory to the path of the actual project on the pool-bcfngs. e.g.
+first, change the working directory to the path of the actual project on the pool-bcfngs. e.g.
 
 ```
 cd /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/
 ```
 
-Next run the snakemake script first as a dry-run (`-n`) and if all seems well than for real. 
+Next run the snakemake script first as a dry-run (`-n`) and if all seems well than run it for real. 
 
 e.g. 
 

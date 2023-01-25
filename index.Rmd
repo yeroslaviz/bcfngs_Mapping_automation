@@ -23,11 +23,11 @@ The file will contains instruction on how to create a conda environment with the
 1. Download the genomes and the annotations from the FTP server (Ensembl genome builds are used here.)
 2. For each genome, an index for the `star` aligner is created.
 
-This two steps are done only once, when the workflow was set-up. It only needs to be re-run, when a new organism is beinf added, or when newer version of exiting organisms are needed.
+This two steps should be done only once, when the workflow was set up. It only needs to be re-run, when a new organism is being added, or when newer genome build of exiting organisms or a newer version of the STAR mapping tool are needed.
 
 **Mapping step** 
 
-3. Map tha samples with the needed parameter.
+3. Map the samples with the needed parameter.
 4. Index the fastA file to create a `chromSize` file for the `bigwig` conversion.
 5. Convert the `bam` files to `wig` and then to `bigwig`.
 
@@ -41,19 +41,19 @@ The examples in this document are based on fictive data as well as a fictional p
 
 ## folder structure
 
-The workflow works from within the folder of the concatenated `fastq` files created after running the `bcl2fastq` script from the project management website. 
+The workflow works from within the folder of the concatenated `fastq` files created after running the `bcl2fastq` script from the project management website (in the core facility here, this folder is called `conc.fastq`). 
 
-* A `config` file is saved under `"/fs/pool/pool-bcfngs/scripts/config.yaml"`, where all the mapping and genome parameters are saved. 
-* The genome indexing step is run only once and creates a folder named `genomes/`  on the `"/fs/pool/pool-bcfngs/"`. Within this folder all the `fastA` and the `gtf` files are saved as well as a folder for each organims, containing the `star`-indexed files.
-* The mapping step expect to find within the working directory the files with the pattern *.conc.R1.fastq.gz* (As this is the current pattern given by the sequencing facility. If, in the future, this will be changed, the search pattern must be changed as well).
+* A `config` file is saved under `/fs/pool/pool-bcfngs/scripts/config.yaml`, where all the mapping and genome parameters are saved. 
+* The genome indexing step will run only once and creates a folder named `genomes/` on the `/fs/pool/pool-bcfngs/`. Within this folder all the `fastA` and the `gtf` files are saved as well as a folder for each organism, containing the `star`-indexed files.
+* The mapping step expect to find within the working directory the files with the pattern *.conc.R1.fastq.gz*, as this is the current pattern given by the sequencing facility. (**If, in the future, this will be changed, the search pattern must be changed as well**).
 
-There are two seperate files for single-ended and paired-ended data sets. The single-ended one expects to find only  *.conc.R1.fastq.gz* , while the paired-end data set must also contain *.conc.R2.fastq.gz* files. 
+There are two separate files for single-ended and paired-ended data sets. The single-ended one expects to find only  *.conc.R1.fastq.gz*, while the paired-end data set must also contain *.conc.R2.fastq.gz* files. 
 
 ## Workflow
 
-The workflow uses a combination of a `conda` environment with the `snakemake` tool (based on python). The advantage of `conda` is that it creates a container, separated from the rest of the tools installed on the system. This gives a better manangement and control over the tools used in the workflow, as well as less conflict potentials with other/older version of tools with non-compatible parameters. To learn more about the conda environment and its advantages, take a look at the [conda web site](https://conda.io/en/latest/).
+The workflow uses a combination of a `conda` environment with the `snakemake` tool (based on python). The advantage of `conda` is that it creates a container, separated from the rest of the tools installed on the system. This gives a better management and control over the tools used in the workflow, as well as less conflict potentials with other/older version of tools with non-compatible parameters. To learn more about the conda environment and its advantages, take a look at the [conda web site](https://conda.io/en/latest/).
 
-`snakemake` offers a lot of advantages as well. It allows better controls over different steps of the analysis, easier automation of the workflow and reduce running time thorugh parallelization of the steps, just to mention some of them. to learn more about `snakemake` take a look at [the snakemake doc site](https://snakemake.readthedocs.io/en/stable/index.html).
+`snakemake` offers a lot of advantages as well. It allows better controls over different steps of the analysis, easier automation of the workflow and reduce running time through parallelization of the steps, just to mention some of them. to learn more about `snakemake` take a look at [the snakemake doc site](https://snakemake.readthedocs.io/en/stable/index.html).
 
 - [conda](conda.html)
 - [snakemake](snakemake.html)
@@ -62,13 +62,13 @@ The workflow uses a combination of a `conda` environment with the `snakemake` to
 
 First the `bam` files are converted into `wig` files. This is done using the `bam2wig.py` script from the `rseqc`-software package.  
 In order for the automatic conversion of `wig` to `bigwig` files to work, one must have the tool `wigToBigwig` from the UCSC repository installed and **in the path**.
-As we are working with conda, the easiest plce to put it is the the path of the environment. In out case, as we are working with `miniconda` the path would be under `/fs/home/USERNAME/miniconda3/envs/ENVNAME/bin/`.
-So far I have copied the file manually to the folder, but I have now added it to the environment.yaml file, which is ran during the environment creation step. This was not tested yet!.
+As we are working with `conda`, the easiest place to put it is the the path of the environment. In this case, as we are working with `miniconda` the path would be under `/fs/home/USERNAME/miniconda3/envs/ENVNAME/bin/`.
+So far I have copied the file manually to the folder, but I have now added it to the `environment.yaml` file, which is ran during the environment creation step. This was not tested yet!.
 
 
 TO DO
 
-In this case it would probably be better if the indexed geneomes would already be saved on the server for various organisms, as it doesn't make sense to download one each time. We sort of know which organisms are needed in most cases
+In this case it would probably be better if the indexed genomes would already be saved on the server for various organisms, as it doesn't make sense to download one each time. We sort of know which organisms are needed in most cases.
 
 1. human
 2. mouse
@@ -77,13 +77,22 @@ In this case it would probably be better if the indexed geneomes would already b
 5. yeast
 6. worm (C. elegans)
 
-as well as for which mappers we need
+as well as which mappers we need
 
 1. star
 2. bwa
 3. bowtie2
 
 # CHANGES
+
+### 27.06.2022
+
+new genome built were added to the workflow
+
+- _D. melanogaster_ - `BDGP6.28`
+- _E. coli_ - HUSEC2011CHR1
+- _D. pseudoobscura_ - `3.0.49`
+- _C. elegans_ - `WBcel 2.35`
 
 ### 13.01.2020
 
