@@ -90,7 +90,7 @@ as well as which mappers we need
 new genome built were added to the workflow
 
 - _D. melanogaster_ - `BDGP6.28`
-- _E. coli_ - HUSEC2011CHR1
+- _E. coli_ - `HUSEC2011CHR1`
 - _D. pseudoobscura_ - `3.0.49`
 - _C. elegans_ - `WBcel 2.35`
 
