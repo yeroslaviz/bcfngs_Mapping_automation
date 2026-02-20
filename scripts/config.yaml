@@ -1,0 +1,76 @@
+# Get the appropriate genome for the analysis from the Ensembl FTP server.
+# To get the correct data copy-paste the link for the fastA and gtf files in the correct row.
+
+# Updated on 23.07.2025
+organism:
+  Hsp.GRCh38:
+    fasta: "ftp://ftp.ensembl.org/pub/current_fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz"
+    gtf: "ftp://ftp.ensembl.org/pub/current_gtf/homo_sapiens/Homo_sapiens.GRCh38.114.gtf.gz"
+    SAindex: 14
+  Mmu.GrCm39:
+    fasta: "ftp://ftp.ensembl.org/pub/current_fasta/mus_musculus/dna/Mus_musculus.GRCm39.dna.primary_assembly.fa.gz"
+    gtf: "ftp://ftp.ensembl.org/pub/current_gtf/mus_musculus/Mus_musculus.GRCm39.114.gtf.gz"
+    SAindex: 14
+  Cel.WBcel235:
+    fasta: "ftp://ftp.ensembl.org/pub/current_fasta/caenorhabditis_elegans/dna/Caenorhabditis_elegans.WBcel235.dna.toplevel.fa.gz"
+    gtf: "ftp://ftp.ensembl.org/pub/current_gtf/caenorhabditis_elegans/Caenorhabditis_elegans.WBcel235.114.gtf.gz"
+    SAindex: 14
+  Dme.BDGP6.54:
+    fasta: "ftp://ftp.ensembl.org/pub/current_fasta/drosophila_melanogaster/dna/Drosophila_melanogaster.BDGP6.54.dna.toplevel.fa.gz"
+    gtf: "ftp://ftp.ensembl.org/pub/current_gtf/drosophila_melanogaster/Drosophila_melanogaster.BDGP6.54.114.gtf.gz"
+    SAindex: 12
+  Sce.R64-1-1:
+    fasta: "ftp://ftp.ensembl.org/pub/current_fasta/saccharomyces_cerevisiae/dna/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa.gz"
+    gtf: "ftp://ftp.ensembl.org/pub/current_gtf/saccharomyces_cerevisiae/Saccharomyces_cerevisiae.R64-1-1.114.gtf.gz"
+    SAindex: 10
+  Dps.3.0.61:
+    fasta: "ftp://ftp.ensemblgenomes.org/pub/current/metazoa/fasta/drosophila_pseudoobscura/dna/Drosophila_pseudoobscura.Dpse_3.0.dna.toplevel.fa.gz"
+    gtf: "ftp://ftp.ensemblgenomes.org/pub/current/metazoa/gtf/drosophila_pseudoobscura/Drosophila_pseudoobscura.Dpse_3.0.61.gtf.gz"
+    SAindex: 12
+#  Eco.HUSEC2011CHR1:
+#    fasta: "ftp://ftp.ensemblgenomes.org/pub/release-45/bacteria//fasta/bacteria_91_collection/escherichia_coli/dna/Escherichia_coli.HUSEC2011CHR1.dna.toplevel.fa.gz"
+#    gtf: "ftp://ftp.ensemblgenomes.org/pub/release-45/bacteria//gtf/bacteria_91_collection/escherichia_coli/Escherichia_coli.HUSEC2011CHR1.45.gtf.gz"
+#    SAindex: 12
+#  Dre.GRCz11:
+#    fasta: "ftp://ftp.ensembl.org/pub/current_fasta/danio_rerio/dna/Danio_rerio.GRCz11.dna.primary_assembly.fa.gz"
+#    gtf: "ftp://ftp.ensembl.org/pub/current_gtf/danio_rerio/Danio_rerio.GRCz11.102.gtf.gz"
+#    SAindex: 14
+####################################################
+######## Project Setting
+# To create a separate project results folder for each run, change the name of the project here.
+project: "P499_SERun"
+# this path would point to the raw data in fastq format. This must be changed each time for the correct data to be analyzed.
+#path: "/fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq"
+path: "/fs/pool/pool-bcfngs/fastq_files/P499_AY/P499_20220225_JM_SM/conc.fastq"
+# Which organism to map the data to
+org: "Dme.BDGP6.28"
+
+##############
+# General parameters
+## Are the input files compressed [true, false]
+gzipped: true
+threads: 32
+
+## parameters for STAR indexing
+RAM:
+  168632718037
+   #  set maximum available RAM (bytes) for genome generation
+# For small genomes, the parameter --genomeSAindexNbases needs to be scaled down (default is 14).
+# This parameter was set individually for each genome, as they have different sizes and therefore should be indexed accordingly.
+#SAindex: 32
+
+## Is your library stranded? options are [true, false]
+stranded: false
+
+## Parameters for chipseq runs (cut&Tag, chipseq, etc.)
+## which aligner is used - this is important ,so that only one of the mapping methods will be used in the downstream analysis [bowtie2, bwa, segemehl]
+mapper: "bowtie2"
+effGenomeSize: 2652783500
+
+## parameters for STAR indexing
+RAM:
+  168632718037
+   #  set maximum available RAM (bytes) for genome generation
+SAindex: 14 # For small genomes, the parameter --genomeSAindexNbases needs to be scaled down (default is 14).
+# Which organism to map the data to
+org: "Dme.BDGP6.28"

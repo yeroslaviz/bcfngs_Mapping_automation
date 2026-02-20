@@ -4,3 +4,7 @@
 .Ruserdata
 .DS_Store
 
+// ignored folders
+
+/scripts/samples/
+/scripts/backup/
