@@ -9,7 +9,8 @@ __pycache__/
 
 // ignored folders
 
-/scripts/samples/
-/scripts/backup/
+scripts/samples/
+scripts/backup/
+fontawesome-free-7.2.0-desktop/
 
 /.quarto/
