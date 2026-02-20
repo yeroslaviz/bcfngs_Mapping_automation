@@ -1,7 +1,7 @@
 name: "Assa Yeroslaviz PhD"
 output_dir: "."
 navbar:
-  title: "Seqeucing Core Facility MPI Biochemistry"
+  title: "Bioinformatics Core Facility MPI Biochemistry"
   left:
     - text: "conda"
       href: conda.html

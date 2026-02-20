@@ -1,0 +1,150 @@
+---
+title: "Updating genomes and indices"
+author: "AY"
+---
+
+This page collects the internal procedures for:
+
+- updating genome FASTA/GTF sources
+- rebuilding STAR indices
+- switching the active STAR index used by mapping
+- running mapping for single-end / paired-end projects
+
+## When to update genomes / indices
+
+Once every few years the genomic sequences must be updated. Also the STAR version for mapping progresses and should be updated when needed.
+
+## Prerequisites / where to run
+
+You can use any server as long as you can activate the conda environment with `snakemake`, `STAR`, `samtools`, `rseqc`, and `ucsc-wigtobigwig`.
+
+### hpcl5002 (example)
+
+```bash
+cd /fs/pool/pool-bcfngs/genomes/
+conda activate GenomeIndexing
+```
+
+### ngs-vm (example)
+
+Example conda environment creation:
+
+```bash
+conda create -n Mapping -c bioconda -c conda-forge snakemake-minimal star samtools rseqc ucsc-wigtobigwig
+```
+
+## 1) Update FASTA and GTF links
+
+The config file used for genome indexing and mapping is `config.yaml` (in the pool-bcfngs folder). It contains a list of `fasta` and `gtf` links for each genome.
+
+When a genome build is updated, update:
+
+1. the `fasta` / `gtf` links
+2. the organism prefix (folder name used for mapping), if needed
+
+Example (D. melanogaster):
+
+```yaml
+Dme.BDGP6.22:
+  fasta: "ftp://ftp.ensembl.org/pub/current_fasta/drosophila_melanogaster/dna/Drosophila_melanogaster.BDGP6.22.dna.toplevel.fa.gz"
+  gtf: "ftp://ftp.ensembl.org/pub/current_gtf/drosophila_melanogaster/Drosophila_melanogaster.BDGP6.22.91.gtf.gz"
+  SAindex: 12
+```
+
+to:
+
+```yaml
+Dme.BDGP6.28:
+  fasta: "ftp://ftp.ensembl.org/pub/current_fasta/drosophila_melanogaster/dna/Drosophila_melanogaster.BDGP6.28.dna.toplevel.fa.gz"
+  gtf: "ftp://ftp.ensembl.org/pub/current_gtf/drosophila_melanogaster/Drosophila_melanogaster.BDGP6.28.102.gtf.gz"
+  SAindex: 12
+```
+
+## 2) Re-run genome indexing (STAR)
+
+This step needs to be run only once (unless new genomes are added or indices are rebuilt for a new STAR version).
+
+1. Log in to the server.
+2. Activate the conda environment inside a `screen` session.
+3. Edit the config file (example):
+
+```bash
+vi /fs/pool/pool-bcfngs/scripts/config.yaml
+```
+
+4. Dry-run:
+
+```bash
+snakemake -nps ../scripts/getGenome_IndexGenome.Snakefile
+```
+
+5. Run for real (example with 12 cores):
+
+```bash
+snakemake -ps ../scripts/getGenome_IndexGenome.Snakefile -j 12
+```
+
+## 3) Switch the active STAR index (symlink approach)
+
+Downstream mapping often expects the index at:
+
+`/fs/pool/pool-bcfngs/genomes/{organism}/starIndex/`
+
+If you build STAR indices into versioned folders, keep the stable path by updating a symlink named `starIndex`.
+
+Example loop (adjust STAR version folder name):
+
+```bash
+folders="Cel.WBcel235
+Dme.BDGP6.28
+Dps.3.0.49
+Dre.GRCz11
+Eco.HUSEC2011CHR1
+Hsp.GRCh38
+Mmu.GrCm38
+Sce.R64-1-1"
+
+for folder in $folders
+do
+  echo $folder
+  cd ${folder}/
+  rm starIndex
+  ln -s starIndex2.7.10a/ starIndex
+  cd ../
+done
+```
+
+## 4) Mapping (per project)
+
+Mapping is done with `STAR` for a specific genome in either paired-end or single-end mode.
+
+### Change parameters before mapping
+
+Adjust the project settings in the config file before running:
+
+```yaml
+project: "P152"
+path: "/fs/pool/pool-bcfngs/fastq_files/P146/P152_ChIP_Asx_5_6/conc.fastq"
+org: "Dme.BDGP6.22"
+```
+
+### Run mapping (dry-run first)
+
+Change into the project folder containing the concatenated FASTQ files:
+
+```bash
+cd /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/
+```
+
+Dry-run then execute:
+
+```bash
+# single-end
+snakemake -nps /fs/pool/pool-bcfngs/scripts/Star.MappingQuant.SingleEndFastq.Snakefile -j 50
+
+# paired-end
+snakemake -nps /fs/pool/pool-bcfngs/scripts/Star.MappingQuant.PairedEndFastq.Snakefile -j 50
+```
+
+Remove `-n` to run for real.
+
