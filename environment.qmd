@@ -1,0 +1,100 @@
+---
+title: "Environment (micromamba)"
+---
+
+This workflow uses **micromamba** to create a reproducible environment with all required tools (Snakemake + aligners + utilities).
+
+## Create the workflow environment (project-local)
+
+From the repo root:
+
+```bash
+micromamba create -y -p .mamba/env -f env/environment.yml
+```
+
+To run commands inside the environment without activating it:
+
+```bash
+micromamba run -p .mamba/env snakemake --version
+```
+
+## Update the environment
+
+If `env/environment.yml` changes (new tools, version bumps):
+
+```bash
+micromamba update -y -p .mamba/env -f env/environment.yml
+```
+
+## Health checks
+
+```bash
+./scripts/bcfngs env check
+```
+
+## How-to (common scenarios)
+
+### I’m new / first time setup
+
+```bash
+micromamba create -y -p .mamba/env -f env/environment.yml
+./scripts/bcfngs env check
+```
+
+### Run a one-off command without activating
+
+```bash
+micromamba run -p .mamba/env snakemake --help
+micromamba run -p .mamba/env STAR --version
+```
+
+### Keep tools up-to-date (routine)
+
+1. Update the environment:
+
+```bash
+micromamba update -y -p .mamba/env -f env/environment.yml
+./scripts/bcfngs env check
+```
+
+2. (Optional) record an explicit lockfile for reproducibility:
+
+```bash
+mkdir -p env/locks
+micromamba list -p .mamba/env --explicit > env/locks/explicit-YYYY-MM-DD.txt
+```
+
+### I want to use HPC modules for vendor tools
+
+You still need the micromamba env for `python` + `snakemake`, but aligners can come from modules:
+
+```bash
+module load bclconvert/4.3.13 star bowtie2 bwa
+./scripts/bcfngs --profile modules env check
+./scripts/bcfngs --profile modules genomes plan
+./scripts/bcfngs --profile modules genomes build --cores 20
+```
+
+### Demultiplexing with bcl-convert (modules)
+
+This repo doesn’t automate demultiplexing yet, but the typical pattern is:
+
+```bash
+module load bclconvert/4.3.13
+bcl-convert --help
+
+# Example placeholders (adjust to your run folder / SampleSheet):
+# bcl-convert --bcl-input-directory /path/to/runfolder \
+#            --output-directory /path/to/output \
+#            --sample-sheet /path/to/SampleSheet.csv
+```
+
+## HPC modules fallback (optional)
+
+If you prefer using HPC modules for vendor tools, you can load:
+
+```bash
+module load bclconvert/4.3.13 star bowtie2 bwa
+```
+
+You can still run Snakemake/python from micromamba (recommended).

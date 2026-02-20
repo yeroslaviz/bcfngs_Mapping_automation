@@ -1,5 +1,10 @@
 project:
   type: website
+  resources:
+    - "configs/**"
+    - "workflow/**"
+    - "env/**"
+    - "scripts/bcfngs"
 
 execute:
   enabled: false
@@ -31,8 +36,8 @@ website:
     left:
       - text: "Home"
         href: index.html
-      - text: "conda"
-        href: conda.html
+      - text: "environment"
+        href: environment.html
       - text: "snakemake"
         href: snakemake.html
       - text: "Updating genomes"

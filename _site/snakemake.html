@@ -9,7 +9,7 @@
 <meta name="author" content="AY">
 <meta name="dcterms.date" content="2026-02-20">
 
-<title>Seqeucing Core Facility MPI Biochemistry - snakemake</title>
+<title>Bioinformatics Core Facility MPI Biochemistry - snakemake</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -101,8 +101,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }</script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css">
 
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 </head>
 
@@ -114,7 +112,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="./index.html">
-    <span class="navbar-title">Seqeucing Core Facility MPI Biochemistry</span>
+    <span class="navbar-title">Bioinformatics Core Facility MPI Biochemistry</span>
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
@@ -128,8 +126,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./conda.html"> 
-<span class="menu-text">conda</span></a>
+    <a class="nav-link" href="./environment.html"> 
+<span class="menu-text">environment</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link active" href="./snakemake.html" aria-current="page"> 
@@ -176,8 +174,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#getting-the-genome-and-indexing" id="toc-getting-the-genome-and-indexing" class="nav-link active" data-scroll-target="#getting-the-genome-and-indexing">Getting the genome and indexing</a></li>
+  <li><a href="#quickstart" id="toc-quickstart" class="nav-link active" data-scroll-target="#quickstart">Quickstart</a></li>
+  <li><a href="#configuration-files" id="toc-configuration-files" class="nav-link" data-scroll-target="#configuration-files">Configuration files</a>
+  <ul class="collapse">
+  <li><a href="#notes" id="toc-notes" class="nav-link" data-scroll-target="#notes">Notes</a></li>
+  </ul></li>
+  <li><a href="#how-to-cookbook" id="toc-how-to-cookbook" class="nav-link" data-scroll-target="#how-to-cookbook">How-to (cookbook)</a>
+  <ul class="collapse">
+  <li><a href="#build-all-genomes-indices" id="toc-build-all-genomes-indices" class="nav-link" data-scroll-target="#build-all-genomes-indices">Build all genomes + indices</a></li>
+  <li><a href="#build-only-a-subset-faster" id="toc-build-only-a-subset-faster" class="nav-link" data-scroll-target="#build-only-a-subset-faster">Build only a subset (faster)</a></li>
+  <li><a href="#ensembl-has-a-newer-release-bump-pinned-release" id="toc-ensembl-has-a-newer-release-bump-pinned-release" class="nav-link" data-scroll-target="#ensembl-has-a-newer-release-bump-pinned-release">Ensembl has a newer release (bump pinned release)</a></li>
+  <li><a href="#new-starbwabowtie2-version-rebuild-indices" id="toc-new-starbwabowtie2-version-rebuild-indices" class="nav-link" data-scroll-target="#new-starbwabowtie2-version-rebuild-indices">New STAR/bwa/bowtie2 version (rebuild indices)</a></li>
+  <li><a href="#use-hpc-modules-for-aligners-fallback" id="toc-use-hpc-modules-for-aligners-fallback" class="nav-link" data-scroll-target="#use-hpc-modules-for-aligners-fallback">Use HPC modules for aligners (fallback)</a></li>
+  </ul></li>
+  <li><a href="#genome-download-indexing" id="toc-genome-download-indexing" class="nav-link" data-scroll-target="#genome-download-indexing">Genome download + indexing</a>
+  <ul class="collapse">
   <li><a href="#mapping-the-samples-with-the-star" id="toc-mapping-the-samples-with-the-star" class="nav-link" data-scroll-target="#mapping-the-samples-with-the-star">Mapping the samples with the <code>STAR</code></a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -215,63 +228,121 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 <p>This part is still work in progress.</p>
-<p><code>snakemake</code> relies heavily on a <code>config</code> file, i.e.&nbsp;<code>config.yaml</code>, where parameter specific for each analysis are saved. This reduces the number of changes needed to be done each time a new project is run.</p>
-<p>For this project we are using the following <code>config</code> file: <a href="config.yaml" target="_blank">config.yaml</a></p>
-<p>The <code>config.yaml</code> file contains several parts.</p>
+<p>This repository uses <code>snakemake</code> for:</p>
 <ol type="1">
-<li>The top one contain the information about the organism used in the analysis. This is necessary as it provides the <em>prefix</em> for both the genome indexing as well as the mapping steps.<br>
-
-<ul>
-<li>The <code>config</code> file contain seven different organisms and should be run only once at the beginning to create the indexed genomes. It must be ran again <strong>only</strong> when new organisms are added or new versions of any genomes (or of tools) are needed. For each genome the prefix would be the three-letter name of the organism followed by the genome built version (e.g <em>Hsp.GRCh38</em>, <em>Cel.WBcel2358</em>).<br>
-</li>
-<li>Below the Organism’s name are the links for the genomic sequence in a <code>fastA</code> format and the annotation files in a <code>gtf</code> (gene transfer file) format. On each first time both files will be downloaded before the genome indexing.</li>
-</ul></li>
-<li>The next part contains parameters for the <code>STAR</code> aligner. In this section the parameters can be set globally and be easily called upon, when running multiple versions of the same aligner.
-<ul>
-<li>The most important parameter is <code>gzipped</code>. This set whether or not the sample files are compressed or not. <code>STAR</code> uses an internal decompressing step on the fly, when running the mapping step. As the fastq files from the core facility are usually <code>gzipped</code>, the default here is set to <code>true</code>.</li>
-<li>The <code>SA</code> index set the <code>preindex</code> string. Bigger genomes take higher values. It should in general be set to <span class="math inline">\(~log2(GenomeLength)/2-1\)</span>. For standard genomes ( <em>hsa</em> or <em>mmu</em>) it should be set to 14, for smaller genomes such as <em>Drosophila</em>, it should be set to 13. <em>C. elegans</em> genome should be even smaller and be setted at 12. The higher the value, the faster the index building, but higher is also the memory requirements.</li>
-<li>The memory can be set with the <code>RAM</code> parameter.</li>
-</ul></li>
-<li>The third part of the <code>config</code> file is project-related and must be changed with each run. It has three parts:
-<ul>
-<li>Project number (e.g.&nbsp;<strong>P000</strong>)</li>
-<li>Path to concatenated fastq files (e.g.&nbsp;<strong>/fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/</strong>).</li>
-<li>the organism to be mapped against (e.g.&nbsp;<strong>Cel.WBcel235</strong>).</li>
-</ul>
-This parameters must be changed each time a new run is done. The run will create a new folder within this working directory, where it will save the mapping results in form of sorted <code>bam</code> files and the <code>bigwig</code> files for visualiztion purposes.</li>
+<li><strong>Genome download + indexing</strong> (STAR, bwa, bowtie2) using <em>versioned</em> index directories and stable symlinks.</li>
+<li><strong>Mapping</strong> (currently STAR) using per-project run settings.</li>
 </ol>
-<p>This <code>config</code> file as well as the snakemake scripts are all placed in the <code>scripts/</code> folder and should stay there. The run command will be set to find them there.</p>
-<p>The <code>snakemake</code> workflow is based on so-called <em>rules</em>. This rules are a way to split the workflow into single steps. The advantage here, is that each time the steps can be ran separately. If some parameters are changed to only one step in the analysis <code>snakemake</code> can figure out which steps must be re-run and which one don’t.</p>
-<p>This snakemake protocol works in two steps.</p>
-<p><strong>1. Getting the genome and indexing</strong></p>
-<p><strong>2. Mapping the samples with the needed mapper and genome</strong></p>
-<p>The first more general step is to set the working directory. It would be best, if we use as less copying/moving of files as possible. For that reason it might be best, if we can directly work inside the <code>conc.fastq</code> folder, where the data is created after the demultiplxing. If so, some of the paths in the work flow would have to be changed or maybe adding a global <code>work.dir</code> parameter to the <code>config.yaml</code> file. (<em><code>work.dir</code> parameter in config.yaml file must be set</em>).</p>
-<section id="getting-the-genome-and-indexing" class="level3">
-<h3 class="anchored" data-anchor-id="getting-the-genome-and-indexing">Getting the genome and indexing</h3>
-<p><code>This work is pending the changes when the indexed genomes will be saved on the server permanently</code></p>
-<ol type="1">
-<li>Should we have a folder with several genomes already indexed and prepared for the mapping beforehand?</li>
-<li>if so which genomes?</li>
-<li>where should they be saved? The paths to the indexed genomes would than needed to be changed accordingly in the second snakemake file for the mapping step.</li>
-</ol>
-<p>The advantage is, that if we have this done, this first script can be spared.</p>
-<p><a href="getGenome_IndexGenome.Snakefile" target="_blank">Getting and indexing the genome</a></p>
-<p>In General the script uses the link and download both the genome and the annotation files for the given genome. it than automatically and in parallel indexes the genome for the three mappers - <code>star</code>, <code>bwa</code> and <code>bowtie2</code>.</p>
-<p><strong>CHANGES in version 3</strong></p>
-<p>In version 3 of the script, the rule <code>get_genome</code> was changed to accommodate the automatic download of multiple genomes. For that reason, wildcards were added as <code>params</code>, one for the <code>fastA</code> file and one for the <code>gtf</code> file. This is because snakemake’s brackets markup can only replace a variable with its string representation, but do not evaluate any codes. so first a string should be set to be passed over to the <code>wget</code> command in the shell.</p>
+<p>For non-experts, prefer the single wrapper command <code>./scripts/bcfngs</code> (runs checks, then snakemake).</p>
+<section id="quickstart" class="level2">
+<h2 class="anchored" data-anchor-id="quickstart">Quickstart</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1) create/update env (only once, then as needed)</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env create</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env check</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 2) (optional) check if a newer Ensembl release exists</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes check-updates</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 3) preflight checks + snakemake lint + dry-run</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes plan</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 4) build genomes + indices (real run)</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
+<section id="configuration-files" class="level2">
+<h2 class="anchored" data-anchor-id="configuration-files">Configuration files</h2>
+<p>The workflow configuration is split into two files:</p>
+<ol type="1">
+<li>Genome and indexing configuration: <a href="configs/genomes.yaml" target="_blank"><code>configs/genomes.yaml</code></a>
+<ul>
+<li>Organism identifiers are <strong>scientific names</strong> (e.g.&nbsp;<code>Homo_sapiens</code>, <code>Mus_musculus</code>).</li>
+<li>Genome sources are pinned to a specific Ensembl release (default: 116).</li>
+<li>Index output directories are versioned via <code>index_versions</code>.</li>
+</ul></li>
+<li>Per-project run configuration (mapping): <a href="configs/run.yaml" target="_blank"><code>configs/run.yaml</code></a>
+<ul>
+<li>Project ID, input <code>path</code>, organism, threads, etc.</li>
+</ul></li>
+</ol>
+<section id="notes" class="level3">
+<h3 class="anchored" data-anchor-id="notes">Notes</h3>
+<ul>
+<li>Genome indexing uses <code>workflow/genomes.smk</code> (not the legacy <code>getGenome_IndexGenome.Snakefile</code>).</li>
+<li>Mapping uses the STAR mapping Snakefiles and expects <code>/fs/pool/pool-bcfngs/genomes/&lt;Organism&gt;/starIndex</code> to exist (symlink to the versioned index).</li>
+</ul>
+</section>
+</section>
+<section id="how-to-cookbook" class="level2">
+<h2 class="anchored" data-anchor-id="how-to-cookbook">How-to (cookbook)</h2>
+<section id="build-all-genomes-indices" class="level3">
+<h3 class="anchored" data-anchor-id="build-all-genomes-indices">Build all genomes + indices</h3>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes plan</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="build-only-a-subset-faster" class="level3">
+<h3 class="anchored" data-anchor-id="build-only-a-subset-faster">Build only a subset (faster)</h3>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20 <span class="at">--organism</span> Homo_sapiens,Mus_musculus</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="ensembl-has-a-newer-release-bump-pinned-release" class="level3">
+<h3 class="anchored" data-anchor-id="ensembl-has-a-newer-release-bump-pinned-release">Ensembl has a newer release (bump pinned release)</h3>
+<ol type="1">
+<li>Check:</li>
+</ol>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes check-updates</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ol start="2" type="1">
+<li>If an update is available, edit <code>configs/genomes.yaml</code> and bump:</li>
+</ol>
+<ul>
+<li><code>releases.ensembl: 116</code> → <code>117</code> (etc.)</li>
+</ul>
+<ol start="3" type="1">
+<li>Then:</li>
+</ol>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes plan</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="new-starbwabowtie2-version-rebuild-indices" class="level3">
+<h3 class="anchored" data-anchor-id="new-starbwabowtie2-version-rebuild-indices">New STAR/bwa/bowtie2 version (rebuild indices)</h3>
+<ol type="1">
+<li>Update tools:</li>
+</ol>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env update</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env check</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ol start="2" type="1">
+<li>Update <code>configs/genomes.yaml</code>:</li>
+</ol>
+<ul>
+<li>set <code>index_versions.star</code>, <code>index_versions.bwa</code>, <code>index_versions.bowtie2</code> (these strings are used in output folder names)</li>
+</ul>
+<ol start="3" type="1">
+<li>Rebuild:</li>
+</ol>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="use-hpc-modules-for-aligners-fallback" class="level3">
+<h3 class="anchored" data-anchor-id="use-hpc-modules-for-aligners-fallback">Use HPC modules for aligners (fallback)</h3>
+<p>This still uses the micromamba env for python/snakemake, but loads vendor tools via modules:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load bclconvert/4.3.13 star bowtie2 bwa</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--profile</span> modules env check</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--profile</span> modules genomes plan</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--profile</span> modules genomes build <span class="at">--cores</span> 20</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="genome-download-indexing" class="level2">
+<h2 class="anchored" data-anchor-id="genome-download-indexing">Genome download + indexing</h2>
+<p>Workflow file: <a href="workflow/genomes.smk" target="_blank">workflow/genomes.smk</a></p>
 <section id="mapping-the-samples-with-the-star" class="level3">
 <h3 class="anchored" data-anchor-id="mapping-the-samples-with-the-star">Mapping the samples with the <code>STAR</code></h3>
 <p><a href="Star.MappingQuant.PairedEndFastq.Snakefile" target="_blank">mapping the samples in a paired-end format</a></p>
 <p>This script contains three (four) steps. in the first step the <code>fastq</code> samples are mapped to the indexed genome. Then, they are being indexed. Last, after creating a chromosome-size file, the <code>bam</code> files are converted into <code>bigwig</code> files for better visualization using the <a href="http://genome.ucsc.edu/cgi-bin/hgTracks">UCSC browser</a>.</p>
 <p>We have two separate scripts for single-end and paired-end runs. The PE run looks for both R1 and R2 fastq files, while the SE script will ignore all R2 samples.</p>
 <p>After the environment was created <strong>and activated</strong>, one must change to the directory of the concatenated fast files. E.g.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>To run the script use this command to test/run. The settings are explained below.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># for single-end samples</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-nps</span> /fs/pool/pool-bcfngs/scripts/Star.MappingQuant.SingleEndFastq.Snakefile <span class="at">-j</span> 50</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># for paired-end samples</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-ps</span> /fs/pool/pool-bcfngs/scripts/Star.MappingQuant.PairedEndFastq.Snakefile <span class="at">-j</span> 50</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>To run mapping, update <code>configs/run.yaml</code> in the repo, then run one of these Snakefiles.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># for single-end samples</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-nps</span> /path/to/repo/Star.MappingQuant.SingleEndFastq.Snakefile <span class="at">-j</span> 50</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co"># for paired-end samples</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-nps</span> /path/to/repo/Star.MappingQuant.PairedEndFastq.Snakefile <span class="at">-j</span> 50</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <ul>
 <li><code>-n</code> - dry-run. This parameter will only output the command, but execute them. This should be used to test the parameters, but must be removed for the analysis to be done.</li>
 <li><code>-p</code> - Print the commands to be execute.</li>
@@ -280,6 +351,7 @@ This parameters must be changed each time a new run is done. The run will create
 </ul>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

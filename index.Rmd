@@ -55,7 +55,7 @@ The workflow uses a combination of a `conda` environment with the `snakemake` to
 
 `snakemake` offers a lot of advantages as well. It allows better controls over different steps of the analysis, easier automation of the workflow and reduce running time through parallelization of the steps, just to mention some of them. to learn more about `snakemake` take a look at [the snakemake doc site](https://snakemake.readthedocs.io/en/stable/index.html).
 
-- [conda](conda.html)
+- [environment](environment.html)
 - [snakemake](snakemake.html)
 
 ### wigToBigwig
@@ -85,6 +85,24 @@ as well as which mappers we need
 
 # CHANGES
 
+### 20.02.2026
+
+- Added Quarto website configuration (`_quarto.yml`) and re-rendered site with `quarto render`.
+- Updated navbar:
+  - Added links to [`environment`](environment.html), [`snakemake`](snakemake.html), and [`Updating genomes`](updating_genomes.html).
+  - Replaced the old contact page with an email link: <mailto:yeroslaviz@biochem.mpg.de>.
+  - Removed Twitter and added Bluesky.
+- Converted `scripts/Updating_genomes.txt` into [`updating_genomes.qmd`](updating_genomes.qmd) (and removed the original text file).
+- Switched environment management docs from conda to micromamba:
+  - Added [`environment.qmd`](environment.qmd) and [`env/environment.yml`](env/environment.yml).
+  - Added cookbook-style “how-to” instructions for common scenarios (new installs, updates, HPC module fallback).
+- Added a new “one command” wrapper CLI: [`scripts/bcfngs`](scripts/bcfngs) (preflight checks, lint, dry-run, then run).
+- Added new Snakemake configuration + workflow for genome download and indexing:
+  - [`configs/genomes.yaml`](configs/genomes.yaml) (scientific organism IDs, pinned releases, index versioning)
+  - [`configs/run.yaml`](configs/run.yaml) (per-project mapping settings)
+  - [`workflow/genomes.smk`](workflow/genomes.smk) (downloads FASTA/GTF, builds STAR+bwa+bowtie2 indices, updates symlinks, creates chromSize)
+- Updated the STAR mapping Snakefiles to use `configs/run.yaml` and scientific organism IDs.
+
 ### 27.06.2022
 
 new genome built were added to the workflow
@@ -108,6 +126,3 @@ The workflow now should work on the hpcl cluster of the MPI. For that reason som
 3. The workflow will create a new folder with the structure `ProjectNumber/Organism/` were it will save two new folders for the star mapping results and the bigwig files.
 4. the first script to get the genomes should be only run once, or when the genome version must be updated.
 5. The second script was splitted into single-end and paired-end version and should be run accordingly. 
-
-
-
