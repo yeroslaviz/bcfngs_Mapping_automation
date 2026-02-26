@@ -4,12 +4,28 @@ title: "Environment (micromamba)"
 
 This workflow uses **micromamba** to create a reproducible environment with all required tools (Snakemake + aligners + utilities).
 
+<<<<<<< HEAD
+=======
+## Installing micromamba
+
+micromamba can be installed from the [github repository](https://github.com/mamba-org/micromamba-releases).
+
+
+```bash
+"${SHELL}" <(curl -L https://micro.mamba.pm/install.sh)
+```
+
+
+
+>>>>>>> b949dd1 (docs: update environment instructions)
 ## Create the workflow environment (project-local)
 
 From the repo root:
 
 ```bash
-micromamba create -y -p .mamba/env -f env/environment.yml
+# micromamba create -y -p .mamba/env -f env/environment.yml # save the env under the path ./mamba/env
+
+micromamba create -y -n update_genomes -f env/environment.yml # save the env under the default path of miniconda3
 ```
 
 To run commands inside the environment without activating it:
