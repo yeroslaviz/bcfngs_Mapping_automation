@@ -18,3 +18,4 @@ _site/
 
 # local-only workflow notes
 /branch_publish_workflow.qmd
+/docs/branch_publish_workflow.html
