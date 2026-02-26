@@ -14,8 +14,8 @@ from typing import Iterable
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_ENV_PREFIX = REPO_ROOT / ".mamba" / "env"
-
+#DEFAULT_ENV_PREFIX = REPO_ROOT / ".mamba" / "env"
+DEFAULT_ENV_PREFIX = "/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes"
 
 @dataclass(frozen=True)
 class RunContext:
