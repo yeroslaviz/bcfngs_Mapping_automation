@@ -13,8 +13,6 @@ micromamba can be installed from the [github repository](https://github.com/mamb
 "${SHELL}" <(curl -L https://micro.mamba.pm/install.sh)
 ```
 
-
-
 ## Create the workflow environment (project-local)
 
 From the repo root:
@@ -43,6 +41,18 @@ micromamba update -y -p .mamba/env -f env/environment.yml
 
 ```bash
 ./scripts/bcfngs env check
+```
+
+This step goes through the needed tools for the workflow and output if the tool versions. you should see something like that:
+
+```
+{
+  "snakemake": "8.30.0",
+  "STAR": "2.7.11b",
+  "bwa": "",
+  "bowtie2": "/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes/bin/bowtie2-build-s version 2.5.5",
+  "samtools": "samtools 1.23"
+}
 ```
 
 ## How-to (common scenarios)
