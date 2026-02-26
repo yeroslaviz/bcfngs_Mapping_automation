@@ -21,6 +21,13 @@
     "text": "This workflow uses micromamba to create a reproducible environment with all required tools (Snakemake + aligners + utilities)."
   },
   {
+    "objectID": "environment.html#installing-micromamba",
+    "href": "environment.html#installing-micromamba",
+    "title": "Environment (micromamba)",
+    "section": "Installing micromamba",
+    "text": "Installing micromamba\nmicromamba can be installed from the github repository.\n\"${SHELL}\" &lt;(curl -L https://micro.mamba.pm/install.sh)"
+  },
+  {
     "objectID": "environment.html#create-the-workflow-environment-project-local",
     "href": "environment.html#create-the-workflow-environment-project-local",
     "title": "Environment (micromamba)",

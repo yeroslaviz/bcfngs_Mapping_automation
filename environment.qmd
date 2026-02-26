@@ -4,6 +4,16 @@ title: "Environment (micromamba)"
 
 This workflow uses **micromamba** to create a reproducible environment with all required tools (Snakemake + aligners + utilities).
 
+## Installing micromamba
+
+micromamba can be installed from the [github repository](https://github.com/mamba-org/micromamba-releases).
+
+
+```{bash}
+"${SHELL}" <(curl -L https://micro.mamba.pm/install.sh)
+```
+
+
 ## Create the workflow environment (project-local)
 
 From the repo root:
