@@ -1,0 +1,121 @@
+---
+title: "Branch and Publish Workflow (Local Notes)"
+---
+
+## Branch purpose
+
+- `codex/hpc-test`: working branch for script, config, and documentation edits.
+- `gh-pages`: publishing branch for website/docs output only.
+
+## Standard work cycle
+
+1. Switch to work branch:
+
+```bash
+git switch codex/hpc-test
+```
+
+2. Make changes (code/docs/config as needed).
+3. Stage and commit:
+
+```bash
+git add <files>
+git commit -m "short message"
+```
+
+4. Push work branch:
+
+```bash
+git push origin codex/hpc-test
+```
+
+## When to publish to gh-pages
+
+Publish only when website-visible docs changed.
+
+Examples that should be published:
+- `.qmd`, `.Rmd`, `_quarto.yml`
+- content that should appear on the docs site
+
+Examples that usually should not be published directly:
+- workflow scripts
+- pipeline configs
+- helper CLI code
+
+## Publish flow (docs changed)
+
+1. Update publishing branch:
+
+```bash
+git switch gh-pages
+git pull origin gh-pages
+```
+
+2. Bring in the docs commit(s):
+
+```bash
+git cherry-pick <commit_sha>
+```
+
+3. Re-render site:
+
+```bash
+quarto render
+```
+
+4. Commit and push rendered site:
+
+```bash
+git add -A
+git commit -m "docs: publish updates"
+git push origin gh-pages
+```
+
+5. Switch back to work branch:
+
+```bash
+git switch codex/hpc-test
+```
+
+## Example: changed docs and config in one work session
+
+Case:
+- Docs changed: `environment.qmd`
+- Config changed: `config.v5.yaml`
+
+Recommended sequence:
+
+```bash
+# On work branch
+git switch codex/hpc-test
+
+# Commit config change first
+git add config.v5.yaml
+git commit -m "config: update v5 settings"
+
+# Commit docs change separately
+git add environment.qmd
+git commit -m "docs: update environment instructions"
+
+# Push both commits to work branch
+git push origin codex/hpc-test
+
+# Publish only docs commit to gh-pages
+git switch gh-pages
+git pull origin gh-pages
+git cherry-pick <docs_commit_sha>
+quarto render
+git add -A
+git commit -m "docs: publish environment update"
+git push origin gh-pages
+
+# Continue work
+git switch codex/hpc-test
+```
+
+## Notes
+
+- Do not use angle brackets around commit SHA in shell commands.
+  - Correct: `git cherry-pick b949dd1`
+  - Incorrect: `git cherry-pick <b949dd1>`
+- If one commit mixes code and docs, split it first or cherry-pick carefully before publishing.
