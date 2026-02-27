@@ -2,7 +2,7 @@ genomes_root: /fs/pool/pool-bcfngs/genomes
 
 # Pinned releases (bumpable).
 releases:
-  ensembl: 116
+  ensembl: 115
   ensemblgenomes:
     metazoa: 61
 
@@ -60,4 +60,3 @@ organisms:
     fasta_url: "https://ftp.ensemblgenomes.org/pub/metazoa/release-61/fasta/drosophila_pseudoobscura/dna/Drosophila_pseudoobscura.Dpse_3.0.dna.toplevel.fa.gz"
     gtf_url: "https://ftp.ensemblgenomes.org/pub/metazoa/release-61/gtf/drosophila_pseudoobscura/Drosophila_pseudoobscura.Dpse_3.0.61.gtf.gz"
     sa_index: 12
-
