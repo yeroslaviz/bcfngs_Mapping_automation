@@ -1,4 +1,3 @@
-name: bcfngs-mapping
 channels:
   - conda-forge
   - bioconda
@@ -15,4 +14,3 @@ dependencies:
   - ucsc-wigtobigwig
   - curl
   - wget
-
