@@ -21,3 +21,5 @@ _site/
 /docs/branch_publish_workflow.html
 
 /archive/
+
+**/*.quarto_ipynb
