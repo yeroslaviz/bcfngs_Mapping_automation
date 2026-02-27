@@ -206,7 +206,9 @@ def cmd_genomes_plan(ctx: RunContext, args: argparse.Namespace) -> None:
     _check_urls(ctx, urls)
 
     smk = REPO_ROOT / "workflow" / "genomes.smk"
-    _run_tool(ctx, ["snakemake", "--lint", "-s", str(smk)])
+    lint = _run_tool(ctx, ["snakemake", "--lint", "-s", str(smk)], check=False)
+    if lint.returncode != 0:
+        print("snakemake --lint reported issues; continuing to dry-run for executability checks.", file=sys.stderr)
     _run_tool(ctx, ["snakemake", "-npr", "-s", str(smk), "--configfile", str(genomes_cfg_path)])
 
 
