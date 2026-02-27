@@ -25,7 +25,7 @@
     "href": "environment.html#installing-micromamba",
     "title": "Environment (micromamba)",
     "section": "Installing micromamba",
-    "text": "Installing micromamba\nmicromamba can be installed from the github repository.\n\"${SHELL}\" &lt;(curl -L https://micro.mamba.pm/install.sh)\n\n\n\n\n\n\n\nb949dd1 (docs: update environment instructions) ## Create the workflow environment (project-local)\n\n\n\n\n\n\n\nFrom the repo root:\n# micromamba create -y -p .mamba/env -f env/environment.yml # save the env under the path ./mamba/env\n\nmicromamba create -y -n update_genomes -f env/environment.yml # save the env under the default path of miniconda3\nTo run commands inside the environment without activating it:\nmicromamba run -p .mamba/env snakemake --version"
+    "text": "Installing micromamba\nmicromamba can be installed from the github repository.\n\"${SHELL}\" &lt;(curl -L https://micro.mamba.pm/install.sh)"
   },
   {
     "objectID": "environment.html#update-the-environment",
@@ -39,7 +39,7 @@
     "href": "environment.html#health-checks",
     "title": "Environment (micromamba)",
     "section": "Health checks",
-    "text": "Health checks\n./scripts/bcfngs env check"
+    "text": "Health checks\n./scripts/bcfngs env check\nThis step goes through the needed tools for the workflow and output if the tool versions. you should see something like that:\n{\n  \"snakemake\": \"8.30.0\",\n  \"STAR\": \"2.7.11b\",\n  \"bwa\": \"\",\n  \"bowtie2\": \"/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes/bin/bowtie2-build-s version 2.5.5\",\n  \"samtools\": \"samtools 1.23\"\n}"
   },
   {
     "objectID": "environment.html#how-to-common-scenarios",
@@ -243,5 +243,19 @@
     "title": "Branch and Publish Workflow (Local Notes)",
     "section": "Notes",
     "text": "Notes\n\nDo not use angle brackets around commit SHA in shell commands.\n\nCorrect: git cherry-pick b949dd1\nIncorrect: git cherry-pick &lt;b949dd1&gt;\n\nIf one commit mixes code and docs, split it first or cherry-pick carefully before publishing."
+  },
+  {
+    "objectID": "environment.html#create-the-workflow-environment-project-local",
+    "href": "environment.html#create-the-workflow-environment-project-local",
+    "title": "Environment (micromamba)",
+    "section": "Create the workflow environment (project-local)",
+    "text": "Create the workflow environment (project-local)\nFrom the repo root:\n# micromamba create -y -p .mamba/env -f env/environment.yml # save the env under the path ./mamba/env\n\nmicromamba create -y -n update_genomes -f env/environment.yml # save the env under the default path of miniconda3\nTo run commands inside the environment without activating it:\nmicromamba run -p .mamba/env snakemake --version"
+  },
+  {
+    "objectID": "environment.html#activate-the-environment",
+    "href": "environment.html#activate-the-environment",
+    "title": "Environment (micromamba)",
+    "section": "Activate the environment",
+    "text": "Activate the environment"
   }
 ]
