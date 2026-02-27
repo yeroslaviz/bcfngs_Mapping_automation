@@ -19,4 +19,5 @@ _site/
 # local-only workflow notes
 /branch_publish_workflow.qmd
 
-**/*.quarto_ipynb
+/docs/branch_publish_workflow.html
+archive/**
