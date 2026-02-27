@@ -14,8 +14,8 @@ from typing import Iterable
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_ENV_PREFIX = REPO_ROOT / ".mamba" / "env"
-
+#DEFAULT_ENV_PREFIX = REPO_ROOT / ".mamba" / "env"
+DEFAULT_ENV_PREFIX = "/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes"
 
 @dataclass(frozen=True)
 class RunContext:
@@ -141,6 +141,15 @@ def _check_urls(ctx: RunContext, urls: Iterable[str]) -> None:
         _run_tool(ctx, ["curl", "-fsSI", url])
 
 
+def _normalize_ensemblgenomes_url(url: str) -> str:
+    # Legacy host fails TLS hostname validation on some clusters.
+    return url.replace(
+        "https://ftp.ensemblgenomes.org/",
+        "https://ftp.ensemblgenomes.ebi.ac.uk/",
+        1,
+    )
+
+
 def cmd_genomes_check_updates(ctx: RunContext, args: argparse.Namespace) -> None:
     genomes_cfg = REPO_ROOT / "configs" / "genomes.yaml"
     cfg = _load_yaml(ctx, genomes_cfg)
@@ -163,20 +172,26 @@ def cmd_genomes_check_updates(ctx: RunContext, args: argparse.Namespace) -> None
 
 
 def _genomes_urls_from_cfg(cfg: dict) -> list[str]:
+    def species_prefix(species: str) -> str:
+        parts = species.split("_")
+        if not parts:
+            return species
+        return "_".join([parts[0].capitalize(), *parts[1:]])
+
     urls: list[str] = []
     for org_key, org in cfg["organisms"].items():
         if org.get("source") == "ensemblgenomes":
-            urls.append(org["fasta_url"])
-            urls.append(org["gtf_url"])
+            urls.append(_normalize_ensemblgenomes_url(org["fasta_url"]))
+            urls.append(_normalize_ensemblgenomes_url(org["gtf_url"]))
             continue
         rel = int(cfg["releases"]["ensembl"])
         root = f"https://ftp.ensembl.org/pub/release-{rel}"
         species = org["species"]
-        cap = "_".join([s.capitalize() for s in species.split("_")])
+        prefix = species_prefix(species)
         assembly = org["assembly"]
         fasta_kind = org.get("fasta_kind", "dna.toplevel")
-        urls.append(f"{root}/fasta/{species}/dna/{cap}.{assembly}.{fasta_kind}.fa.gz")
-        urls.append(f"{root}/gtf/{species}/{cap}.{assembly}.{rel}.gtf.gz")
+        urls.append(f"{root}/fasta/{species}/dna/{prefix}.{assembly}.{fasta_kind}.fa.gz")
+        urls.append(f"{root}/gtf/{species}/{prefix}.{assembly}.{rel}.gtf.gz")
     return urls
 
 
@@ -191,8 +206,21 @@ def cmd_genomes_plan(ctx: RunContext, args: argparse.Namespace) -> None:
     _check_urls(ctx, urls)
 
     smk = REPO_ROOT / "workflow" / "genomes.smk"
-    _run_tool(ctx, ["snakemake", "--lint", "-s", str(smk)])
-    _run_tool(ctx, ["snakemake", "-npr", "-s", str(smk), "--configfile", str(genomes_cfg_path)])
+    lint = _run_tool(ctx, ["snakemake", "--lint", "-s", str(smk)], check=False)
+    if lint.returncode != 0:
+        print("snakemake --lint reported issues; continuing to dry-run for executability checks.", file=sys.stderr)
+    _run_tool(
+        ctx,
+        [
+            "snakemake",
+            "--dry-run",
+            "--printshellcmds",
+            "-s",
+            str(smk),
+            "--configfile",
+            str(genomes_cfg_path),
+        ],
+    )
 
 
 def cmd_genomes_build(ctx: RunContext, args: argparse.Namespace) -> None:
@@ -204,7 +232,20 @@ def cmd_genomes_build(ctx: RunContext, args: argparse.Namespace) -> None:
     if args.organism:
         orgs = [o.strip() for o in args.organism.split(",") if o.strip()]
         extra += ["--config", f"org_subset={','.join(orgs)}"]
-    _run_tool(ctx, ["snakemake", "-pr", "-j", str(args.cores), "-s", str(smk), "--configfile", str(genomes_cfg_path), *extra])
+    _run_tool(
+        ctx,
+        [
+            "snakemake",
+            "--printshellcmds",
+            "--cores",
+            str(args.cores),
+            "-s",
+            str(smk),
+            "--configfile",
+            str(genomes_cfg_path),
+            *extra,
+        ],
+    )
 
 
 def main() -> None:

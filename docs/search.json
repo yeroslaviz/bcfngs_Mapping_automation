@@ -28,6 +28,16 @@
     "text": "Installing micromamba\nmicromamba can be installed from the github repository.\n\"${SHELL}\" &lt;(curl -L https://micro.mamba.pm/install.sh)"
   },
   {
+<<<<<<< Updated upstream
+=======
+    "objectID": "environment.html#create-the-workflow-environment-project-local",
+    "href": "environment.html#create-the-workflow-environment-project-local",
+    "title": "Environment (micromamba)",
+    "section": "Create the workflow environment (project-local)",
+    "text": "Create the workflow environment (project-local)\nFrom the repo root:\n# micromamba create -y -p .mamba/env -f env/environment.yml # save the env under the path ./mamba/env\n\nmicromamba create -y -n update_genomes -f env/environment.yml # save the env under the default path of miniconda3\nTo run commands inside the environment without activating it:\nmicromamba run -p .mamba/env snakemake --version"
+  },
+  {
+>>>>>>> Stashed changes
     "objectID": "environment.html#update-the-environment",
     "href": "environment.html#update-the-environment",
     "title": "Environment (micromamba)",
@@ -203,6 +213,7 @@
     "text": "Mapping\nMapping will be done with the STAR aligner for a specific genome either in a paired-end or single-end format.\n\nChanging parameters before mapping\nThe following setting must be adjusted before running the script:\n######## Project Setting\n# To create a separate project results folder for each run, change the name of the project here.\nproject: \"P152\"\n# this path would point to the raw data in fastq format. This must be changed each time for the correct data to be analyzed.\npath: \"/fs/pool/pool-bcfngs/fastq_files/P146/P152_ChIP_Asx_5_6/conc.fastq\"\n# Which organism to map the data to\norg: \"Dme.BDGP6.22\"\nThe project and the path should point to the current project which is being mapped.\nthe org must be the organism the data is mapped against. The term must be identical to the term in the list of organisms from the config files.\n\n\nrunning the star mapping step.\nfirst, change the working directory to the path of the actual project on the pool-bcfngs. e.g.\ncd /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/\nNext run the snakemake script first as a dry-run (-n) and if all seems well than run it for real.\ne.g. \n# for single-end samples\nsnakemake -nps /fs/pool/pool-bcfngs/scripts/Star.MappingQuant.SingleEndFastq.Snakefile -j 50\n# for paired-end samples\nsnakemake -ps /fs/pool/pool-bcfngs/scripts/Star.MappingQuant.PairedEndFastq.Snakefile -j 50"
   },
   {
+<<<<<<< Updated upstream
     "objectID": "branch_publish_workflow.html",
     "href": "branch_publish_workflow.html",
     "title": "Branch and Publish Workflow (Local Notes)",
@@ -252,6 +263,8 @@
     "text": "Create the workflow environment (project-local)\nFrom the repo root:\n# micromamba create -y -p .mamba/env -f env/environment.yml # save the env under the path ./mamba/env\n\nmicromamba create -y -n update_genomes -f env/environment.yml # save the env under the default path of miniconda3\nTo run commands inside the environment without activating it:\nmicromamba run -p .mamba/env snakemake --version"
   },
   {
+=======
+>>>>>>> Stashed changes
     "objectID": "environment.html#activate-the-environment",
     "href": "environment.html#activate-the-environment",
     "title": "Environment (micromamba)",
