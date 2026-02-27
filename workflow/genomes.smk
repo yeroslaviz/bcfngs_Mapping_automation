@@ -37,6 +37,13 @@ def _source_root(org_key: str) -> str:
     return f"https://ftp.ensembl.org/pub/release-{rel}"
 
 
+def _species_prefix(species: str) -> str:
+    parts = species.split("_")
+    if not parts:
+        return species
+    return "_".join([parts[0].capitalize(), *parts[1:]])
+
+
 def fasta_url(wc):
     org = ORGANISMS[wc.org]
     if "fasta_url" in org:
@@ -46,8 +53,8 @@ def fasta_url(wc):
     assembly = org["assembly"]
     kind = org.get("fasta_kind", "dna.toplevel")
     # Example: .../fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz
-    cap = "_".join([s.capitalize() for s in species.split("_")])
-    return f"{root}/fasta/{species}/dna/{cap}.{assembly}.{kind}.fa.gz"
+    prefix = _species_prefix(species)
+    return f"{root}/fasta/{species}/dna/{prefix}.{assembly}.{kind}.fa.gz"
 
 
 def gtf_url(wc):
@@ -58,9 +65,9 @@ def gtf_url(wc):
     species = org["species"]
     assembly = org["assembly"]
     rel = _release_for_org(wc.org)
-    cap = "_".join([s.capitalize() for s in species.split("_")])
+    prefix = _species_prefix(species)
     # Example: .../gtf/homo_sapiens/Homo_sapiens.GRCh38.116.gtf.gz
-    return f"{root}/gtf/{species}/{cap}.{assembly}.{rel}.gtf.gz"
+    return f"{root}/gtf/{species}/{prefix}.{assembly}.{rel}.gtf.gz"
 
 
 def sources_dir(wc):

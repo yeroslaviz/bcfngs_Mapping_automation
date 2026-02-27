@@ -163,6 +163,12 @@ def cmd_genomes_check_updates(ctx: RunContext, args: argparse.Namespace) -> None
 
 
 def _genomes_urls_from_cfg(cfg: dict) -> list[str]:
+    def species_prefix(species: str) -> str:
+        parts = species.split("_")
+        if not parts:
+            return species
+        return "_".join([parts[0].capitalize(), *parts[1:]])
+
     urls: list[str] = []
     for org_key, org in cfg["organisms"].items():
         if org.get("source") == "ensemblgenomes":
@@ -172,11 +178,11 @@ def _genomes_urls_from_cfg(cfg: dict) -> list[str]:
         rel = int(cfg["releases"]["ensembl"])
         root = f"https://ftp.ensembl.org/pub/release-{rel}"
         species = org["species"]
-        cap = "_".join([s.capitalize() for s in species.split("_")])
+        prefix = species_prefix(species)
         assembly = org["assembly"]
         fasta_kind = org.get("fasta_kind", "dna.toplevel")
-        urls.append(f"{root}/fasta/{species}/dna/{cap}.{assembly}.{fasta_kind}.fa.gz")
-        urls.append(f"{root}/gtf/{species}/{cap}.{assembly}.{rel}.gtf.gz")
+        urls.append(f"{root}/fasta/{species}/dna/{prefix}.{assembly}.{fasta_kind}.fa.gz")
+        urls.append(f"{root}/gtf/{species}/{prefix}.{assembly}.{rel}.gtf.gz")
     return urls
 
 
