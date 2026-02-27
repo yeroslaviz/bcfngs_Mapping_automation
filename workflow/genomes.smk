@@ -32,9 +32,17 @@ def _source_root(org_key: str) -> str:
     if org.get("source") == "ensemblgenomes":
         division = org["division"]
         rel = _release_for_org(org_key)
-        return f"https://ftp.ensemblgenomes.org/pub/{division}/release-{rel}"
+        return f"https://ftp.ensemblgenomes.ebi.ac.uk/pub/{division}/release-{rel}"
     rel = _release_for_org(org_key)
     return f"https://ftp.ensembl.org/pub/release-{rel}"
+
+
+def _normalize_ensemblgenomes_url(url: str) -> str:
+    return url.replace(
+        "https://ftp.ensemblgenomes.org/",
+        "https://ftp.ensemblgenomes.ebi.ac.uk/",
+        1,
+    )
 
 
 def _species_prefix(species: str) -> str:
@@ -47,7 +55,7 @@ def _species_prefix(species: str) -> str:
 def fasta_url(wc):
     org = ORGANISMS[wc.org]
     if "fasta_url" in org:
-        return org["fasta_url"]
+        return _normalize_ensemblgenomes_url(org["fasta_url"])
     root = _source_root(wc.org)
     species = org["species"]
     assembly = org["assembly"]
@@ -60,7 +68,7 @@ def fasta_url(wc):
 def gtf_url(wc):
     org = ORGANISMS[wc.org]
     if "gtf_url" in org:
-        return org["gtf_url"]
+        return _normalize_ensemblgenomes_url(org["gtf_url"])
     root = _source_root(wc.org)
     species = org["species"]
     assembly = org["assembly"]

@@ -141,6 +141,15 @@ def _check_urls(ctx: RunContext, urls: Iterable[str]) -> None:
         _run_tool(ctx, ["curl", "-fsSI", url])
 
 
+def _normalize_ensemblgenomes_url(url: str) -> str:
+    # Legacy host fails TLS hostname validation on some clusters.
+    return url.replace(
+        "https://ftp.ensemblgenomes.org/",
+        "https://ftp.ensemblgenomes.ebi.ac.uk/",
+        1,
+    )
+
+
 def cmd_genomes_check_updates(ctx: RunContext, args: argparse.Namespace) -> None:
     genomes_cfg = REPO_ROOT / "configs" / "genomes.yaml"
     cfg = _load_yaml(ctx, genomes_cfg)
@@ -172,8 +181,8 @@ def _genomes_urls_from_cfg(cfg: dict) -> list[str]:
     urls: list[str] = []
     for org_key, org in cfg["organisms"].items():
         if org.get("source") == "ensemblgenomes":
-            urls.append(org["fasta_url"])
-            urls.append(org["gtf_url"])
+            urls.append(_normalize_ensemblgenomes_url(org["fasta_url"]))
+            urls.append(_normalize_ensemblgenomes_url(org["gtf_url"]))
             continue
         rel = int(cfg["releases"]["ensembl"])
         root = f"https://ftp.ensembl.org/pub/release-{rel}"
