@@ -7,6 +7,9 @@ GENOMES_ROOT = config["genomes_root"]
 DEFAULT_THREADS = int(config.get("default_threads", 16))
 DEFAULT_RAM = int(config.get("default_ram_bytes", 0))
 INDEX_VERSIONS = config.get("index_versions", {})
+STAR_VER = INDEX_VERSIONS.get("star", "unknown")
+BWA_VER = INDEX_VERSIONS.get("bwa", "unknown")
+BOWTIE2_VER = INDEX_VERSIONS.get("bowtie2", "unknown")
 
 ORGANISMS = config["organisms"]
 
@@ -106,8 +109,8 @@ rule all:
 
 rule download_sources:
     output:
-        fasta=lambda wc: os.path.join(sources_dir(wc.org), f"{wc.org}.fa"),
-        gtf=lambda wc: os.path.join(sources_dir(wc.org), f"{wc.org}.gtf"),
+        fasta=os.path.join(GENOMES_ROOT, "sources", "{org}", "{src_rel}", "{org}.fa"),
+        gtf=os.path.join(GENOMES_ROOT, "sources", "{org}", "{src_rel}", "{org}.gtf"),
     params:
         dir=lambda wc: sources_dir(wc.org),
         fasta_url=fasta_url,
@@ -127,7 +130,7 @@ rule star_index:
         fasta=lambda wc: os.path.join(sources_dir(wc.org), f"{wc.org}.fa"),
         gtf=lambda wc: os.path.join(sources_dir(wc.org), f"{wc.org}.gtf"),
     output:
-        sa=lambda wc: os.path.join(versioned_index_dir("star", wc.org), "SA"),
+        sa=os.path.join(GENOMES_ROOT, "{org}", f"starIndex-{STAR_VER}", "SA"),
     threads: DEFAULT_THREADS
     params:
         outdir=lambda wc: versioned_index_dir("star", wc.org),
@@ -158,7 +161,7 @@ rule bwa_index:
     input:
         fasta=lambda wc: os.path.join(sources_dir(wc.org), f"{wc.org}.fa"),
     output:
-        bwt=lambda wc: os.path.join(versioned_index_dir("bwa", wc.org), f"{wc.org}.bwt"),
+        bwt=os.path.join(GENOMES_ROOT, "{org}", f"bwaIndex-{BWA_VER}", "{org}.bwt"),
     threads: 1
     params:
         outdir=lambda wc: versioned_index_dir("bwa", wc.org),
@@ -180,7 +183,7 @@ rule bowtie2_index:
     input:
         fasta=lambda wc: os.path.join(sources_dir(wc.org), f"{wc.org}.fa"),
     output:
-        bt2=lambda wc: os.path.join(versioned_index_dir("bowtie2", wc.org), f"{wc.org}.1.bt2"),
+        bt2=os.path.join(GENOMES_ROOT, "{org}", f"bowtie2Index-{BOWTIE2_VER}", "{org}.1.bt2"),
     threads: DEFAULT_THREADS
     params:
         outdir=lambda wc: versioned_index_dir("bowtie2", wc.org),
