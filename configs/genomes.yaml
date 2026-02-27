@@ -4,7 +4,7 @@ genomes_root: /fs/pool/pool-bcfngs/genomes
 releases:
   ensembl: 115
   ensemblgenomes:
-    metazoa: 61
+    metazoa: 62
 
 default_threads: 16
 default_ram_bytes: 168632718037
