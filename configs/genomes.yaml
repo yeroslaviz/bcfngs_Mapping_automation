@@ -11,9 +11,9 @@ default_ram_bytes: 168632718037
 
 # Versions are used for versioned output directories (and symlink targets).
 index_versions:
-  star: "unknown"
-  bwa: "unknown"
-  bowtie2: "unknown"
+  star: "2.7.11b"
+  bwa: "0.7.18"
+  bowtie2: "2.5.4"
 
 organisms:
   Homo_sapiens:
