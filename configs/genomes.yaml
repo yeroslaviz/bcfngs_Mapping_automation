@@ -8,7 +8,7 @@ releases:
 
 default_threads: 16
 default_ram_bytes: 168632718037
-bwa_index_algorithm: is
+bwa_index_algorithm: bwtsw
 bwa_index_mem_mb: 16000
 
 # Versions are used for versioned output directories (and symlink targets).

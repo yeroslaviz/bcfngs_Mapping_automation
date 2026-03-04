@@ -29,3 +29,5 @@ _site/
 /archive/**/.DS_Store
 
 **/*.quarto_ipynb
+archive/legacy/mapping/Star.MappingQuant.PairedEndFastq.Snakefile
+archive/legacy/mapping/Star.MappingQuant.SingleEndFastq.Snakefile
