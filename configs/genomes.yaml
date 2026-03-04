@@ -37,6 +37,13 @@ organisms:
     fasta_kind: dna.primary_assembly
     gtf_kind: gtf
     sa_index: 14
+  Gallus_gallus:
+    source: ensembl
+    species: gallus_gallus
+    assembly: GRCg7b
+    fasta_kind: dna.toplevel
+    gtf_kind: gtf
+    sa_index: 12
   Caenorhabditis_elegans:
     source: ensembl
     species: caenorhabditis_elegans
