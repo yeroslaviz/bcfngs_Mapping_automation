@@ -204,8 +204,8 @@ ul.task-list li input[type="checkbox"] {
     fasta: "ftp://ftp.ensemblgenomes.org/pub/metazoa/release-45/fasta/drosophila_pseudoobscura/dna/Drosophila_pseudoobscura.Dpse_3.0.dna.toplevel.fa.gz"
     gtf: "ftp://ftp.ensemblgenomes.org/pub/metazoa/release-45/gtf/drosophila_pseudoobscura/Drosophila_pseudoobscura.Dpse_3.0.45.gtf.gz"</code></pre>
 <ol start="4" type="1">
-<li>run the command <code>snakemake -nps ../scripts/getGenome_IndexGenome.Snakefile</code> to check that the new genome is added to the workflow (the <code>-n</code> is a dry-run which just output the command without performing the tasks.)</li>
-<li>run the same command without the <code>-n</code> - <code>snakemake -ps ../scripts/getGenome_IndexGenome.Snakefile -j 12</code>. This will download the fastA and gtf files from the given links and create the index files for them as well. The parameter <code>-j</code> sets the number pf cores used in the snakemake run. If the number of cores is smaller then the one sets for e.g.&nbsp;STAR, only this numner of cores will be used.</li>
+<li>run the command <code>snakemake -nps archive/legacy/getGenome_IndexGenome.Snakefile</code> to check that the new genome is added to the workflow (the <code>-n</code> is a dry-run which just output the command without performing the tasks.)</li>
+<li>run the same command without the <code>-n</code> - <code>snakemake -ps archive/legacy/getGenome_IndexGenome.Snakefile -j 12</code>. This will download the fastA and gtf files from the given links and create the index files for them as well. The parameter <code>-j</code> sets the number pf cores used in the snakemake run. If the number of cores is smaller then the one sets for e.g.&nbsp;STAR, only this numner of cores will be used.</li>
 </ol>
 </section>
 <section id="mapping" class="level2">

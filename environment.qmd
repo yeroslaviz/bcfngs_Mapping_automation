@@ -94,8 +94,7 @@ You still need the micromamba env for `python` + `snakemake`, but aligners can c
 ```bash
 module load bclconvert/4.3.13 star bowtie2 bwa
 ./scripts/bcfngs --profile modules env check
-./scripts/bcfngs --profile modules genomes plan
-./scripts/bcfngs --profile modules genomes build --cores 20
+./scripts/bcfngs --profile modules genomes build --cores 20 --no-skip-plan
 ```
 
 ### Demultiplexing with bcl-convert (modules)

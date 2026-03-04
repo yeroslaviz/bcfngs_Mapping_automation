@@ -87,19 +87,21 @@ as well as which mappers we need
 
 ### 04.03.2026
 
-- Improved `./scripts/bcfngs genomes plan` preflight output:
-  - Replaced the generic `OK` with a clear config validation message (`Config file is OK: ...`).
-  - Replaced raw `HTTP/1.1 200 OK` header output from URL checks with readable per-organism status lines for FASTA and GTF URLs.
-- Added version reporting in `genomes plan`:
-  - Prints pinned genome build release(s), including Ensembl (currently 115 from config).
-  - Prints configured tool versions for STAR, bwa, and bowtie2.
-- Added Snakemake per-rule logging and environment declarations in `workflow/genomes.smk`:
-  - Added `log:` targets for `download_sources`, `star_index`, `bwa_index`, `bowtie2_index`, and `chrom_size`.
-  - Redirected rule command output to the corresponding log files.
-  - Added `conda: "../env/environment.yml"` to those rules.
-- Fixed follow-up issues introduced during logging changes:
-  - Updated `download_sources` log path to include `{src_rel}` so output and log wildcards match.
-  - Escaped shell block braces in `shell:` commands (`{{ ... }}`) to avoid Snakemake formatting errors.
+- Updated `./scripts/bcfngs genomes build` behavior and documentation:
+  - `genomes build` now skips `genomes plan` by default.
+  - Added `-no-skip-plan` / `--no-skip-plan` to force preflight checks (config + URL checks, lint, dry-run) before build.
+- Added optional execution backend parameter for genome builds:
+  - `--executor local|slurm` (default: `local`).
+  - Added SLURM options for jobs and cluster settings (`--jobs`, partition/account/qos, mail settings, runtime, CPUs, memory, exclusive node).
+- Added default SLURM settings for cluster runs:
+  - `--partition p.hpcl8`
+  - `--mail-user yeroslaviz@biochem.mpg.de`
+  - `--mail-type ALL`
+  - `--time 04:00:00`
+  - `--cpus-per-task 20`
+  - `--mem-per-cpu 20G`
+- Added `snakemake-executor-plugin-slurm` to `env/environment.yml` for Snakemake 8 SLURM execution support.
+- Updated Snakemake examples to reflect local default behavior and optional SLURM execution.
 
 ### 20.02.2026
 

@@ -27,8 +27,8 @@ This is all run on the `hpcl5002`.
     gtf: "ftp://ftp.ensemblgenomes.org/pub/metazoa/release-45/gtf/drosophila_pseudoobscura/Drosophila_pseudoobscura.Dpse_3.0.45.gtf.gz"
 ```
 
-4. run the command `snakemake -nps ../scripts/getGenome_IndexGenome.Snakefile` to check that the new genome is added to the workflow (the `-n` is a dry-run which just output the command without performing the tasks.)
-5. run the same command without the `-n` - `snakemake -ps ../scripts/getGenome_IndexGenome.Snakefile -j 12`. This will download the fastA and gtf files from the given links and create the index files for them as well. The parameter `-j` sets the number pf cores used in the snakemake run. If the number of cores is smaller then the one sets for e.g. STAR, only this numner of cores will be used. 
+4. run the command `snakemake -nps archive/legacy/getGenome_IndexGenome.Snakefile` to check that the new genome is added to the workflow (the `-n` is a dry-run which just output the command without performing the tasks.)
+5. run the same command without the `-n` - `snakemake -ps archive/legacy/getGenome_IndexGenome.Snakefile -j 12`. This will download the fastA and gtf files from the given links and create the index files for them as well. The parameter `-j` sets the number pf cores used in the snakemake run. If the number of cores is smaller then the one sets for e.g. STAR, only this numner of cores will be used. 
 
 
 ## Mapping
@@ -71,6 +71,5 @@ snakemake -nps /fs/pool/pool-bcfngs/scripts/Star.MappingQuant.SingleEndFastq.Sna
 # for paired-end samples
 snakemake -ps /fs/pool/pool-bcfngs/scripts/Star.MappingQuant.PairedEndFastq.Snakefile -j 50
 ```
-
 
 

@@ -30,8 +30,10 @@ You can use any server as long as you can run `snakemake` and the required tools
 ### Routine: re-run indexing (no config changes)
 
 ```bash
-./scripts/bcfngs genomes plan
 ./scripts/bcfngs genomes build --cores 20
+
+# optional explicit preflight (or use --no-skip-plan on build)
+./scripts/bcfngs genomes plan
 ```
 
 ### Only rebuild one or two organisms
@@ -52,8 +54,7 @@ You can use any server as long as you can run `snakemake` and the required tools
 3. Then:
 
 ```bash
-./scripts/bcfngs genomes plan
-./scripts/bcfngs genomes build --cores 20
+./scripts/bcfngs genomes build --cores 20 --no-skip-plan
 ```
 
 ### You updated STAR/bwa/bowtie2 (rebuild indices into new versioned folders)
@@ -77,8 +78,7 @@ You can use any server as long as you can run `snakemake` and the required tools
 ```bash
 module load bclconvert/4.3.13 star bowtie2 bwa
 ./scripts/bcfngs --profile modules env check
-./scripts/bcfngs --profile modules genomes plan
-./scripts/bcfngs --profile modules genomes build --cores 20
+./scripts/bcfngs --profile modules genomes build --cores 20 --no-skip-plan
 ```
 
 ### Recommended (micromamba)
@@ -114,16 +114,25 @@ To add or update a genome:
 
 ## 3) Build genomes + indices (safe workflow)
 
-Preflight checks + snakemake lint + dry-run:
-
-```bash
-./scripts/bcfngs genomes plan
-```
-
-Real build (example with 20 cores):
+Build directly (default behavior skips preflight plan checks):
 
 ```bash
 ./scripts/bcfngs genomes build --cores 20
+```
+
+Force preflight checks + lint + dry-run before build:
+
+```bash
+./scripts/bcfngs genomes build --cores 20 --no-skip-plan
+```
+
+Run through SLURM instead of local execution:
+
+```bash
+./scripts/bcfngs genomes build --executor slurm --jobs 20
+
+# if SLURM executor is unavailable, refresh the environment first
+./scripts/bcfngs env update
 ```
 
 To build only a subset:

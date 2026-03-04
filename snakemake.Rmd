@@ -16,7 +16,7 @@ This repository uses `snakemake` for:
 1. **Genome download + indexing** (STAR, bwa, bowtie2) using *versioned* index directories and stable symlinks.
 2. **Mapping** (currently STAR) using per-project run settings.
 
-For non-experts, prefer the single wrapper command `./scripts/bcfngs` (runs checks, then snakemake).
+For non-experts, prefer the single wrapper command `./scripts/bcfngs` (plan checks + build execution, local or SLURM).
 
 ## Quickstart
 
@@ -28,11 +28,31 @@ For non-experts, prefer the single wrapper command `./scripts/bcfngs` (runs chec
 # 2) (optional) check if a newer Ensembl release exists
 ./scripts/bcfngs genomes check-updates
 
-# 3) preflight checks + snakemake lint + dry-run
+# 3) (optional) preflight checks + snakemake lint + dry-run
 ./scripts/bcfngs genomes plan
 
 # 4) build genomes + indices (real run)
 ./scripts/bcfngs genomes build --cores 20
+
+# 4b) force preflight checks + build in one command
+./scripts/bcfngs genomes build --cores 20 --no-skip-plan
+
+# 4c) run jobs through SLURM (instead of local execution)
+./scripts/bcfngs genomes build --executor slurm --jobs 20
+
+# if SLURM executor is reported as unavailable, refresh the env first
+./scripts/bcfngs env update
+
+# 4d) override defaults for a specific cluster/queue when needed
+./scripts/bcfngs genomes build --executor slurm --jobs 20 --slurm-partition <other_partition>
+
+# SLURM defaults used automatically in slurm mode:
+# --partition p.hpcl8
+# --mail-user yeroslaviz@biochem.mpg.de
+# --mail-type ALL
+# --time 04:00:00 (240 min)
+# --cpus-per-task 20
+# --mem-per-cpu 20G
 ```
 
 ## Configuration files
@@ -57,8 +77,10 @@ The workflow configuration is split into two files:
 ### Build all genomes + indices
 
 ```bash
-./scripts/bcfngs genomes plan
 ./scripts/bcfngs genomes build --cores 20
+
+# optional explicit preflight (or use --no-skip-plan on build)
+./scripts/bcfngs genomes plan
 ```
 
 ### Build only a subset (faster)
@@ -82,8 +104,7 @@ The workflow configuration is split into two files:
 3. Then:
 
 ```bash
-./scripts/bcfngs genomes plan
-./scripts/bcfngs genomes build --cores 20
+./scripts/bcfngs genomes build --cores 20 --no-skip-plan
 ```
 
 ### New STAR/bwa/bowtie2 version (rebuild indices)
@@ -112,8 +133,7 @@ This still uses the micromamba env for python/snakemake, but loads vendor tools 
 ```bash
 module load bclconvert/4.3.13 star bowtie2 bwa
 ./scripts/bcfngs --profile modules env check
-./scripts/bcfngs --profile modules genomes plan
-./scripts/bcfngs --profile modules genomes build --cores 20
+./scripts/bcfngs --profile modules genomes build --cores 20 --no-skip-plan
 ```
 
 ## Genome download + indexing
