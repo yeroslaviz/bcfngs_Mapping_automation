@@ -112,7 +112,7 @@ rule download_sources:
         fasta=os.path.join(GENOMES_ROOT, "sources", "{org}", "{src_rel}", "{org}.fa"),
         gtf=os.path.join(GENOMES_ROOT, "sources", "{org}", "{src_rel}", "{org}.gtf"),
     log:
-        os.path.join(GENOMES_ROOT, "logs", "{org}", "download_sources.log"),
+        os.path.join(GENOMES_ROOT, "logs", "{org}", "{src_rel}", "download_sources.log"),
     conda:
         "../env/environment.yml"
     params:
