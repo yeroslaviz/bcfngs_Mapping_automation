@@ -225,6 +225,28 @@ def _genomes_urls_from_cfg(cfg: dict) -> list[str]:
     return urls
 
 
+def _snakemake_available_executors(ctx: RunContext) -> set[str]:
+    out = _run_tool(ctx, ["snakemake", "--help"], capture=True)
+    help_text = f"{out.stdout}\n{out.stderr}"
+    match = re.search(r"--executor\s+\{([^}]+)\}", help_text)
+    if not match:
+        return set()
+    return {x.strip() for x in match.group(1).split(",") if x.strip()}
+
+
+def _require_snakemake_slurm_executor(ctx: RunContext) -> None:
+    executors = _snakemake_available_executors(ctx)
+    if "slurm" in executors:
+        return
+    available = ", ".join(sorted(executors)) if executors else "unknown"
+    raise SystemExit(
+        "Requested --executor slurm, but this Snakemake installation has no slurm executor "
+        f"(available executors: {available}).\n"
+        "Update environment and try again:\n"
+        "  ./scripts/bcfngs env update"
+    )
+
+
 def cmd_genomes_plan(ctx: RunContext, args: argparse.Namespace) -> None:
     genomes_cfg_path = REPO_ROOT / "configs" / "genomes.yaml"
     cfg = _load_yaml(ctx, genomes_cfg_path)
