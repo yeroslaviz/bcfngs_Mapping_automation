@@ -11,6 +11,7 @@ dependencies:
   - bwa
   - bowtie2
   - samtools
+  - deeptools
   - bedtools
   - rseqc
   - ucsc-wigtobigwig
