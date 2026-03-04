@@ -16,7 +16,7 @@ from typing import Iterable
 REPO_ROOT = Path(__file__).resolve().parents[1]
 #DEFAULT_ENV_PREFIX = REPO_ROOT / ".mamba" / "env"
 DEFAULT_ENV_PREFIX = "/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes"
-DEFAULT_SLURM_PARTITION = "p.hpcl8"
+DEFAULT_SLURM_PARTITION = "p.hpcl93"
 DEFAULT_SLURM_MAIL_USER = "yeroslaviz@biochem.mpg.de"
 DEFAULT_SLURM_MAIL_TYPE = "ALL"
 DEFAULT_SLURM_TIME_MINUTES = 240
