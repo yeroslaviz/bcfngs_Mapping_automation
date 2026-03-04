@@ -5,6 +5,7 @@ channels:
 dependencies:
   - python >=3.10
   - snakemake >=8,<9
+  - snakemake-executor-plugin-slurm
   - pyyaml
   - star
   - bwa
@@ -15,4 +16,3 @@ dependencies:
   - ucsc-wigtobigwig
   - curl
   - wget
-

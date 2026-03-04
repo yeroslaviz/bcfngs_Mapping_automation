@@ -16,6 +16,12 @@ from typing import Iterable
 REPO_ROOT = Path(__file__).resolve().parents[1]
 #DEFAULT_ENV_PREFIX = REPO_ROOT / ".mamba" / "env"
 DEFAULT_ENV_PREFIX = "/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes"
+DEFAULT_SLURM_PARTITION = "p.hpcl8"
+DEFAULT_SLURM_MAIL_USER = "yeroslaviz@biochem.mpg.de"
+DEFAULT_SLURM_MAIL_TYPE = "ALL"
+DEFAULT_SLURM_TIME_MINUTES = 240
+DEFAULT_SLURM_CPUS_PER_TASK = 20
+DEFAULT_SLURM_MEM_PER_CPU_MB = 20480
 
 @dataclass(frozen=True)
 class RunContext:
@@ -254,19 +260,48 @@ def cmd_genomes_build(ctx: RunContext, args: argparse.Namespace) -> None:
     if args.organism:
         orgs = [o.strip() for o in args.organism.split(",") if o.strip()]
         extra += ["--config", f"org_subset={','.join(orgs)}"]
+
+    snakemake_cmd: list[str] = ["snakemake", "--printshellcmds"]
+    if args.executor == "slurm":
+        print(f"Using SLURM executor (max concurrent jobs: {args.jobs}).")
+        snakemake_cmd += ["--executor", "slurm", "--jobs", str(args.jobs)]
+
+        default_resources: list[str] = []
+        if args.slurm_partition:
+            default_resources.append(f"slurm_partition={args.slurm_partition}")
+        if args.slurm_account:
+            default_resources.append(f"slurm_account={args.slurm_account}")
+        if args.slurm_qos:
+            default_resources.append(f"slurm_qos={args.slurm_qos}")
+        if args.slurm_cpus_per_task:
+            default_resources.append(f"cpus_per_task={args.slurm_cpus_per_task}")
+        if args.slurm_mem_per_cpu:
+            default_resources.append(f"mem_mb_per_cpu={args.slurm_mem_per_cpu}")
+        if args.slurm_time:
+            default_resources.append(f"runtime={args.slurm_time}")
+
+        slurm_extra_parts = [
+            f"--mail-user={args.slurm_mail_user}",
+            f"--mail-type={args.slurm_mail_type}",
+        ]
+        if args.slurm_exclusive:
+            slurm_extra_parts.append("--exclusive")
+        default_resources.append(f"slurm_extra={' '.join(slurm_extra_parts)}")
+        if default_resources:
+            snakemake_cmd += ["--default-resources", *default_resources]
+    else:
+        snakemake_cmd += ["--cores", str(args.cores)]
+
+    snakemake_cmd += [
+        "-s",
+        str(smk),
+        "--configfile",
+        str(genomes_cfg_path),
+        *extra,
+    ]
     _run_tool(
         ctx,
-        [
-            "snakemake",
-            "--printshellcmds",
-            "--cores",
-            str(args.cores),
-            "-s",
-            str(smk),
-            "--configfile",
-            str(genomes_cfg_path),
-            *extra,
-        ],
+        snakemake_cmd,
     )
 
 
@@ -288,7 +323,54 @@ def main() -> None:
     genomes_sub.add_parser("check-updates")
     genomes_sub.add_parser("plan")
     build_p = genomes_sub.add_parser("build")
+    build_p.add_argument(
+        "--executor",
+        choices=["local", "slurm"],
+        default="local",
+        help="Execution backend: local (default) or slurm.",
+    )
     build_p.add_argument("--cores", type=int, default=16)
+    build_p.add_argument("--jobs", type=int, default=20, help="Max concurrent jobs for --executor slurm.")
+    build_p.add_argument(
+        "--slurm-partition",
+        default=DEFAULT_SLURM_PARTITION,
+        help="SLURM partition name (for --executor slurm).",
+    )
+    build_p.add_argument("--slurm-account", help="SLURM account name (for --executor slurm).")
+    build_p.add_argument("--slurm-qos", help="SLURM QoS name (for --executor slurm).")
+    build_p.add_argument(
+        "--slurm-mail-user",
+        default=DEFAULT_SLURM_MAIL_USER,
+        help="SLURM mail user for --executor slurm.",
+    )
+    build_p.add_argument(
+        "--slurm-mail-type",
+        default=DEFAULT_SLURM_MAIL_TYPE,
+        help="SLURM mail type for --executor slurm (e.g. ALL or END,FAIL).",
+    )
+    build_p.add_argument(
+        "--slurm-time",
+        type=int,
+        default=DEFAULT_SLURM_TIME_MINUTES,
+        help="SLURM runtime limit in minutes for --executor slurm (default: 240 = 04:00:00).",
+    )
+    build_p.add_argument(
+        "--slurm-cpus-per-task",
+        type=int,
+        default=DEFAULT_SLURM_CPUS_PER_TASK,
+        help="SLURM cpus-per-task for --executor slurm.",
+    )
+    build_p.add_argument(
+        "--slurm-mem-per-cpu",
+        type=int,
+        default=DEFAULT_SLURM_MEM_PER_CPU_MB,
+        help="SLURM mem-per-cpu in MB for --executor slurm (default: 20480 = 20G).",
+    )
+    build_p.add_argument(
+        "--slurm-exclusive",
+        action="store_true",
+        help="Request exclusive node allocation per submitted SLURM job.",
+    )
     build_p.add_argument("--organism", help="Comma-separated subset of organism keys (e.g. Homo_sapiens,Mus_musculus)")
     build_p.add_argument(
         "-no-skip-plan",
