@@ -71,7 +71,9 @@ def cmd_env_create(ctx: RunContext, args: argparse.Namespace) -> None:
 def cmd_env_update(ctx: RunContext, args: argparse.Namespace) -> None:
     mm = _micromamba()
     env_yml = REPO_ROOT / "env" / "environment.yml"
-    _run([mm, "update", "-y", "-p", str(ctx.env_prefix), "-f", str(env_yml)])
+    # Use install with the environment file so newly added dependencies
+    # (e.g. executor plugins) are also pulled in.
+    _run([mm, "install", "-y", "-p", str(ctx.env_prefix), "-f", str(env_yml)])
 
 def _module_load_snippet() -> str:
     return "module load bclconvert/4.3.13 star bowtie2 bwa"
