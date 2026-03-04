@@ -111,6 +111,10 @@ rule download_sources:
     output:
         fasta=os.path.join(GENOMES_ROOT, "sources", "{org}", "{src_rel}", "{org}.fa"),
         gtf=os.path.join(GENOMES_ROOT, "sources", "{org}", "{src_rel}", "{org}.gtf"),
+    log:
+        os.path.join(GENOMES_ROOT, "logs", "{org}", "download_sources.log"),
+    conda:
+        "../env/environment.yml"
     params:
         dir=lambda wc: sources_dir(wc.org),
         fasta_url=fasta_url,
@@ -119,9 +123,12 @@ rule download_sources:
         "Downloading FASTA/GTF for {wildcards.org}"
     shell:
         r"""
-        mkdir -p "{params.dir}"
-        curl -fsSL "{params.fasta_url}" | gunzip -c > "{output.fasta}"
-        curl -fsSL "{params.gtf_url}"   | gunzip -c > "{output.gtf}"
+        mkdir -p "{params.dir}" "$(dirname "{log}")"
+        : > "{log}"
+        {
+          curl -fsSL "{params.fasta_url}" | gunzip -c > "{output.fasta}"
+          curl -fsSL "{params.gtf_url}"   | gunzip -c > "{output.gtf}"
+        } >> "{log}" 2>&1
         """
 
 
@@ -131,6 +138,10 @@ rule star_index:
         gtf=lambda wc: os.path.join(sources_dir(wc.org), f"{wc.org}.gtf"),
     output:
         sa=os.path.join(GENOMES_ROOT, "{org}", f"starIndex-{STAR_VER}", "SA"),
+    log:
+        os.path.join(GENOMES_ROOT, "logs", "{org}", "star_index.log"),
+    conda:
+        "../env/environment.yml"
     threads: DEFAULT_THREADS
     params:
         outdir=lambda wc: versioned_index_dir("star", wc.org),
@@ -139,21 +150,24 @@ rule star_index:
         link=lambda wc: current_index_link("star", wc.org),
     shell:
         r"""
-        mkdir -p "{params.outdir}"
-        STAR --runThreadN {threads} \
-          --runMode genomeGenerate \
-          --genomeDir "{params.outdir}" \
-          --limitGenomeGenerateRAM {params.ram} \
-          --genomeSAindexNbases {params.sa_index} \
-          --genomeFastaFiles "{input.fasta}" \
-          --sjdbGTFfile "{input.gtf}" \
-          --sjdbOverhang 100
+        mkdir -p "{params.outdir}" "$(dirname "{log}")"
+        : > "{log}"
+        {
+          STAR --runThreadN {threads} \
+            --runMode genomeGenerate \
+            --genomeDir "{params.outdir}" \
+            --limitGenomeGenerateRAM {params.ram} \
+            --genomeSAindexNbases {params.sa_index} \
+            --genomeFastaFiles "{input.fasta}" \
+            --sjdbGTFfile "{input.gtf}" \
+            --sjdbOverhang 100
 
-        # Atomic-ish symlink update: create temp link then move into place.
-        mkdir -p "$(dirname "{params.link}")"
-        tmp_link="{params.link}.tmp.$$"
-        ln -s "{params.outdir}" "$tmp_link"
-        mv -Tf "$tmp_link" "{params.link}"
+          # Atomic-ish symlink update: create temp link then move into place.
+          mkdir -p "$(dirname "{params.link}")"
+          tmp_link="{params.link}.tmp.$$"
+          ln -s "{params.outdir}" "$tmp_link"
+          mv -Tf "$tmp_link" "{params.link}"
+        } >> "{log}" 2>&1
         """
 
 
@@ -162,6 +176,10 @@ rule bwa_index:
         fasta=lambda wc: os.path.join(sources_dir(wc.org), f"{wc.org}.fa"),
     output:
         bwt=os.path.join(GENOMES_ROOT, "{org}", f"bwaIndex-{BWA_VER}", "{org}.bwt"),
+    log:
+        os.path.join(GENOMES_ROOT, "logs", "{org}", "bwa_index.log"),
+    conda:
+        "../env/environment.yml"
     threads: 1
     params:
         outdir=lambda wc: versioned_index_dir("bwa", wc.org),
@@ -169,13 +187,16 @@ rule bwa_index:
         link=lambda wc: current_index_link("bwa", wc.org),
     shell:
         r"""
-        mkdir -p "{params.outdir}"
-        bwa index -p "{params.prefix}" "{input.fasta}"
+        mkdir -p "{params.outdir}" "$(dirname "{log}")"
+        : > "{log}"
+        {
+          bwa index -p "{params.prefix}" "{input.fasta}"
 
-        mkdir -p "$(dirname "{params.link}")"
-        tmp_link="{params.link}.tmp.$$"
-        ln -s "{params.outdir}" "$tmp_link"
-        mv -Tf "$tmp_link" "{params.link}"
+          mkdir -p "$(dirname "{params.link}")"
+          tmp_link="{params.link}.tmp.$$"
+          ln -s "{params.outdir}" "$tmp_link"
+          mv -Tf "$tmp_link" "{params.link}"
+        } >> "{log}" 2>&1
         """
 
 
@@ -184,6 +205,10 @@ rule bowtie2_index:
         fasta=lambda wc: os.path.join(sources_dir(wc.org), f"{wc.org}.fa"),
     output:
         bt2=os.path.join(GENOMES_ROOT, "{org}", f"bowtie2Index-{BOWTIE2_VER}", "{org}.1.bt2"),
+    log:
+        os.path.join(GENOMES_ROOT, "logs", "{org}", "bowtie2_index.log"),
+    conda:
+        "../env/environment.yml"
     threads: DEFAULT_THREADS
     params:
         outdir=lambda wc: versioned_index_dir("bowtie2", wc.org),
@@ -191,13 +216,16 @@ rule bowtie2_index:
         link=lambda wc: current_index_link("bowtie2", wc.org),
     shell:
         r"""
-        mkdir -p "{params.outdir}"
-        bowtie2-build --threads {threads} "{input.fasta}" "{params.prefix}"
+        mkdir -p "{params.outdir}" "$(dirname "{log}")"
+        : > "{log}"
+        {
+          bowtie2-build --threads {threads} "{input.fasta}" "{params.prefix}"
 
-        mkdir -p "$(dirname "{params.link}")"
-        tmp_link="{params.link}.tmp.$$"
-        ln -s "{params.outdir}" "$tmp_link"
-        mv -Tf "$tmp_link" "{params.link}"
+          mkdir -p "$(dirname "{params.link}")"
+          tmp_link="{params.link}.tmp.$$"
+          ln -s "{params.outdir}" "$tmp_link"
+          mv -Tf "$tmp_link" "{params.link}"
+        } >> "{log}" 2>&1
         """
 
 
@@ -206,8 +234,16 @@ rule chrom_size:
         fasta=lambda wc: os.path.join(sources_dir(wc.org), f"{wc.org}.fa"),
     output:
         chrom=os.path.join(GENOMES_ROOT, "{org}.chromSize"),
+    log:
+        os.path.join(GENOMES_ROOT, "logs", "{org}", "chrom_size.log"),
+    conda:
+        "../env/environment.yml"
     shell:
         r"""
-        samtools faidx "{input.fasta}"
-        cut -f 1,2 "{input.fasta}.fai" > "{output.chrom}"
+        mkdir -p "$(dirname "{log}")"
+        : > "{log}"
+        {
+          samtools faidx "{input.fasta}"
+          cut -f 1,2 "{input.fasta}.fai" > "{output.chrom}"
+        } >> "{log}" 2>&1
         """
