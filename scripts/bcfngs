@@ -243,6 +243,12 @@ def _require_snakemake_slurm_executor(ctx: RunContext) -> None:
     )
 
 
+def _resource_str(value: str) -> str:
+    # Snakemake parses default resource values as Python expressions.
+    # Use a quoted literal for string resources (especially values with spaces).
+    return repr(value)
+
+
 def cmd_genomes_plan(ctx: RunContext, args: argparse.Namespace) -> None:
     genomes_cfg_path = REPO_ROOT / "configs" / "genomes.yaml"
     cfg = _load_yaml(ctx, genomes_cfg_path, announce=True)
@@ -293,11 +299,11 @@ def cmd_genomes_build(ctx: RunContext, args: argparse.Namespace) -> None:
 
         default_resources: list[str] = []
         if args.slurm_partition:
-            default_resources.append(f"slurm_partition={args.slurm_partition}")
+            default_resources.append(f"slurm_partition={_resource_str(args.slurm_partition)}")
         if args.slurm_account:
-            default_resources.append(f"slurm_account={args.slurm_account}")
+            default_resources.append(f"slurm_account={_resource_str(args.slurm_account)}")
         if args.slurm_qos:
-            default_resources.append(f"slurm_qos={args.slurm_qos}")
+            default_resources.append(f"slurm_qos={_resource_str(args.slurm_qos)}")
         if args.slurm_cpus_per_task:
             default_resources.append(f"cpus_per_task={args.slurm_cpus_per_task}")
         if args.slurm_mem_per_cpu:
@@ -311,7 +317,7 @@ def cmd_genomes_build(ctx: RunContext, args: argparse.Namespace) -> None:
         ]
         if args.slurm_exclusive:
             slurm_extra_parts.append("--exclusive")
-        default_resources.append(f"slurm_extra={' '.join(slurm_extra_parts)}")
+        default_resources.append(f"slurm_extra={_resource_str(' '.join(slurm_extra_parts))}")
         if default_resources:
             snakemake_cmd += ["--default-resources", *default_resources]
     else:
