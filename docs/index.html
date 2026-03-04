@@ -267,27 +267,27 @@ In order for the automatic conversion of <code>wig</code> to <code>bigwig</code>
 <section id="section" class="level3">
 <h3 class="anchored" data-anchor-id="section">04.03.2026</h3>
 <ul>
-<li>Updated <code>./scripts/bcfngs genomes build</code> behavior and documentation:
+<li>Improved <code>./scripts/bcfngs genomes plan</code> preflight output:
 <ul>
-<li><code>genomes build</code> now skips <code>genomes plan</code> by default.</li>
-<li>Added <code>-no-skip-plan</code> / <code>--no-skip-plan</code> to force preflight checks (config + URL checks, lint, dry-run) before build.</li>
+<li>Replaced the generic <code>OK</code> with a clear config validation message (<code>Config file is OK: ...</code>).</li>
+<li>Replaced raw <code>HTTP/1.1 200 OK</code> header output from URL checks with readable per-organism status lines for FASTA and GTF URLs.</li>
 </ul></li>
-<li>Added optional execution backend parameter for genome builds:
+<li>Added version reporting in <code>genomes plan</code>:
 <ul>
-<li><code>--executor local|slurm</code> (default: <code>local</code>).</li>
-<li>Added SLURM options for jobs and cluster settings (<code>--jobs</code>, partition/account/qos, mail settings, runtime, CPUs, memory, exclusive node).</li>
+<li>Prints pinned genome build release(s), including Ensembl (currently 115 from config).</li>
+<li>Prints configured tool versions for STAR, bwa, and bowtie2.</li>
 </ul></li>
-<li>Added default SLURM settings for cluster runs:
+<li>Added Snakemake per-rule logging and environment declarations in <code>workflow/genomes.smk</code>:
 <ul>
-<li><code>--partition p.hpcl8</code></li>
-<li><code>--mail-user yeroslaviz@biochem.mpg.de</code></li>
-<li><code>--mail-type ALL</code></li>
-<li><code>--time 04:00:00</code></li>
-<li><code>--cpus-per-task 20</code></li>
-<li><code>--mem-per-cpu 20G</code></li>
+<li>Added <code>log:</code> targets for <code>download_sources</code>, <code>star_index</code>, <code>bwa_index</code>, <code>bowtie2_index</code>, and <code>chrom_size</code>.</li>
+<li>Redirected rule command output to the corresponding log files.</li>
+<li>Added <code>conda: "../env/environment.yml"</code> to those rules.</li>
 </ul></li>
-<li>Added <code>snakemake-executor-plugin-slurm</code> to <code>env/environment.yml</code> for Snakemake 8 SLURM execution support.</li>
-<li>Updated Snakemake examples to reflect local default behavior and optional SLURM execution.</li>
+<li>Fixed follow-up issues introduced during logging changes:
+<ul>
+<li>Updated <code>download_sources</code> log path to include <code>{src_rel}</code> so output and log wildcards match.</li>
+<li>Escaped shell block braces in <code>shell:</code> commands (<code>{ ... }</code>) to avoid Snakemake formatting errors.</li>
+</ul></li>
 </ul>
 </section>
 <section id="section-1" class="level3">
