@@ -8,6 +8,8 @@ releases:
 
 default_threads: 16
 default_ram_bytes: 168632718037
+bwa_index_algorithm: is
+bwa_index_mem_mb: 16000
 
 # Versions are used for versioned output directories (and symlink targets).
 index_versions:
@@ -23,6 +25,8 @@ organisms:
     fasta_kind: dna.primary_assembly
     gtf_kind: gtf
     sa_index: 14
+    bwa_index_algorithm: bwtsw
+    bwa_index_mem_mb: 64000
   Mus_musculus:
     source: ensembl
     species: mus_musculus

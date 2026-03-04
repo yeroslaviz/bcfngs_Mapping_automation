@@ -10,6 +10,8 @@ INDEX_VERSIONS = config.get("index_versions", {})
 STAR_VER = INDEX_VERSIONS.get("star", "unknown")
 BWA_VER = INDEX_VERSIONS.get("bwa", "unknown")
 BOWTIE2_VER = INDEX_VERSIONS.get("bowtie2", "unknown")
+BWA_INDEX_DEFAULT_ALGO = str(config.get("bwa_index_algorithm", "is"))
+BWA_INDEX_DEFAULT_MEM_MB = int(config.get("bwa_index_mem_mb", 16000))
 
 ORGANISMS = config["organisms"]
 
@@ -99,6 +101,14 @@ def current_index_link(tool: str, wc):
     return os.path.join(GENOMES_ROOT, wc, f"{tool}Index")
 
 
+def bwa_index_algorithm(wc):
+    return str(ORGANISMS[wc.org].get("bwa_index_algorithm", BWA_INDEX_DEFAULT_ALGO))
+
+
+def bwa_index_mem_mb(wc):
+    return int(ORGANISMS[wc.org].get("bwa_index_mem_mb", BWA_INDEX_DEFAULT_MEM_MB))
+
+
 rule all:
     input:
         expand(os.path.join(GENOMES_ROOT, "{org}.chromSize"), org=ORG_KEYS),
@@ -181,16 +191,19 @@ rule bwa_index:
     conda:
         "../env/environment.yml"
     threads: 1
+    resources:
+        mem_mb=bwa_index_mem_mb
     params:
         outdir=lambda wc: versioned_index_dir("bwa", wc.org),
         prefix=lambda wc: os.path.join(versioned_index_dir("bwa", wc.org), wc.org),
+        algo=bwa_index_algorithm,
         link=lambda wc: current_index_link("bwa", wc.org),
     shell:
         r"""
         mkdir -p "{params.outdir}" "$(dirname "{log}")"
         : > "{log}"
         {{
-          bwa index -p "{params.prefix}" "{input.fasta}"
+          bwa index -a "{params.algo}" -p "{params.prefix}" "{input.fasta}"
 
           mkdir -p "$(dirname "{params.link}")"
           tmp_link="{params.link}.tmp.$$"
