@@ -304,10 +304,6 @@ def cmd_genomes_build(ctx: RunContext, args: argparse.Namespace) -> None:
             default_resources.append(f"slurm_account={_resource_str(args.slurm_account)}")
         if args.slurm_qos:
             default_resources.append(f"slurm_qos={_resource_str(args.slurm_qos)}")
-        if args.slurm_cpus_per_task:
-            default_resources.append(f"cpus_per_task={args.slurm_cpus_per_task}")
-        if args.slurm_mem_per_cpu:
-            default_resources.append(f"mem_mb_per_cpu={args.slurm_mem_per_cpu}")
         if args.slurm_time:
             default_resources.append(f"runtime={args.slurm_time}")
 
@@ -320,6 +316,29 @@ def cmd_genomes_build(ctx: RunContext, args: argparse.Namespace) -> None:
         default_resources.append(f"slurm_extra={_resource_str(' '.join(slurm_extra_parts))}")
         if default_resources:
             snakemake_cmd += ["--default-resources", *default_resources]
+
+        # Apply high CPU/memory defaults only to heavy index rules.
+        # Keep lightweight download/chrom-size/bwa jobs schedulable.
+        set_resources: list[str] = []
+        if args.slurm_cpus_per_task:
+            set_resources += [
+                f"star_index:cpus_per_task={args.slurm_cpus_per_task}",
+                f"bowtie2_index:cpus_per_task={args.slurm_cpus_per_task}",
+                "download_sources:cpus_per_task=1",
+                "chrom_size:cpus_per_task=1",
+                "bwa_index:cpus_per_task=1",
+            ]
+        if args.slurm_mem_per_cpu:
+            light_mem = min(args.slurm_mem_per_cpu, 4096)
+            set_resources += [
+                f"star_index:mem_mb_per_cpu={args.slurm_mem_per_cpu}",
+                f"bowtie2_index:mem_mb_per_cpu={args.slurm_mem_per_cpu}",
+                f"download_sources:mem_mb_per_cpu={light_mem}",
+                f"chrom_size:mem_mb_per_cpu={light_mem}",
+                f"bwa_index:mem_mb_per_cpu={light_mem}",
+            ]
+        if set_resources:
+            snakemake_cmd += ["--set-resources", *set_resources]
     else:
         snakemake_cmd += ["--cores", str(args.cores)]
 
