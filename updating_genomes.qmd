@@ -17,14 +17,16 @@ Once every few years the genomic sequences must be updated. Also the STAR versio
 ## Prerequisites / where to run
 
 You can use any server as long as you can run `snakemake` and the required tools. The recommended method is **micromamba** (see [environment](environment.html)).
+Default environment path used on the cluster:
+`/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes`
 
 ## How-to (by scenario)
 
 ### First time setup (recommended)
 
 ```bash
-./scripts/bcfngs env create
-./scripts/bcfngs env check
+./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env create
+./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env check
 ```
 
 ### Routine: re-run indexing (no config changes)
@@ -62,8 +64,8 @@ You can use any server as long as you can run `snakemake` and the required tools
 1. Update tools:
 
 ```bash
-./scripts/bcfngs env update
-./scripts/bcfngs env check
+./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env update
+./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env check
 ```
 
 2. Update `index_versions` in `configs/genomes.yaml` (these strings are used in output folder names).
@@ -84,8 +86,8 @@ module load bclconvert/4.3.13 star bowtie2 bwa
 ### Recommended (micromamba)
 
 ```bash
-./scripts/bcfngs env create
-./scripts/bcfngs env check
+./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env create
+./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env check
 ```
 
 ### HPC modules fallback (optional)

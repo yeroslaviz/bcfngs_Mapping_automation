@@ -3,6 +3,8 @@ title: "Environment (micromamba)"
 ---
 
 This workflow uses **micromamba** to create a reproducible environment with all required tools (Snakemake + aligners + utilities).
+Default environment path used for this project:
+`/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes`
 
 ## Installing micromamba
 
@@ -13,20 +15,18 @@ micromamba can be installed from the [github repository](https://github.com/mamb
 "${SHELL}" <(curl -L https://micro.mamba.pm/install.sh)
 ```
 
-## Create the workflow environment (project-local)
+## Create the workflow environment (default cluster path)
 
 From the repo root:
 
 ```bash
-# micromamba create -y -p .mamba/env -f env/environment.yml # save the env under the path ./mamba/env
-
-micromamba create -y -n update_genomes -f env/environment.yml # save the env under the default path of miniconda3
+micromamba create -y -p /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes -f env/environment.yml
 ```
 
 To run commands inside the environment without activating it:
 
 ```bash
-micromamba run -p .mamba/env snakemake --version
+micromamba run -p /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes snakemake --version
 ```
 
 ## Update the environment
@@ -34,7 +34,7 @@ micromamba run -p .mamba/env snakemake --version
 If `env/environment.yml` changes (new tools, version bumps):
 
 ```bash
-micromamba update -y -p .mamba/env -f env/environment.yml
+micromamba update -y -p /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes -f env/environment.yml
 ```
 
 ## Health checks
@@ -60,15 +60,15 @@ This step goes through the needed tools for the workflow and output if the tool 
 ### I’m new / first time setup
 
 ```bash
-micromamba create -y -p .mamba/env -f env/environment.yml
+micromamba create -y -p /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes -f env/environment.yml
 ./scripts/bcfngs env check
 ```
 
 ### Run a one-off command without activating
 
 ```bash
-micromamba run -p .mamba/env snakemake --help
-micromamba run -p .mamba/env STAR --version
+micromamba run -p /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes snakemake --help
+micromamba run -p /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes STAR --version
 ```
 
 ### Keep tools up-to-date (routine)
@@ -76,7 +76,7 @@ micromamba run -p .mamba/env STAR --version
 1. Update the environment:
 
 ```bash
-micromamba update -y -p .mamba/env -f env/environment.yml
+micromamba update -y -p /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes -f env/environment.yml
 ./scripts/bcfngs env check
 ```
 
@@ -84,7 +84,7 @@ micromamba update -y -p .mamba/env -f env/environment.yml
 
 ```bash
 mkdir -p env/locks
-micromamba list -p .mamba/env --explicit > env/locks/explicit-YYYY-MM-DD.txt
+micromamba list -p /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes --explicit > env/locks/explicit-YYYY-MM-DD.txt
 ```
 
 ### I want to use HPC modules for vendor tools

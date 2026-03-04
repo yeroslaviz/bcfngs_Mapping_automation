@@ -59,7 +59,14 @@ The workflow uses a combination of a `conda` environment with the `snakemake` to
 
 ### bigWig conversion
 
+<<<<<<< Updated upstream
 bigWig generation is performed with `deeptools bamCoverage` directly from BAM input.
+=======
+First the `bam` files are converted into `wig` files. This is done using the `bam2wig.py` script from the `rseqc`-software package.  
+In order for the automatic conversion of `wig` to `bigwig` files to work, one must have the tool `wigToBigwig` from the UCSC repository installed and **in the path**.
+As we are working with `conda`, the easiest place to put it is the path of the environment. In this project, the default environment path is `/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes`, so binaries are expected under `/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes/bin/`.
+So far I have copied the file manually to the folder, but I have now added it to the `environment.yaml` file, which is ran during the environment creation step. This was not tested yet!.
+>>>>>>> Stashed changes
 
 
 TO DO
@@ -84,6 +91,7 @@ as well as which mappers we need
 ### 04.03.2026
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 - Improved `./scripts/bcfngs genomes plan` preflight output:
   - Replaced the generic `OK` with a clear config validation message (`Config file is OK: ...`).
   - Replaced raw `HTTP/1.1 200 OK` header output from URL checks with readable per-organism status lines for FASTA and GTF URLs.
@@ -107,6 +115,14 @@ as well as which mappers we need
 - Added FASTQ pattern auto-detection for multiple naming schemes.
 - Archived old STAR-only mapping Snakefiles under `archive/legacy/mapping/`.
 - Added dedicated mapping documentation page (`mapping.qmd`).
+>>>>>>> Stashed changes
+=======
+- Documented the default cluster micromamba environment path consistently across docs:
+  - `/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes`
+- Updated environment/setup command examples in:
+  - [`environment`](environment.html)
+  - [`snakemake`](snakemake.html)
+  - [`Updating genomes`](updating_genomes.html)
 >>>>>>> Stashed changes
 
 ### 20.02.2026

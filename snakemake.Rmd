@@ -15,17 +15,29 @@ This repository uses `snakemake` for:
 2. **Mapping** using STAR, bwa, and/or bowtie2 with unified paired/single-end support.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 For non-experts, prefer the single wrapper command `./scripts/bcfngs` (plan checks + build execution, local or SLURM).
 =======
 Use the wrapper command `./scripts/bcfngs`.
+>>>>>>> Stashed changes
+=======
+For non-experts, prefer the single wrapper command `./scripts/bcfngs` (runs checks, then snakemake).
+Default environment path used on the cluster:
+`/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes`
 >>>>>>> Stashed changes
 
 ## Quickstart
 
 ```bash
+<<<<<<< Updated upstream
 # environment
 ./scripts/bcfngs env create
 ./scripts/bcfngs env check
+=======
+# 1) create/update env (only once, then as needed)
+./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env create
+./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env check
+>>>>>>> Stashed changes
 
 <<<<<<< Updated upstream
 # 2) (optional) check if a newer Ensembl release exists
@@ -136,8 +148,13 @@ The old STAR-only Snakefiles were archived under `archive/legacy/mapping/`.
 ### SLURM mode
 
 ```bash
+<<<<<<< Updated upstream
 ./scripts/bcfngs mapping plan --executor slurm --jobs 20
 ./scripts/bcfngs mapping run  --executor slurm --jobs 20
+=======
+./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env update
+./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env check
+>>>>>>> Stashed changes
 ```
 
 Default SLURM settings:
