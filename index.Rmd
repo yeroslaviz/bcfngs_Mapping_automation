@@ -85,6 +85,22 @@ as well as which mappers we need
 
 # CHANGES
 
+### 04.03.2026
+
+- Improved `./scripts/bcfngs genomes plan` preflight output:
+  - Replaced the generic `OK` with a clear config validation message (`Config file is OK: ...`).
+  - Replaced raw `HTTP/1.1 200 OK` header output from URL checks with readable per-organism status lines for FASTA and GTF URLs.
+- Added version reporting in `genomes plan`:
+  - Prints pinned genome build release(s), including Ensembl (currently 115 from config).
+  - Prints configured tool versions for STAR, bwa, and bowtie2.
+- Added Snakemake per-rule logging and environment declarations in `workflow/genomes.smk`:
+  - Added `log:` targets for `download_sources`, `star_index`, `bwa_index`, `bowtie2_index`, and `chrom_size`.
+  - Redirected rule command output to the corresponding log files.
+  - Added `conda: "../env/environment.yml"` to those rules.
+- Fixed follow-up issues introduced during logging changes:
+  - Updated `download_sources` log path to include `{src_rel}` so output and log wildcards match.
+  - Escaped shell block braces in `shell:` commands (`{{ ... }}`) to avoid Snakemake formatting errors.
+
 ### 20.02.2026
 
 - Added Quarto website configuration (`_quarto.yml`) and re-rendered site with `quarto render`.

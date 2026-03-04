@@ -7,9 +7,6 @@ GENOMES_ROOT = config["genomes_root"]
 DEFAULT_THREADS = int(config.get("default_threads", 16))
 DEFAULT_RAM = int(config.get("default_ram_bytes", 0))
 INDEX_VERSIONS = config.get("index_versions", {})
-STAR_VER = INDEX_VERSIONS.get("star", "unknown")
-BWA_VER = INDEX_VERSIONS.get("bwa", "unknown")
-BOWTIE2_VER = INDEX_VERSIONS.get("bowtie2", "unknown")
 
 ORGANISMS = config["organisms"]
 
@@ -35,50 +32,35 @@ def _source_root(org_key: str) -> str:
     if org.get("source") == "ensemblgenomes":
         division = org["division"]
         rel = _release_for_org(org_key)
-        return f"https://ftp.ensemblgenomes.ebi.ac.uk/pub/{division}/release-{rel}"
+        return f"https://ftp.ensemblgenomes.org/pub/{division}/release-{rel}"
     rel = _release_for_org(org_key)
     return f"https://ftp.ensembl.org/pub/release-{rel}"
-
-
-def _normalize_ensemblgenomes_url(url: str) -> str:
-    return url.replace(
-        "https://ftp.ensemblgenomes.org/",
-        "https://ftp.ensemblgenomes.ebi.ac.uk/",
-        1,
-    )
-
-
-def _species_prefix(species: str) -> str:
-    parts = species.split("_")
-    if not parts:
-        return species
-    return "_".join([parts[0].capitalize(), *parts[1:]])
 
 
 def fasta_url(wc):
     org = ORGANISMS[wc.org]
     if "fasta_url" in org:
-        return _normalize_ensemblgenomes_url(org["fasta_url"])
+        return org["fasta_url"]
     root = _source_root(wc.org)
     species = org["species"]
     assembly = org["assembly"]
     kind = org.get("fasta_kind", "dna.toplevel")
     # Example: .../fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz
-    prefix = _species_prefix(species)
-    return f"{root}/fasta/{species}/dna/{prefix}.{assembly}.{kind}.fa.gz"
+    cap = "_".join([s.capitalize() for s in species.split("_")])
+    return f"{root}/fasta/{species}/dna/{cap}.{assembly}.{kind}.fa.gz"
 
 
 def gtf_url(wc):
     org = ORGANISMS[wc.org]
     if "gtf_url" in org:
-        return _normalize_ensemblgenomes_url(org["gtf_url"])
+        return org["gtf_url"]
     root = _source_root(wc.org)
     species = org["species"]
     assembly = org["assembly"]
     rel = _release_for_org(wc.org)
-    prefix = _species_prefix(species)
+    cap = "_".join([s.capitalize() for s in species.split("_")])
     # Example: .../gtf/homo_sapiens/Homo_sapiens.GRCh38.116.gtf.gz
-    return f"{root}/gtf/{species}/{prefix}.{assembly}.{rel}.gtf.gz"
+    return f"{root}/gtf/{species}/{cap}.{assembly}.{rel}.gtf.gz"
 
 
 def sources_dir(wc):
@@ -109,8 +91,8 @@ rule all:
 
 rule download_sources:
     output:
-        fasta=os.path.join(GENOMES_ROOT, "sources", "{org}", "{src_rel}", "{org}.fa"),
-        gtf=os.path.join(GENOMES_ROOT, "sources", "{org}", "{src_rel}", "{org}.gtf"),
+        fasta=lambda wc: os.path.join(sources_dir(wc.org), f"{wc.org}.fa"),
+        gtf=lambda wc: os.path.join(sources_dir(wc.org), f"{wc.org}.gtf"),
     params:
         dir=lambda wc: sources_dir(wc.org),
         fasta_url=fasta_url,
@@ -130,7 +112,7 @@ rule star_index:
         fasta=lambda wc: os.path.join(sources_dir(wc.org), f"{wc.org}.fa"),
         gtf=lambda wc: os.path.join(sources_dir(wc.org), f"{wc.org}.gtf"),
     output:
-        sa=os.path.join(GENOMES_ROOT, "{org}", f"starIndex-{STAR_VER}", "SA"),
+        sa=lambda wc: os.path.join(versioned_index_dir("star", wc.org), "SA"),
     threads: DEFAULT_THREADS
     params:
         outdir=lambda wc: versioned_index_dir("star", wc.org),
@@ -161,7 +143,7 @@ rule bwa_index:
     input:
         fasta=lambda wc: os.path.join(sources_dir(wc.org), f"{wc.org}.fa"),
     output:
-        bwt=os.path.join(GENOMES_ROOT, "{org}", f"bwaIndex-{BWA_VER}", "{org}.bwt"),
+        bwt=lambda wc: os.path.join(versioned_index_dir("bwa", wc.org), f"{wc.org}.bwt"),
     threads: 1
     params:
         outdir=lambda wc: versioned_index_dir("bwa", wc.org),
@@ -183,7 +165,7 @@ rule bowtie2_index:
     input:
         fasta=lambda wc: os.path.join(sources_dir(wc.org), f"{wc.org}.fa"),
     output:
-        bt2=os.path.join(GENOMES_ROOT, "{org}", f"bowtie2Index-{BOWTIE2_VER}", "{org}.1.bt2"),
+        bt2=lambda wc: os.path.join(versioned_index_dir("bowtie2", wc.org), f"{wc.org}.1.bt2"),
     threads: DEFAULT_THREADS
     params:
         outdir=lambda wc: versioned_index_dir("bowtie2", wc.org),

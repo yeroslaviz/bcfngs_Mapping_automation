@@ -2,9 +2,9 @@ genomes_root: /fs/pool/pool-bcfngs/genomes
 
 # Pinned releases (bumpable).
 releases:
-  ensembl: 115
+  ensembl: 116
   ensemblgenomes:
-    metazoa: 62
+    metazoa: 61
 
 default_threads: 16
 default_ram_bytes: 168632718037
@@ -57,6 +57,7 @@ organisms:
     species: drosophila_pseudoobscura
     assembly: Dpse_3.0
     # EnsemblGenomes file naming differs; use explicit URLs below.
-    fasta_url: "https://ftp.ensemblgenomes.ebi.ac.uk/pub/metazoa/release-61/fasta/drosophila_pseudoobscura/dna/Drosophila_pseudoobscura.Dpse_3.0.dna.toplevel.fa.gz"
-    gtf_url: "https://ftp.ensemblgenomes.ebi.ac.uk/pub/metazoa/release-61/gtf/drosophila_pseudoobscura/Drosophila_pseudoobscura.Dpse_3.0.61.gtf.gz"
+    fasta_url: "https://ftp.ensemblgenomes.org/pub/metazoa/release-61/fasta/drosophila_pseudoobscura/dna/Drosophila_pseudoobscura.Dpse_3.0.dna.toplevel.fa.gz"
+    gtf_url: "https://ftp.ensemblgenomes.org/pub/metazoa/release-61/gtf/drosophila_pseudoobscura/Drosophila_pseudoobscura.Dpse_3.0.61.gtf.gz"
     sa_index: 12
+

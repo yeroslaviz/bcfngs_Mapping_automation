@@ -28,8 +28,6 @@
     "text": "Installing micromamba\nmicromamba can be installed from the github repository.\n\"${SHELL}\" &lt;(curl -L https://micro.mamba.pm/install.sh)"
   },
   {
-<<<<<<< Updated upstream
-=======
     "objectID": "environment.html#create-the-workflow-environment-project-local",
     "href": "environment.html#create-the-workflow-environment-project-local",
     "title": "Environment (micromamba)",
@@ -37,7 +35,6 @@
     "text": "Create the workflow environment (project-local)\nFrom the repo root:\n# micromamba create -y -p .mamba/env -f env/environment.yml # save the env under the path ./mamba/env\n\nmicromamba create -y -n update_genomes -f env/environment.yml # save the env under the default path of miniconda3\nTo run commands inside the environment without activating it:\nmicromamba run -p .mamba/env snakemake --version"
   },
   {
->>>>>>> Stashed changes
     "objectID": "environment.html#update-the-environment",
     "href": "environment.html#update-the-environment",
     "title": "Environment (micromamba)",
@@ -129,6 +126,62 @@
     "text": "5) Mapping (per project)\nMapping is done with STAR for a specific genome in either paired-end or single-end mode.\n\nChange parameters before mapping\nAdjust the project settings in configs/run.yaml before running:\nproject: \"P152\"\npath: \"/fs/pool/pool-bcfngs/fastq_files/P146/P152_ChIP_Asx_5_6/conc.fastq\"\norganism: \"Drosophila_melanogaster\"\n\n\nRun mapping (dry-run first)\nChange into the project folder containing the concatenated FASTQ files:\ncd /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/\nDry-run then execute:\n# single-end\nsnakemake -nps /path/to/repo/Star.MappingQuant.SingleEndFastq.Snakefile -j 50\n\n# paired-end\nsnakemake -nps /path/to/repo/Star.MappingQuant.PairedEndFastq.Snakefile -j 50\nRemove -n to run for real."
   },
   {
+    "objectID": "branch_publish_workflow.html",
+    "href": "branch_publish_workflow.html",
+    "title": "Branch and Publish Workflow (Local Notes)",
+    "section": "",
+    "text": "codex/hpc-test: working branch for script, config, and documentation edits.\ngh-pages: publishing branch for website/docs output only."
+  },
+  {
+    "objectID": "branch_publish_workflow.html#branch-purpose",
+    "href": "branch_publish_workflow.html#branch-purpose",
+    "title": "Branch and Publish Workflow (Local Notes)",
+    "section": "",
+    "text": "codex/hpc-test: working branch for script, config, and documentation edits.\ngh-pages: publishing branch for website/docs output only."
+  },
+  {
+    "objectID": "branch_publish_workflow.html#standard-work-cycle",
+    "href": "branch_publish_workflow.html#standard-work-cycle",
+    "title": "Branch and Publish Workflow (Local Notes)",
+    "section": "Standard work cycle",
+    "text": "Standard work cycle\n\nSwitch to work branch:\n\ngit switch codex/hpc-test\n\nMake changes (code/docs/config as needed).\nStage and commit:\n\ngit add &lt;files&gt;\ngit commit -m \"short message\"\n\nPush work branch:\n\ngit push origin codex/hpc-test"
+  },
+  {
+    "objectID": "branch_publish_workflow.html#when-to-publish-to-gh-pages",
+    "href": "branch_publish_workflow.html#when-to-publish-to-gh-pages",
+    "title": "Branch and Publish Workflow (Local Notes)",
+    "section": "When to publish to gh-pages",
+    "text": "When to publish to gh-pages\nPublish only when website-visible docs changed.\nExamples that should be published: - .qmd, .Rmd, _quarto.yml - content that should appear on the docs site\nExamples that usually should not be published directly: - workflow scripts - pipeline configs - helper CLI code"
+  },
+  {
+    "objectID": "branch_publish_workflow.html#publish-flow-docs-changed",
+    "href": "branch_publish_workflow.html#publish-flow-docs-changed",
+    "title": "Branch and Publish Workflow (Local Notes)",
+    "section": "Publish flow (docs changed)",
+    "text": "Publish flow (docs changed)\n\nUpdate publishing branch:\n\ngit switch gh-pages\ngit pull origin gh-pages\n\nBring in the docs commit(s):\n\ngit cherry-pick &lt;commit_sha&gt;\n\nRe-render site:\n\nquarto render\n\nCommit and push rendered site:\n\ngit add -A\ngit commit -m \"docs: publish updates\"\ngit push origin gh-pages\n\nSwitch back to work branch:\n\ngit switch codex/hpc-test"
+  },
+  {
+    "objectID": "branch_publish_workflow.html#example-changed-docs-and-config-in-one-work-session",
+    "href": "branch_publish_workflow.html#example-changed-docs-and-config-in-one-work-session",
+    "title": "Branch and Publish Workflow (Local Notes)",
+    "section": "Example: changed docs and config in one work session",
+    "text": "Example: changed docs and config in one work session\nCase: - Docs changed: environment.qmd - Config changed: config.v5.yaml\nRecommended sequence:\n# On work branch\ngit switch codex/hpc-test\n\n# Commit config change first\ngit add config.v5.yaml\ngit commit -m \"config: update v5 settings\"\n\n# Commit docs change separately\ngit add environment.qmd\ngit commit -m \"docs: update environment instructions\"\n\n# Push both commits to work branch\ngit push origin codex/hpc-test\n\n# Publish only docs commit to gh-pages\ngit switch gh-pages\ngit pull origin gh-pages\ngit cherry-pick &lt;docs_commit_sha&gt;\nquarto render\ngit add -A\ngit commit -m \"docs: publish environment update\"\ngit push origin gh-pages\n\n# Continue work\ngit switch codex/hpc-test"
+  },
+  {
+    "objectID": "branch_publish_workflow.html#notes",
+    "href": "branch_publish_workflow.html#notes",
+    "title": "Branch and Publish Workflow (Local Notes)",
+    "section": "Notes",
+    "text": "Notes\n\nDo not use angle brackets around commit SHA in shell commands.\n\nCorrect: git cherry-pick b949dd1\nIncorrect: git cherry-pick &lt;b949dd1&gt;\n\nIf one commit mixes code and docs, split it first or cherry-pick carefully before publishing."
+  },
+  {
+    "objectID": "branch_publish_workflow.html#stash-publish-path-and-recurring-conflict-fix",
+    "href": "branch_publish_workflow.html#stash-publish-path-and-recurring-conflict-fix",
+    "title": "Branch and Publish Workflow (Local Notes)",
+    "section": "Stash publish path (and recurring conflict fix)",
+    "text": "Stash publish path (and recurring conflict fix)\nUse this when docs output is already in your working tree on codex/hpc-test and you want to publish to gh-pages.\n# On codex/hpc-test\ngit stash push -u -m \"publish-docs\" -- docs\n\n# Switch and apply on gh-pages\ngit switch gh-pages\ngit stash apply stash@{0}\nIf docs/search.json conflicts after stash apply:\ngit checkout --theirs docs/search.json\ngit add docs/search.json\nWhy --theirs here: - During stash apply, ours = current branch (gh-pages), theirs = stashed content (the docs you prepared on codex/hpc-test). - For publish updates, you usually want the stashed docs version.\nIf stash restore reports “already exists, no checkout” for untracked docs files, just stage them explicitly if needed:\ngit add docs\nThen finish publish:\ngit commit -m \"docs: refresh generated site files\"\ngit push origin gh-pages\ngit stash drop stash@{0}\nFinal cleanup after switching back to codex/hpc-test:\ngit switch codex/hpc-test\ngit restore -- docs\ngit clean -fd docs/site_libs/bootstrap docs/site_libs/quarto-html\ngit status --short"
+  },
+  {
     "objectID": "index.html",
     "href": "index.html",
     "title": "index",
@@ -211,64 +264,5 @@
     "title": "HOWTO",
     "section": "Mapping",
     "text": "Mapping\nMapping will be done with the STAR aligner for a specific genome either in a paired-end or single-end format.\n\nChanging parameters before mapping\nThe following setting must be adjusted before running the script:\n######## Project Setting\n# To create a separate project results folder for each run, change the name of the project here.\nproject: \"P152\"\n# this path would point to the raw data in fastq format. This must be changed each time for the correct data to be analyzed.\npath: \"/fs/pool/pool-bcfngs/fastq_files/P146/P152_ChIP_Asx_5_6/conc.fastq\"\n# Which organism to map the data to\norg: \"Dme.BDGP6.22\"\nThe project and the path should point to the current project which is being mapped.\nthe org must be the organism the data is mapped against. The term must be identical to the term in the list of organisms from the config files.\n\n\nrunning the star mapping step.\nfirst, change the working directory to the path of the actual project on the pool-bcfngs. e.g.\ncd /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/\nNext run the snakemake script first as a dry-run (-n) and if all seems well than run it for real.\ne.g. \n# for single-end samples\nsnakemake -nps /fs/pool/pool-bcfngs/scripts/Star.MappingQuant.SingleEndFastq.Snakefile -j 50\n# for paired-end samples\nsnakemake -ps /fs/pool/pool-bcfngs/scripts/Star.MappingQuant.PairedEndFastq.Snakefile -j 50"
-  },
-  {
-<<<<<<< Updated upstream
-    "objectID": "branch_publish_workflow.html",
-    "href": "branch_publish_workflow.html",
-    "title": "Branch and Publish Workflow (Local Notes)",
-    "section": "",
-    "text": "codex/hpc-test: working branch for script, config, and documentation edits.\ngh-pages: publishing branch for website/docs output only."
-  },
-  {
-    "objectID": "branch_publish_workflow.html#branch-purpose",
-    "href": "branch_publish_workflow.html#branch-purpose",
-    "title": "Branch and Publish Workflow (Local Notes)",
-    "section": "",
-    "text": "codex/hpc-test: working branch for script, config, and documentation edits.\ngh-pages: publishing branch for website/docs output only."
-  },
-  {
-    "objectID": "branch_publish_workflow.html#standard-work-cycle",
-    "href": "branch_publish_workflow.html#standard-work-cycle",
-    "title": "Branch and Publish Workflow (Local Notes)",
-    "section": "Standard work cycle",
-    "text": "Standard work cycle\n\nSwitch to work branch:\n\ngit switch codex/hpc-test\n\nMake changes (code/docs/config as needed).\nStage and commit:\n\ngit add &lt;files&gt;\ngit commit -m \"short message\"\n\nPush work branch:\n\ngit push origin codex/hpc-test"
-  },
-  {
-    "objectID": "branch_publish_workflow.html#when-to-publish-to-gh-pages",
-    "href": "branch_publish_workflow.html#when-to-publish-to-gh-pages",
-    "title": "Branch and Publish Workflow (Local Notes)",
-    "section": "When to publish to gh-pages",
-    "text": "When to publish to gh-pages\nPublish only when website-visible docs changed.\nExamples that should be published: - .qmd, .Rmd, _quarto.yml - content that should appear on the docs site\nExamples that usually should not be published directly: - workflow scripts - pipeline configs - helper CLI code"
-  },
-  {
-    "objectID": "branch_publish_workflow.html#publish-flow-docs-changed",
-    "href": "branch_publish_workflow.html#publish-flow-docs-changed",
-    "title": "Branch and Publish Workflow (Local Notes)",
-    "section": "Publish flow (docs changed)",
-    "text": "Publish flow (docs changed)\n\nUpdate publishing branch:\n\ngit switch gh-pages\ngit pull origin gh-pages\n\nBring in the docs commit(s):\n\ngit cherry-pick &lt;commit_sha&gt;\n\nRe-render site:\n\nquarto render\n\nCommit and push rendered site:\n\ngit add -A\ngit commit -m \"docs: publish updates\"\ngit push origin gh-pages\n\nSwitch back to work branch:\n\ngit switch codex/hpc-test"
-  },
-  {
-    "objectID": "branch_publish_workflow.html#notes",
-    "href": "branch_publish_workflow.html#notes",
-    "title": "Branch and Publish Workflow (Local Notes)",
-    "section": "Notes",
-    "text": "Notes\n\nDo not use angle brackets around commit SHA in shell commands.\n\nCorrect: git cherry-pick b949dd1\nIncorrect: git cherry-pick &lt;b949dd1&gt;\n\nIf one commit mixes code and docs, split it first or cherry-pick carefully before publishing."
-  },
-  {
-    "objectID": "environment.html#create-the-workflow-environment-project-local",
-    "href": "environment.html#create-the-workflow-environment-project-local",
-    "title": "Environment (micromamba)",
-    "section": "Create the workflow environment (project-local)",
-    "text": "Create the workflow environment (project-local)\nFrom the repo root:\n# micromamba create -y -p .mamba/env -f env/environment.yml # save the env under the path ./mamba/env\n\nmicromamba create -y -n update_genomes -f env/environment.yml # save the env under the default path of miniconda3\nTo run commands inside the environment without activating it:\nmicromamba run -p .mamba/env snakemake --version"
-  },
-  {
-=======
->>>>>>> Stashed changes
-    "objectID": "environment.html#activate-the-environment",
-    "href": "environment.html#activate-the-environment",
-    "title": "Environment (micromamba)",
-    "section": "Activate the environment",
-    "text": "Activate the environment"
   }
 ]
