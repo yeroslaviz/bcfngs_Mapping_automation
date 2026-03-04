@@ -40,7 +40,7 @@ organisms:
   Gallus_gallus:
     source: ensembl
     species: gallus_gallus
-    assembly: GRCg7b
+    assembly: bGalGal1.mat.broiler.GRCg7b
     fasta_kind: dna.toplevel
     gtf_kind: gtf
     sa_index: 12
