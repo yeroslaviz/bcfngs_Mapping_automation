@@ -219,6 +219,28 @@ def _genomes_url_checks_from_cfg(cfg: dict) -> list[tuple[str, str, str]]:
     return checks
 
 
+def _snakemake_available_executors(ctx: RunContext) -> set[str]:
+    out = _run_tool(ctx, ["snakemake", "--help"], capture=True)
+    help_text = f"{out.stdout}\n{out.stderr}"
+    match = re.search(r"--executor\s+\{([^}]+)\}", help_text)
+    if not match:
+        return set()
+    return {x.strip() for x in match.group(1).split(",") if x.strip()}
+
+
+def _require_snakemake_slurm_executor(ctx: RunContext) -> None:
+    executors = _snakemake_available_executors(ctx)
+    if "slurm" in executors:
+        return
+    available = ", ".join(sorted(executors)) if executors else "unknown"
+    raise SystemExit(
+        "Requested --executor slurm, but this Snakemake installation has no slurm executor "
+        f"(available executors: {available}).\n"
+        f"Update the environment at {ctx.env_prefix} to install the plugin:\n"
+        "  ./scripts/bcfngs env update"
+    )
+
+
 def cmd_genomes_plan(ctx: RunContext, args: argparse.Namespace) -> None:
     genomes_cfg_path = REPO_ROOT / "configs" / "genomes.yaml"
     cfg = _load_yaml(ctx, genomes_cfg_path, announce=True)
@@ -263,6 +285,7 @@ def cmd_genomes_build(ctx: RunContext, args: argparse.Namespace) -> None:
 
     snakemake_cmd: list[str] = ["snakemake", "--printshellcmds"]
     if args.executor == "slurm":
+        _require_snakemake_slurm_executor(ctx)
         print(f"Using SLURM executor (max concurrent jobs: {args.jobs}).")
         snakemake_cmd += ["--executor", "slurm", "--jobs", str(args.jobs)]
 
@@ -410,4 +433,9 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except subprocess.CalledProcessError as e:
+        cmd = e.cmd if isinstance(e.cmd, list) else [str(e.cmd)]
+        cmd_str = " ".join(shlex.quote(str(part)) for part in cmd)
+        raise SystemExit(f"Command failed with exit code {e.returncode}: {cmd_str}") from None
