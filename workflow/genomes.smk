@@ -125,10 +125,10 @@ rule download_sources:
         r"""
         mkdir -p "{params.dir}" "$(dirname "{log}")"
         : > "{log}"
-        {
+        {{
           curl -fsSL "{params.fasta_url}" | gunzip -c > "{output.fasta}"
           curl -fsSL "{params.gtf_url}"   | gunzip -c > "{output.gtf}"
-        } >> "{log}" 2>&1
+        }} >> "{log}" 2>&1
         """
 
 
@@ -152,7 +152,7 @@ rule star_index:
         r"""
         mkdir -p "{params.outdir}" "$(dirname "{log}")"
         : > "{log}"
-        {
+        {{
           STAR --runThreadN {threads} \
             --runMode genomeGenerate \
             --genomeDir "{params.outdir}" \
@@ -167,7 +167,7 @@ rule star_index:
           tmp_link="{params.link}.tmp.$$"
           ln -s "{params.outdir}" "$tmp_link"
           mv -Tf "$tmp_link" "{params.link}"
-        } >> "{log}" 2>&1
+        }} >> "{log}" 2>&1
         """
 
 
@@ -189,14 +189,14 @@ rule bwa_index:
         r"""
         mkdir -p "{params.outdir}" "$(dirname "{log}")"
         : > "{log}"
-        {
+        {{
           bwa index -p "{params.prefix}" "{input.fasta}"
 
           mkdir -p "$(dirname "{params.link}")"
           tmp_link="{params.link}.tmp.$$"
           ln -s "{params.outdir}" "$tmp_link"
           mv -Tf "$tmp_link" "{params.link}"
-        } >> "{log}" 2>&1
+        }} >> "{log}" 2>&1
         """
 
 
@@ -218,14 +218,14 @@ rule bowtie2_index:
         r"""
         mkdir -p "{params.outdir}" "$(dirname "{log}")"
         : > "{log}"
-        {
+        {{
           bowtie2-build --threads {threads} "{input.fasta}" "{params.prefix}"
 
           mkdir -p "$(dirname "{params.link}")"
           tmp_link="{params.link}.tmp.$$"
           ln -s "{params.outdir}" "$tmp_link"
           mv -Tf "$tmp_link" "{params.link}"
-        } >> "{log}" 2>&1
+        }} >> "{log}" 2>&1
         """
 
 
@@ -242,8 +242,8 @@ rule chrom_size:
         r"""
         mkdir -p "$(dirname "{log}")"
         : > "{log}"
-        {
+        {{
           samtools faidx "{input.fasta}"
           cut -f 1,2 "{input.fasta}.fai" > "{output.chrom}"
-        } >> "{log}" 2>&1
+        }} >> "{log}" 2>&1
         """
