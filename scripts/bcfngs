@@ -328,14 +328,24 @@ def cmd_genomes_build(ctx: RunContext, args: argparse.Namespace) -> None:
                 "chrom_size:cpus_per_task=1",
                 "bwa_index:cpus_per_task=1",
             ]
-        if args.slurm_mem_per_cpu:
+        if args.slurm_mem is not None:
+            # Use total memory per job (--mem). This decouples memory from cpus-per-task.
+            light_mem = min(args.slurm_mem, 4096)
+            set_resources += [
+                f"star_index:mem_mb={args.slurm_mem}",
+                f"bowtie2_index:mem_mb={args.slurm_mem}",
+                f"bwa_index:mem_mb={args.slurm_mem}",
+                f"download_sources:mem_mb={light_mem}",
+                f"chrom_size:mem_mb={light_mem}",
+            ]
+        elif args.slurm_mem_per_cpu:
             light_mem = min(args.slurm_mem_per_cpu, 4096)
             set_resources += [
                 f"star_index:mem_mb_per_cpu={args.slurm_mem_per_cpu}",
                 f"bowtie2_index:mem_mb_per_cpu={args.slurm_mem_per_cpu}",
+                f"bwa_index:mem_mb_per_cpu={args.slurm_mem_per_cpu}",
                 f"download_sources:mem_mb_per_cpu={light_mem}",
                 f"chrom_size:mem_mb_per_cpu={light_mem}",
-                f"bwa_index:mem_mb_per_cpu={light_mem}",
             ]
         if set_resources:
             snakemake_cmd += ["--set-resources", *set_resources]
@@ -414,7 +424,12 @@ def main() -> None:
         "--slurm-mem-per-cpu",
         type=int,
         default=DEFAULT_SLURM_MEM_PER_CPU_MB,
-        help="SLURM mem-per-cpu in MB for --executor slurm (default: 20480 = 20G).",
+        help="SLURM mem-per-cpu in MB for --executor slurm (default: 20480 = 20G). Ignored if --slurm-mem is set.",
+    )
+    build_p.add_argument(
+        "--slurm-mem",
+        type=int,
+        help="SLURM total memory (--mem) in MB for heavy index rules; use this to decouple memory from CPU count.",
     )
     build_p.add_argument(
         "--slurm-exclusive",
