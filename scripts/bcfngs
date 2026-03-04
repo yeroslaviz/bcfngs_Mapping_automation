@@ -13,7 +13,8 @@ from typing import Iterable
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_ENV_PREFIX = REPO_ROOT / ".mamba" / "env"
+CLUSTER_ENV_PREFIX = Path("/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes")
+DEFAULT_ENV_PREFIX = CLUSTER_ENV_PREFIX if CLUSTER_ENV_PREFIX.exists() else REPO_ROOT / ".mamba" / "env"
 ALLOWED_MAPPERS = {"star", "bwa", "bowtie2"}
 
 DEFAULT_SLURM_PARTITION = "p.hpcl8"
@@ -226,7 +227,20 @@ def _genomes_urls_from_cfg(cfg: dict) -> list[str]:
 
 
 def _snakemake_available_executors(ctx: RunContext) -> set[str]:
-    out = _run_tool(ctx, ["snakemake", "--help"], capture=True)
+    out = _run_tool(ctx, ["snakemake", "--help"], check=False, capture=True)
+    if out.returncode != 0:
+        details = (out.stderr or out.stdout or "").strip()
+        msg = (
+            "Failed to run 'snakemake --help' in the selected environment.\n"
+            f"env-prefix: {ctx.env_prefix}\n"
+            "Use an environment that contains snakemake (and slurm executor plugin if needed), e.g.:\n"
+            "  ./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes genomes build ...\n"
+            "or update/create the environment first:\n"
+            "  ./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env update"
+        )
+        if details:
+            msg += f"\n\nsnakemake output:\n{details}"
+        raise SystemExit(msg)
     help_text = f"{out.stdout}\n{out.stderr}"
     match = re.search(r"--executor\s+\{([^}]+)\}", help_text)
     if not match:
