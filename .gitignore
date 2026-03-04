@@ -20,7 +20,7 @@ _site/
 /branch_publish_workflow.qmd
 /docs/branch_publish_workflow.html
 
-/archive/*
+/archive/
 !/archive/legacy/
 !/archive/legacy/**
 /archive/.DS_Store
