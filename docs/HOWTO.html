@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="AY">
-<meta name="dcterms.date" content="2020-01-13">
+<meta name="dcterms.date" content="2026-03-04">
 
 <title>HOWTO – Bioinformatics Core Facility MPI Biochemistry</title>
 <style>
@@ -24,6 +24,41 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -107,6 +142,10 @@ ul.task-list li input[type="checkbox"] {
 <span class="menu-text">snakemake</span></a>
   </li>  
   <li class="nav-item">
+    <a class="nav-link" href="./mapping.html"> 
+<span class="menu-text">Mapping</span></a>
+  </li>  
+  <li class="nav-item">
     <a class="nav-link" href="./updating_genomes.html"> 
 <span class="menu-text">Updating genomes</span></a>
   </li>  
@@ -147,11 +186,20 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#genome-indexing" id="toc-genome-indexing" class="nav-link active" data-scroll-target="#genome-indexing">genome indexing</a></li>
+  <li><a href="#prepare-environment" id="toc-prepare-environment" class="nav-link active" data-scroll-target="#prepare-environment">1) Prepare environment</a></li>
   <li><a href="#mapping" id="toc-mapping" class="nav-link" data-scroll-target="#mapping">Mapping</a>
   <ul class="collapse">
   <li><a href="#changing-parameters-before-mapping" id="toc-changing-parameters-before-mapping" class="nav-link" data-scroll-target="#changing-parameters-before-mapping">Changing parameters before mapping</a></li>
-  <li><a href="#running-the-star-mapping-step." id="toc-running-the-star-mapping-step." class="nav-link" data-scroll-target="#running-the-star-mapping-step.">running the <code>star</code> mapping step.</a></li>
+  </ul></li>
+  <li><a href="#the-following-setting-must-be-adjusted-before-running-the-script" id="toc-the-following-setting-must-be-adjusted-before-running-the-script" class="nav-link" data-scroll-target="#the-following-setting-must-be-adjusted-before-running-the-script">The following setting must be adjusted before running the script:</a>
+  <ul class="collapse">
+  <li><a href="#build-or-update-genomesindices" id="toc-build-or-update-genomesindices" class="nav-link" data-scroll-target="#build-or-update-genomesindices">2) Build or update genomes/indices</a></li>
+  <li><a href="#configure-mapping-run" id="toc-configure-mapping-run" class="nav-link" data-scroll-target="#configure-mapping-run">3) Configure mapping run</a></li>
+  <li><a href="#run-mapping" id="toc-run-mapping" class="nav-link" data-scroll-target="#run-mapping">4) Run mapping</a></li>
+  </ul></li>
+  <li><a href="#updated-upstream" id="toc-updated-upstream" class="nav-link" data-scroll-target="#updated-upstream">&lt;&lt;&lt;&lt;&lt;&lt;&lt; Updated upstream</a>
+  <ul class="collapse">
+  <li><a href="#run-mapping-on-slurm" id="toc-run-mapping-on-slurm" class="nav-link" data-scroll-target="#run-mapping-on-slurm">5) Run mapping on SLURM</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -178,7 +226,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">January 13, 2020</p>
+      <p class="date">March 4, 2026</p>
     </div>
   </div>
   
@@ -190,50 +238,92 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>This is an internal HOW-TO for the workflow of the automation for the bcfngs core facility.</p>
-<section id="genome-indexing" class="level2">
-<h2 class="anchored" data-anchor-id="genome-indexing">genome indexing</h2>
-<p>This steps needs to be run only once. <strong>unless</strong> new genomes are added.</p>
-<p>This is all run on the <code>hpcl5002</code>.</p>
-<ol type="1">
-<li>log-in to the server.</li>
-<li>If not done before, activate the conda environment inside a <code>screen</code>, so that one can log out from the server and still run the workflow in the background. More information about the is on the github web site.</li>
-<li>open the <code>config.yaml</code> file, e.g.&nbsp;<code>vi /fs/pool/pool-bcfngs/scripts/config.yaml</code> and add the genome links from the ensembl FTP site in this format:</li>
-</ol>
-<pre><code>  Dps.3.0.45:
-    fasta: "ftp://ftp.ensemblgenomes.org/pub/metazoa/release-45/fasta/drosophila_pseudoobscura/dna/Drosophila_pseudoobscura.Dpse_3.0.dna.toplevel.fa.gz"
-    gtf: "ftp://ftp.ensemblgenomes.org/pub/metazoa/release-45/gtf/drosophila_pseudoobscura/Drosophila_pseudoobscura.Dpse_3.0.45.gtf.gz"</code></pre>
-<ol start="4" type="1">
-<li>run the command <code>snakemake -nps archive/legacy/getGenome_IndexGenome.Snakefile</code> to check that the new genome is added to the workflow (the <code>-n</code> is a dry-run which just output the command without performing the tasks.)</li>
-<li>run the same command without the <code>-n</code> - <code>snakemake -ps archive/legacy/getGenome_IndexGenome.Snakefile -j 12</code>. This will download the fastA and gtf files from the given links and create the index files for them as well. The parameter <code>-j</code> sets the number pf cores used in the snakemake run. If the number of cores is smaller then the one sets for e.g.&nbsp;STAR, only this numner of cores will be used.</li>
-</ol>
+<p>This is a short internal HOW-TO for the bcfngs mapping automation.</p>
+<section id="prepare-environment" class="level2">
+<h2 class="anchored" data-anchor-id="prepare-environment">1) Prepare environment</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env create</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env check</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>&lt;&lt;&lt;&lt;&lt;&lt;&lt; Updated upstream 4. run the command <code>snakemake -nps archive/legacy/getGenome_IndexGenome.Snakefile</code> to check that the new genome is added to the workflow (the <code>-n</code> is a dry-run which just output the command without performing the tasks.) 5. run the same command without the <code>-n</code> - <code>snakemake -ps archive/legacy/getGenome_IndexGenome.Snakefile -j 12</code>. This will download the fastA and gtf files from the given links and create the index files for them as well. The parameter <code>-j</code> sets the number pf cores used in the snakemake run. If the number of cores is smaller then the one sets for e.g.&nbsp;STAR, only this numner of cores will be used.</p>
 </section>
 <section id="mapping" class="level2">
 <h2 class="anchored" data-anchor-id="mapping">Mapping</h2>
 <p>Mapping will be done with the <code>STAR</code> aligner for a specific genome either in a paired-end or single-end format.</p>
 <section id="changing-parameters-before-mapping" class="level3">
 <h3 class="anchored" data-anchor-id="changing-parameters-before-mapping">Changing parameters before mapping</h3>
-<p>The following setting must be adjusted before running the script:</p>
-<pre><code>######## Project Setting
-# To create a separate project results folder for each run, change the name of the project here.
-project: "P152"
-# this path would point to the raw data in fastq format. This must be changed each time for the correct data to be analyzed.
-path: "/fs/pool/pool-bcfngs/fastq_files/P146/P152_ChIP_Asx_5_6/conc.fastq"
-# Which organism to map the data to
-org: "Dme.BDGP6.22"</code></pre>
-<p>The <code>project</code> and the <code>path</code> should point to the current project which is being mapped.</p>
-<p>the <code>org</code> must be the organism the data is mapped against. The term must be identical to the term in the list of organisms from the config files.</p>
 </section>
-<section id="running-the-star-mapping-step." class="level3">
-<h3 class="anchored" data-anchor-id="running-the-star-mapping-step.">running the <code>star</code> mapping step.</h3>
-<p>first, change the working directory to the path of the actual project on the pool-bcfngs. e.g.</p>
-<pre><code>cd /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/</code></pre>
-<p>Next run the snakemake script first as a dry-run (<code>-n</code>) and if all seems well than run it for real.</p>
-<p>e.g.&nbsp;</p>
-<pre><code># for single-end samples
-snakemake -nps /fs/pool/pool-bcfngs/scripts/Star.MappingQuant.SingleEndFastq.Snakefile -j 50
-# for paired-end samples
-snakemake -ps /fs/pool/pool-bcfngs/scripts/Star.MappingQuant.PairedEndFastq.Snakefile -j 50</code></pre>
+</section>
+<section id="the-following-setting-must-be-adjusted-before-running-the-script" class="level1">
+<h1>The following setting must be adjusted before running the script:</h1>
+<section id="build-or-update-genomesindices" class="level2">
+<h2 class="anchored" data-anchor-id="build-or-update-genomesindices">2) Build or update genomes/indices</h2>
+<blockquote class="blockquote">
+<blockquote class="blockquote">
+<blockquote class="blockquote">
+<blockquote class="blockquote">
+<blockquote class="blockquote">
+<blockquote class="blockquote">
+<blockquote class="blockquote">
+<p>Stashed changes</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes plan</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Subset build:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20 <span class="at">--organism</span> Homo_sapiens,Mus_musculus</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="configure-mapping-run" class="level2">
+<h2 class="anchored" data-anchor-id="configure-mapping-run">3) Configure mapping run</h2>
+<p>Edit <code>configs/run.yaml</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">project</span><span class="kw">:</span><span class="at"> </span><span class="st">"P152"</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">path</span><span class="kw">:</span><span class="at"> </span><span class="st">"/fs/pool/pool-bcfngs/fastq_files/P152/conc.fastq/"</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">outdir</span><span class="kw">:</span><span class="at"> </span><span class="st">"/fs/pool/pool-bcfngs/mapping"</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">organism</span><span class="kw">:</span><span class="at"> </span><span class="st">"Drosophila_melanogaster"</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">threads</span><span class="kw">:</span><span class="at"> </span><span class="dv">16</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ram_bytes</span><span class="kw">:</span><span class="at"> </span><span class="dv">168632718037</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="run-mapping" class="level2">
+<h2 class="anchored" data-anchor-id="run-mapping">4) Run mapping</h2>
+<p>Dry-run:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping plan</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Execute:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Examples:</p>
+</section>
+</section>
+<section id="updated-upstream" class="level1">
+<h1>&lt;&lt;&lt;&lt;&lt;&lt;&lt; Updated upstream</h1>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># select mapper(s)</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run <span class="at">--mapper</span> star,bwa,bowtie2</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># single-end mode</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run <span class="at">--single-end</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># keep intermediary files</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run <span class="at">--keep-intermediary-files</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="run-mapping-on-slurm" class="level2">
+<h2 class="anchored" data-anchor-id="run-mapping-on-slurm">5) Run mapping on SLURM</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping plan <span class="at">--executor</span> slurm <span class="at">--jobs</span> 20</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run  <span class="at">--executor</span> slurm <span class="at">--jobs</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<blockquote class="blockquote">
+<blockquote class="blockquote">
+<blockquote class="blockquote">
+<blockquote class="blockquote">
+<blockquote class="blockquote">
+<blockquote class="blockquote">
+<blockquote class="blockquote">
+<p>Stashed changes</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
+</blockquote>
 
 
 </section>

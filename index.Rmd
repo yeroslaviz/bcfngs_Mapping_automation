@@ -27,9 +27,9 @@ This two steps should be done only once, when the workflow was set up. It only n
 
 **Mapping step** 
 
-3. Map the samples with the needed parameter.
-4. Index the fastA file to create a `chromSize` file for the `bigwig` conversion.
-5. Convert the `bam` files to `wig` and then to `bigwig`.
+3. Map the samples with STAR, bwa and/or bowtie2 (parameter-controlled).
+4. Index the BAM files (`samtools index`).
+5. Convert BAM files directly to bigWig using `deeptools bamCoverage`.
 
 points to consider:
 If this is only a preliminary analysis - 
@@ -41,13 +41,12 @@ The examples in this document are based on fictive data as well as a fictional p
 
 ## folder structure
 
-The workflow works from within the folder of the concatenated `fastq` files created after running the `bcl2fastq` script from the project management website (in the core facility here, this folder is called `conc.fastq`). 
+The workflow is controlled via `./scripts/bcfngs` and does not require changing directories for mapping.
 
-* A `config` file is saved under `/fs/pool/pool-bcfngs/scripts/config.yaml`, where all the mapping and genome parameters are saved. 
-* The genome indexing step will run only once and creates a folder named `genomes/` on the `/fs/pool/pool-bcfngs/`. Within this folder all the `fastA` and the `gtf` files are saved as well as a folder for each organism, containing the `star`-indexed files.
-* The mapping step expect to find within the working directory the files with the pattern *.conc.R1.fastq.gz*, as this is the current pattern given by the sequencing facility. (**If, in the future, this will be changed, the search pattern must be changed as well**).
-
-There are two separate files for single-ended and paired-ended data sets. The single-ended one expects to find only  *.conc.R1.fastq.gz*, while the paired-end data set must also contain *.conc.R2.fastq.gz* files. 
+* Mapping and run settings are saved in `configs/run.yaml`.
+* Genome/index settings are saved in `configs/genomes.yaml`.
+* The mapping step auto-detects FASTQ naming patterns (`*_R1.fastq.gz`, `*_R1_001.fastq.gz`, `*_L1_R1.fastq.gz`, `*.conc.R1.fastq.gz`).
+* A unified mapping workflow handles both single-end and paired-end modes via command line flags.
 
 ## Workflow
 
@@ -58,12 +57,9 @@ The workflow uses a combination of a `conda` environment with the `snakemake` to
 - [environment](environment.html)
 - [snakemake](snakemake.html)
 
-### wigToBigwig
+### bigWig conversion
 
-First the `bam` files are converted into `wig` files. This is done using the `bam2wig.py` script from the `rseqc`-software package.  
-In order for the automatic conversion of `wig` to `bigwig` files to work, one must have the tool `wigToBigwig` from the UCSC repository installed and **in the path**.
-As we are working with `conda`, the easiest place to put it is the the path of the environment. In this case, as we are working with `miniconda` the path would be under `/fs/home/USERNAME/miniconda3/envs/ENVNAME/bin/`.
-So far I have copied the file manually to the folder, but I have now added it to the `environment.yaml` file, which is ran during the environment creation step. This was not tested yet!.
+bigWig generation is performed with `deeptools bamCoverage` directly from BAM input.
 
 
 TO DO
@@ -87,6 +83,7 @@ as well as which mappers we need
 
 ### 04.03.2026
 
+<<<<<<< Updated upstream
 - Improved `./scripts/bcfngs genomes plan` preflight output:
   - Replaced the generic `OK` with a clear config validation message (`Config file is OK: ...`).
   - Replaced raw `HTTP/1.1 200 OK` header output from URL checks with readable per-organism status lines for FASTA and GTF URLs.
@@ -100,6 +97,17 @@ as well as which mappers we need
 - Fixed follow-up issues introduced during logging changes:
   - Updated `download_sources` log path to include `{src_rel}` so output and log wildcards match.
   - Escaped shell block braces in `shell:` commands (`{{ ... }}`) to avoid Snakemake formatting errors.
+=======
+- Added unified mapping workflow (`workflow/mapping.smk`) with STAR, bwa, and bowtie2 support.
+- Added wrapper commands:
+  - `./scripts/bcfngs mapping plan`
+  - `./scripts/bcfngs mapping run`
+- Added paired-end/single-end mode as CLI flags (paired-end default).
+- Replaced `bam2wig.py` conversion with `deeptools bamCoverage`.
+- Added FASTQ pattern auto-detection for multiple naming schemes.
+- Archived old STAR-only mapping Snakefiles under `archive/legacy/mapping/`.
+- Added dedicated mapping documentation page (`mapping.qmd`).
+>>>>>>> Stashed changes
 
 ### 20.02.2026
 

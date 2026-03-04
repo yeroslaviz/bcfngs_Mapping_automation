@@ -41,6 +41,8 @@ website:
         href: environment.html
       - text: "snakemake"
         href: snakemake.html
+      - text: "Mapping"
+        href: mapping.html
       - text: "Updating genomes"
         href: updating_genomes.html
     right:

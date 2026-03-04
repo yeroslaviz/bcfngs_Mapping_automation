@@ -153,34 +153,37 @@ Symlinks are updated automatically by the Snakemake workflow after successful in
 
 ## 5) Mapping (per project)
 
-Mapping is done with `STAR` for a specific genome in either paired-end or single-end mode.
+Mapping is now handled by a unified workflow (`workflow/mapping.smk`) and wrapper commands:
+
+- `./scripts/bcfngs mapping plan`
+- `./scripts/bcfngs mapping run`
+
+Supported mappers are `STAR`, `bwa`, and `bowtie2` (selectable by `--mapper`).
 
 ### Change parameters before mapping
 
-Adjust the project settings in [`configs/run.yaml`](configs/run.yaml) before running:
+Adjust [`configs/run.yaml`](configs/run.yaml):
 
 ```yaml
 project: "P152"
-path: "/fs/pool/pool-bcfngs/fastq_files/P146/P152_ChIP_Asx_5_6/conc.fastq"
+path: "/fs/pool/pool-bcfngs/fastq_files/P152/conc.fastq/"
+outdir: "/fs/pool/pool-bcfngs/mapping"
 organism: "Drosophila_melanogaster"
+threads: 16
 ```
 
 ### Run mapping (dry-run first)
 
-Change into the project folder containing the concatenated FASTQ files:
-
 ```bash
-cd /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/
+# default mapper and mode (STAR, paired-end)
+./scripts/bcfngs mapping plan
+./scripts/bcfngs mapping run
+
+# choose mapper(s)
+./scripts/bcfngs mapping run --mapper star,bwa,bowtie2
+
+# single-end mode
+./scripts/bcfngs mapping run --single-end
 ```
 
-Dry-run then execute:
-
-```bash
-# single-end
-snakemake -nps /path/to/repo/Star.MappingQuant.SingleEndFastq.Snakefile -j 50
-
-# paired-end
-snakemake -nps /path/to/repo/Star.MappingQuant.PairedEndFastq.Snakefile -j 50
-```
-
-Remove `-n` to run for real.
+For more usage details, see [`mapping.qmd`](mapping.qmd).

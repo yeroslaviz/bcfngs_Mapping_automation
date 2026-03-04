@@ -1,0 +1,135 @@
+---
+title: "Mapping Workflow"
+author: "AY"
+---
+
+This page documents the unified mapping workflow (`STAR`, `bwa`, `bowtie2`) driven via `./scripts/bcfngs`.
+
+## Overview
+
+- One workflow file: `workflow/mapping.smk`
+- One CLI entrypoint:
+  - `./scripts/bcfngs mapping plan`
+  - `./scripts/bcfngs mapping run`
+- Default mapper: `star`
+- Default read mode: paired-end
+- Default bigWig conversion: `bamCoverage --normalizeUsing CPM --binSize 10`
+
+Output layout:
+
+```text
+<outdir>/<project>/<organism>/<mapper>/<sample>.bam
+<outdir>/<project>/<organism>/<mapper>/<sample>.bam.bai
+<outdir>/<project>/<organism>/<mapper>/bigwig/<sample>.bw
+```
+
+For `STAR`, the workflow also keeps:
+
+- `<sample>.counts.tab`
+- `<sample>.SJ.out.tab`
+
+## Required configuration
+
+Update `configs/run.yaml`:
+
+```yaml
+project: "P000"
+path: "/fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/"
+outdir: "/fs/pool/pool-bcfngs/mapping"
+organism: "Caenorhabditis_elegans"
+threads: 16
+ram_bytes: 168632718037
+```
+
+`organism` must be a single organism key from `configs/genomes.yaml`.
+
+## FASTQ pattern auto-detection
+
+The workflow detects input naming in this fixed order:
+
+1. `*_R1.fastq.gz`
+2. `*_R1_001.fastq.gz`
+3. `*_L1_R1.fastq.gz`
+4. `*.conc.R1.fastq.gz`
+
+In paired-end mode, the corresponding `R2` file must exist.
+
+## Basic usage
+
+Dry-run first:
+
+```bash
+./scripts/bcfngs mapping plan
+```
+
+Run:
+
+```bash
+./scripts/bcfngs mapping run
+```
+
+Select mapper(s):
+
+```bash
+./scripts/bcfngs mapping plan --mapper star,bwa,bowtie2
+./scripts/bcfngs mapping run  --mapper bwa
+```
+
+Read mode:
+
+```bash
+./scripts/bcfngs mapping run --single-end
+./scripts/bcfngs mapping run --paired-end
+```
+
+Override config values for a single run:
+
+```bash
+./scripts/bcfngs mapping plan \
+  --project P152 \
+  --organism Drosophila_melanogaster \
+  --fastq-dir /fs/pool/pool-bcfngs/fastq_files/P152/conc.fastq \
+  --outdir /fs/pool/pool-bcfngs/mapping
+```
+
+Keep intermediary files (default is cleanup):
+
+```bash
+./scripts/bcfngs mapping run --keep-intermediary-files
+```
+
+Tune bigWig options:
+
+```bash
+./scripts/bcfngs mapping run --bw-normalization CPM --bw-bin-size 10
+```
+
+## SLURM execution
+
+Run mapping on SLURM:
+
+```bash
+./scripts/bcfngs mapping plan --executor slurm --jobs 20
+./scripts/bcfngs mapping run  --executor slurm --jobs 20
+```
+
+Defaults:
+
+- Partition: `p.hpcl8`
+- Mail user: `yeroslaviz@biochem.mpg.de`
+- Mail type: `ALL`
+- Time: `04:00:00`
+
+Key SLURM overrides:
+
+```bash
+./scripts/bcfngs mapping run \
+  --executor slurm \
+  --slurm-partition p.hpcl8 \
+  --slurm-time 04:00:00 \
+  --slurm-cpus-per-task 20 \
+  --slurm-star-mem-mb 64000 \
+  --slurm-aligner-mem-mb 32000
+```
+
+The wrapper sets per-rule resources so lightweight rules (indexing and bamCoverage) do not request mapper-level memory.

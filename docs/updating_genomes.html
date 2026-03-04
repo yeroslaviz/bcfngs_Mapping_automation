@@ -141,6 +141,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span class="menu-text">snakemake</span></a>
   </li>  
   <li class="nav-item">
+    <a class="nav-link" href="./mapping.html"> 
+<span class="menu-text">Mapping</span></a>
+  </li>  
+  <li class="nav-item">
     <a class="nav-link active" href="./updating_genomes.html" aria-current="page"> 
 <span class="menu-text">Updating genomes</span></a>
   </li>  
@@ -349,25 +353,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="mapping-per-project" class="level2">
 <h2 class="anchored" data-anchor-id="mapping-per-project">5) Mapping (per project)</h2>
-<p>Mapping is done with <code>STAR</code> for a specific genome in either paired-end or single-end mode.</p>
+<p>Mapping is now handled by a unified workflow (<code>workflow/mapping.smk</code>) and wrapper commands:</p>
+<ul>
+<li><code>./scripts/bcfngs mapping plan</code></li>
+<li><code>./scripts/bcfngs mapping run</code></li>
+</ul>
+<p>Supported mappers are <code>STAR</code>, <code>bwa</code>, and <code>bowtie2</code> (selectable by <code>--mapper</code>).</p>
 <section id="change-parameters-before-mapping" class="level3">
 <h3 class="anchored" data-anchor-id="change-parameters-before-mapping">Change parameters before mapping</h3>
-<p>Adjust the project settings in <a href="configs/run.yaml"><code>configs/run.yaml</code></a> before running:</p>
+<p>Adjust <a href="configs/run.yaml"><code>configs/run.yaml</code></a>:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">project</span><span class="kw">:</span><span class="at"> </span><span class="st">"P152"</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">path</span><span class="kw">:</span><span class="at"> </span><span class="st">"/fs/pool/pool-bcfngs/fastq_files/P146/P152_ChIP_Asx_5_6/conc.fastq"</span></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="fu">organism</span><span class="kw">:</span><span class="at"> </span><span class="st">"Drosophila_melanogaster"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">path</span><span class="kw">:</span><span class="at"> </span><span class="st">"/fs/pool/pool-bcfngs/fastq_files/P152/conc.fastq/"</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="fu">outdir</span><span class="kw">:</span><span class="at"> </span><span class="st">"/fs/pool/pool-bcfngs/mapping"</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="fu">organism</span><span class="kw">:</span><span class="at"> </span><span class="st">"Drosophila_melanogaster"</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="fu">threads</span><span class="kw">:</span><span class="at"> </span><span class="dv">16</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="run-mapping-dry-run-first" class="level3">
 <h3 class="anchored" data-anchor-id="run-mapping-dry-run-first">Run mapping (dry-run first)</h3>
-<p>Change into the project folder containing the concatenated FASTQ files:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Dry-run then execute:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># single-end</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-nps</span> /path/to/repo/Star.MappingQuant.SingleEndFastq.Snakefile <span class="at">-j</span> 50</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co"># paired-end</span></span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-nps</span> /path/to/repo/Star.MappingQuant.PairedEndFastq.Snakefile <span class="at">-j</span> 50</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Remove <code>-n</code> to run for real.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># default mapper and mode (STAR, paired-end)</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping plan</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="co"># choose mapper(s)</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run <span class="at">--mapper</span> star,bwa,bowtie2</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="co"># single-end mode</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run <span class="at">--single-end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>For more usage details, see <a href="./mapping.html"><code>mapping.qmd</code></a>.</p>
 
 
 </section>

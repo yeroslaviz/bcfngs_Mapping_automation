@@ -9,31 +9,36 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-This part is still work in progress.
-
 This repository uses `snakemake` for:
 
-1. **Genome download + indexing** (STAR, bwa, bowtie2) using *versioned* index directories and stable symlinks.
-2. **Mapping** (currently STAR) using per-project run settings.
+1. **Genome download + indexing** (STAR, bwa, bowtie2) with versioned index folders and stable symlinks.
+2. **Mapping** using STAR, bwa, and/or bowtie2 with unified paired/single-end support.
 
+<<<<<<< Updated upstream
 For non-experts, prefer the single wrapper command `./scripts/bcfngs` (plan checks + build execution, local or SLURM).
+=======
+Use the wrapper command `./scripts/bcfngs`.
+>>>>>>> Stashed changes
 
 ## Quickstart
 
 ```bash
-# 1) create/update env (only once, then as needed)
+# environment
 ./scripts/bcfngs env create
 ./scripts/bcfngs env check
 
+<<<<<<< Updated upstream
 # 2) (optional) check if a newer Ensembl release exists
 ./scripts/bcfngs genomes check-updates
 
 # 3) (optional) preflight checks + snakemake lint + dry-run
+=======
+# genomes
+>>>>>>> Stashed changes
 ./scripts/bcfngs genomes plan
-
-# 4) build genomes + indices (real run)
 ./scripts/bcfngs genomes build --cores 20
 
+<<<<<<< Updated upstream
 # 4b) force preflight checks + build in one command
 ./scripts/bcfngs genomes build --cores 20 --no-skip-plan
 
@@ -53,81 +58,105 @@ For non-experts, prefer the single wrapper command `./scripts/bcfngs` (plan chec
 # --time 04:00:00 (240 min)
 # --cpus-per-task 20
 # --mem-per-cpu 20G
+=======
+# mapping
+./scripts/bcfngs mapping plan
+./scripts/bcfngs mapping run
+>>>>>>> Stashed changes
 ```
 
 ## Configuration files
 
-The workflow configuration is split into two files:
+1. Genome configuration: [`configs/genomes.yaml`](configs/genomes.yaml){target="_blank"}
+2. Per-run mapping configuration: [`configs/run.yaml`](configs/run.yaml){target="_blank"}
 
-1. Genome and indexing configuration: [`configs/genomes.yaml`](configs/genomes.yaml){target="_blank"}
-   - Organism identifiers are **scientific names** (e.g. `Homo_sapiens`, `Mus_musculus`).
-   - Genome sources are pinned to a specific Ensembl release (default: 116).
-   - Index output directories are versioned via `index_versions`.
+## Genome workflow
 
-2. Per-project run configuration (mapping): [`configs/run.yaml`](configs/run.yaml){target="_blank"}
-   - Project ID, input `path`, organism, threads, etc.
+Workflow file: [`workflow/genomes.smk`](workflow/genomes.smk){target="_blank"}
 
-### Notes
-
-- Genome indexing uses `workflow/genomes.smk` (not the legacy `getGenome_IndexGenome.Snakefile`).
-- Mapping uses the STAR mapping Snakefiles and expects `/fs/pool/pool-bcfngs/genomes/<Organism>/starIndex` to exist (symlink to the versioned index).
-
-## How-to (cookbook)
-
-### Build all genomes + indices
+Examples:
 
 ```bash
+<<<<<<< Updated upstream
 ./scripts/bcfngs genomes build --cores 20
 
 # optional explicit preflight (or use --no-skip-plan on build)
 ./scripts/bcfngs genomes plan
 ```
+=======
+# all organisms
+./scripts/bcfngs genomes build --cores 20
+>>>>>>> Stashed changes
 
-### Build only a subset (faster)
-
-```bash
+# subset
 ./scripts/bcfngs genomes build --cores 20 --organism Homo_sapiens,Mus_musculus
 ```
 
-### Ensembl has a newer release (bump pinned release)
+## Mapping workflow
 
-1. Check:
+Workflow file: [`workflow/mapping.smk`](workflow/mapping.smk){target="_blank"}
+
+Mapping supports:
+
+- `--mapper star,bwa,bowtie2` (default: `star`)
+- `--paired-end` (default) / `--single-end`
+- `samtools index`
+- `deeptools` `bamCoverage` for bigWig
+
+The old STAR-only Snakefiles were archived under `archive/legacy/mapping/`.
+
+### Dry-run and execution
 
 ```bash
-./scripts/bcfngs genomes check-updates
+# default (paired-end, STAR)
+./scripts/bcfngs mapping plan
+./scripts/bcfngs mapping run
+
+# one mapper
+./scripts/bcfngs mapping run --mapper bwa
+
+# all mappers
+./scripts/bcfngs mapping run --mapper star,bwa,bowtie2
 ```
 
-2. If an update is available, edit `configs/genomes.yaml` and bump:
-
-- `releases.ensembl: 116` → `117` (etc.)
-
-3. Then:
+### Override config values for one run
 
 ```bash
+<<<<<<< Updated upstream
 ./scripts/bcfngs genomes build --cores 20 --no-skip-plan
+=======
+./scripts/bcfngs mapping plan \
+  --project P152 \
+  --organism Drosophila_melanogaster \
+  --fastq-dir /fs/pool/pool-bcfngs/fastq_files/P152/conc.fastq \
+  --outdir /fs/pool/pool-bcfngs/mapping
+>>>>>>> Stashed changes
 ```
 
-### New STAR/bwa/bowtie2 version (rebuild indices)
-
-1. Update tools:
+### SLURM mode
 
 ```bash
-./scripts/bcfngs env update
-./scripts/bcfngs env check
+./scripts/bcfngs mapping plan --executor slurm --jobs 20
+./scripts/bcfngs mapping run  --executor slurm --jobs 20
 ```
 
-2. Update `configs/genomes.yaml`:
+Default SLURM settings:
 
-- set `index_versions.star`, `index_versions.bwa`, `index_versions.bowtie2` (these strings are used in output folder names)
+- partition `p.hpcl8`
+- mail user `yeroslaviz@biochem.mpg.de`
+- mail type `ALL`
+- time `04:00:00`
 
-3. Rebuild:
+### FASTQ pattern auto-detection
 
-```bash
-./scripts/bcfngs genomes build --cores 20
-```
+The workflow checks these patterns in order:
 
-### Use HPC modules for aligners (fallback)
+1. `*_R1.fastq.gz`
+2. `*_R1_001.fastq.gz`
+3. `*_L1_R1.fastq.gz`
+4. `*.conc.R1.fastq.gz`
 
+<<<<<<< Updated upstream
 This still uses the micromamba env for python/snakemake, but loads vendor tools via modules:
 
 ```bash
@@ -167,3 +196,6 @@ snakemake -nps /path/to/repo/Star.MappingQuant.PairedEndFastq.Snakefile -j 50
 * `-p` -  Print the commands to be execute.
 * `-s` - the name of the snakeake file to be executed. 
 * `-j` - #cores. How many cores should be used in the run. 
+=======
+In paired-end mode, matching R2 files are required.
+>>>>>>> Stashed changes
