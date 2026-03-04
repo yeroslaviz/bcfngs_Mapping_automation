@@ -151,6 +151,23 @@ def _normalize_ensemblgenomes_url(url: str) -> str:
     )
 
 
+def _print_genomes_build_versions(cfg: dict) -> None:
+    releases = cfg.get("releases", {})
+    ensembl_rel = releases.get("ensembl", "unknown")
+    print(f"Genome build release: Ensembl {ensembl_rel}")
+
+    eg_rels = releases.get("ensemblgenomes", {})
+    if eg_rels:
+        eg_msg = ", ".join(f"{division} {rel}" for division, rel in sorted(eg_rels.items()))
+        print(f"Genome build release: EnsemblGenomes {eg_msg}")
+
+    idx = cfg.get("index_versions", {})
+    star_ver = idx.get("star", "unknown")
+    bwa_ver = idx.get("bwa", "unknown")
+    bowtie2_ver = idx.get("bowtie2", "unknown")
+    print(f"Tool versions: STAR {star_ver}, bwa {bwa_ver}, bowtie2 {bowtie2_ver}")
+
+
 def cmd_genomes_check_updates(ctx: RunContext, args: argparse.Namespace) -> None:
     genomes_cfg = REPO_ROOT / "configs" / "genomes.yaml"
     cfg = _load_yaml(ctx, genomes_cfg)
@@ -199,6 +216,7 @@ def _genomes_url_checks_from_cfg(cfg: dict) -> list[tuple[str, str, str]]:
 def cmd_genomes_plan(ctx: RunContext, args: argparse.Namespace) -> None:
     genomes_cfg_path = REPO_ROOT / "configs" / "genomes.yaml"
     cfg = _load_yaml(ctx, genomes_cfg_path, announce=True)
+    _print_genomes_build_versions(cfg)
 
     genomes_root = Path(cfg["genomes_root"])
     _check_write_permission(genomes_root)
