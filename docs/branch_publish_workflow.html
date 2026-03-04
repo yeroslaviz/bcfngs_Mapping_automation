@@ -180,14 +180,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#branch-purpose" id="toc-branch-purpose" class="nav-link active" data-scroll-target="#branch-purpose">Branch purpose</a></li>
-  <li><a href="#standard-work-cycle" id="toc-standard-work-cycle" class="nav-link" data-scroll-target="#standard-work-cycle">Standard work cycle</a></li>
-  <li><a href="#when-to-publish-to-gh-pages" id="toc-when-to-publish-to-gh-pages" class="nav-link" data-scroll-target="#when-to-publish-to-gh-pages">When to publish to gh-pages</a></li>
-  <li><a href="#publish-flow-docs-changed" id="toc-publish-flow-docs-changed" class="nav-link" data-scroll-target="#publish-flow-docs-changed">Publish flow (docs changed)</a></li>
-  <li><a href="#example-changed-docs-and-config-in-one-work-session" id="toc-example-changed-docs-and-config-in-one-work-session" class="nav-link" data-scroll-target="#example-changed-docs-and-config-in-one-work-session">Example: changed docs and config in one work session</a></li>
-  <li><a href="#notes" id="toc-notes" class="nav-link" data-scroll-target="#notes">Notes</a></li>
-  <li><a href="#stash-publish-path-and-recurring-conflict-fix" id="toc-stash-publish-path-and-recurring-conflict-fix" class="nav-link" data-scroll-target="#stash-publish-path-and-recurring-conflict-fix">Stash publish path (and recurring conflict fix)</a></li>
-  <li><a href="#what-to-do" id="toc-what-to-do" class="nav-link" data-scroll-target="#what-to-do">what to do:</a></li>
+  <li><a href="#strict-branch-split" id="toc-strict-branch-split" class="nav-link active" data-scroll-target="#strict-branch-split">Strict branch split</a></li>
+  <li><a href="#allowed-files-by-branch" id="toc-allowed-files-by-branch" class="nav-link" data-scroll-target="#allowed-files-by-branch">Allowed files by branch</a></li>
+  <li><a href="#daily-code-workflow-strict-split" id="toc-daily-code-workflow-strict-split" class="nav-link" data-scroll-target="#daily-code-workflow-strict-split">Daily code workflow (strict split)</a></li>
+  <li><a href="#daily-docs-publish-workflow-strict-split" id="toc-daily-docs-publish-workflow-strict-split" class="nav-link" data-scroll-target="#daily-docs-publish-workflow-strict-split">Daily docs publish workflow (strict split)</a></li>
+  <li><a href="#if-docs-were-edited-by-mistake-on-codexhpc-test" id="toc-if-docs-were-edited-by-mistake-on-codexhpc-test" class="nav-link" data-scroll-target="#if-docs-were-edited-by-mistake-on-codexhpc-test">If docs were edited by mistake on codex/hpc-test</a></li>
+  <li><a href="#conflict-note-docssearch.json" id="toc-conflict-note-docssearch.json" class="nav-link" data-scroll-target="#conflict-note-docssearch.json">Conflict note (<code>docs/search.json</code>)</a></li>
+  <li><a href="#non-negotiable-rule" id="toc-non-negotiable-rule" class="nav-link" data-scroll-target="#non-negotiable-rule">Non-negotiable rule</a></li>
   </ul>
 </nav>
     </div>
@@ -213,132 +212,80 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="branch-purpose" class="level2">
-<h2 class="anchored" data-anchor-id="branch-purpose">Branch purpose</h2>
+<section id="strict-branch-split" class="level2">
+<h2 class="anchored" data-anchor-id="strict-branch-split">Strict branch split</h2>
 <ul>
-<li><code>codex/hpc-test</code>: working branch for script, config, and documentation edits.</li>
-<li><code>gh-pages</code>: publishing branch for website/docs output only.</li>
+<li><code>codex/hpc-test</code>: code and config only.</li>
+<li><code>gh-pages</code>: docs source + rendered site output only.</li>
 </ul>
 </section>
-<section id="standard-work-cycle" class="level2">
-<h2 class="anchored" data-anchor-id="standard-work-cycle">Standard work cycle</h2>
-<ol type="1">
-<li>Switch to work branch:</li>
-</ol>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> switch codex/hpc-test</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<ol start="2" type="1">
-<li>Make changes (code/docs/config as needed).</li>
-<li>Stage and commit:</li>
-</ol>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add <span class="op">&lt;</span>files<span class="op">&gt;</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">"short message"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<ol start="4" type="1">
-<li>Push work branch:</li>
-</ol>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> push origin codex/hpc-test</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-<section id="when-to-publish-to-gh-pages" class="level2">
-<h2 class="anchored" data-anchor-id="when-to-publish-to-gh-pages">When to publish to gh-pages</h2>
-<p>Publish only when website-visible docs changed.</p>
-<p>Examples that should be published: - <code>.qmd</code>, <code>.Rmd</code>, <code>_quarto.yml</code> - content that should appear on the docs site</p>
-<p>Examples that usually should not be published directly: - workflow scripts - pipeline configs - helper CLI code</p>
-</section>
-<section id="publish-flow-docs-changed" class="level2">
-<h2 class="anchored" data-anchor-id="publish-flow-docs-changed">Publish flow (docs changed)</h2>
-<ol type="1">
-<li>Update publishing branch:</li>
-</ol>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> switch gh-pages</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> pull origin gh-pages</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<ol start="2" type="1">
-<li>Bring in the docs commit(s):</li>
-</ol>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> cherry-pick <span class="op">&lt;</span>commit_sha<span class="op">&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<ol start="3" type="1">
-<li>Re-render site:</li>
-</ol>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> render</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<ol start="4" type="1">
-<li>Commit and push rendered site:</li>
-</ol>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add <span class="at">-A</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">"docs: publish updates"</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> push origin gh-pages</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<ol start="5" type="1">
-<li>Switch back to work branch:</li>
-</ol>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> switch codex/hpc-test</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-<section id="example-changed-docs-and-config-in-one-work-session" class="level2">
-<h2 class="anchored" data-anchor-id="example-changed-docs-and-config-in-one-work-session">Example: changed docs and config in one work session</h2>
-<p>Case: - Docs changed: <code>environment.qmd</code> - Config changed: <code>config.v5.yaml</code></p>
-<p>Recommended sequence:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># On work branch</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> switch codex/hpc-test</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Commit config change first</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add config.v5.yaml</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">"config: update v5 settings"</span></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Commit docs change separately</span></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add environment.qmd</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">"docs: update environment instructions"</span></span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Push both commits to work branch</span></span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> push origin codex/hpc-test</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Publish only docs commit to gh-pages</span></span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> switch gh-pages</span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> pull origin gh-pages</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> cherry-pick <span class="op">&lt;</span>docs_commit_sha<span class="op">&gt;</span></span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> render</span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add <span class="at">-A</span></span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">"docs: publish environment update"</span></span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> push origin gh-pages</span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Continue work</span></span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> switch codex/hpc-test</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-<section id="notes" class="level2">
-<h2 class="anchored" data-anchor-id="notes">Notes</h2>
+<section id="allowed-files-by-branch" class="level2">
+<h2 class="anchored" data-anchor-id="allowed-files-by-branch">Allowed files by branch</h2>
 <ul>
-<li>Do not use angle brackets around commit SHA in shell commands.
-<ul>
-<li>Correct: <code>git cherry-pick b949dd1</code></li>
-<li>Incorrect: <code>git cherry-pick &lt;b949dd1&gt;</code></li>
-</ul></li>
-<li>If one commit mixes code and docs, split it first or cherry-pick carefully before publishing.</li>
+<li><p><code>codex/hpc-test</code> examples:</p></li>
+<li><p><code>scripts/</code></p></li>
+<li><p><code>workflow/</code></p></li>
+<li><p><code>configs/</code></p></li>
+<li><p><code>env/</code></p></li>
+<li><p>Snakefiles and helper code</p></li>
+<li><p><code>gh-pages</code> examples:</p></li>
+<li><p><code>*.qmd</code>, <code>*.Rmd</code>, <code>_quarto.yml</code></p></li>
+<li><p><code>docs/</code> rendered output</p></li>
 </ul>
 </section>
-<section id="stash-publish-path-and-recurring-conflict-fix" class="level2">
-<h2 class="anchored" data-anchor-id="stash-publish-path-and-recurring-conflict-fix">Stash publish path (and recurring conflict fix)</h2>
-<p>Use this when docs output is already in your working tree on <code>codex/hpc-test</code> and you want to publish to <code>gh-pages</code>.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># On codex/hpc-test</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> stash push <span class="at">-u</span> <span class="at">-m</span> <span class="st">"publish-docs"</span> <span class="at">--</span> docs</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Switch and apply on gh-pages</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> switch gh-pages</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> stash apply stash@{0}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>If <code>docs/search.json</code> conflicts after <code>stash apply</code>:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout <span class="at">--theirs</span> docs/search.json</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add docs/search.json</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Why <code>--theirs</code> here: - During <code>stash apply</code>, <code>ours</code> = current branch (<code>gh-pages</code>), <code>theirs</code> = stashed content (the docs you prepared on <code>codex/hpc-test</code>). - For publish updates, you usually want the stashed docs version.</p>
-<p>If stash restore reports “already exists, no checkout” for untracked docs files, just stage them explicitly if needed:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add docs</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Then finish publish:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">"docs: refresh generated site files"</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> push origin gh-pages</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> stash drop stash@{0}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Final cleanup after switching back to <code>codex/hpc-test</code>:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> switch codex/hpc-test</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> restore <span class="at">--</span> docs</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clean <span class="at">-fd</span> docs/site_libs/bootstrap docs/site_libs/quarto-html</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> status <span class="at">--short</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="daily-code-workflow-strict-split" class="level2">
+<h2 class="anchored" data-anchor-id="daily-code-workflow-strict-split">Daily code workflow (strict split)</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> switch codex/hpc-test</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># edit code/config only</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add <span class="op">&lt;</span>code_or_config_files<span class="op">&gt;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">"code: ..."</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> push origin codex/hpc-test</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="what-to-do" class="level1">
-<h1>what to do:</h1>
-<p>Use this rule going forward:</p>
-<p>Source changes (<code>environment.qmd</code>, <code>config.v5.yaml</code>, scripts): commit/push to <code>codex/hpc-test</code>. Rendered site output (<code>docs/*</code>): push to <code>gh-pages</code> only, and only for pages you want published. Local-only note (b<code>ranch_publish_workflow.qmd</code>and its HTML): push nowhere.</p>
+<section id="daily-docs-publish-workflow-strict-split" class="level2">
+<h2 class="anchored" data-anchor-id="daily-docs-publish-workflow-strict-split">Daily docs publish workflow (strict split)</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> switch gh-pages</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> pull origin gh-pages</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># edit docs source only</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> render</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add <span class="pp">*</span>.qmd <span class="pp">*</span>.Rmd _quarto.yml docs/</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">"docs: publish site update"</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> push origin gh-pages</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="if-docs-were-edited-by-mistake-on-codexhpc-test" class="level2">
+<h2 class="anchored" data-anchor-id="if-docs-were-edited-by-mistake-on-codexhpc-test">If docs were edited by mistake on codex/hpc-test</h2>
+<p>Move docs work to <code>gh-pages</code> without committing docs on <code>codex/hpc-test</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1) While on codex/hpc-test, stash docs-related files only</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> stash push <span class="at">-u</span> <span class="at">-m</span> <span class="st">"move-docs-to-gh-pages"</span> <span class="at">--</span> <span class="dt">\</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  index.Rmd conda.Rmd HOWTO.Rmd environment.qmd snakemake.Rmd updating_genomes.qmd <span class="dt">\</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  _quarto.yml docs/</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 2) Switch to docs branch and apply</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> switch gh-pages</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> pull origin gh-pages</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> stash pop</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 3) Publish</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> render</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add <span class="pp">*</span>.qmd <span class="pp">*</span>.Rmd _quarto.yml docs/</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">"docs: publish site update"</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> push origin gh-pages</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co"># 4) Return to code branch</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> switch codex/hpc-test</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="conflict-note-docssearch.json" class="level2">
+<h2 class="anchored" data-anchor-id="conflict-note-docssearch.json">Conflict note (<code>docs/search.json</code>)</h2>
+<p>If stash apply/pop conflicts on <code>docs/search.json</code> while on <code>gh-pages</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout <span class="at">--theirs</span> docs/search.json</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> add docs/search.json</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Then continue staging/commit normally.</p>
+</section>
+<section id="non-negotiable-rule" class="level2">
+<h2 class="anchored" data-anchor-id="non-negotiable-rule">Non-negotiable rule</h2>
+<ul>
+<li>Never commit <code>docs/</code> output to <code>codex/hpc-test</code>.</li>
+<li>Never commit code/config pipeline changes to <code>gh-pages</code>.</li>
+</ul>
 
 
 </section>

@@ -130,56 +130,56 @@
     "href": "branch_publish_workflow.html",
     "title": "Branch and Publish Workflow (Local Notes)",
     "section": "",
-    "text": "codex/hpc-test: working branch for script, config, and documentation edits.\ngh-pages: publishing branch for website/docs output only."
+    "text": "codex/hpc-test: code and config only.\ngh-pages: docs source + rendered site output only."
   },
   {
-    "objectID": "branch_publish_workflow.html#branch-purpose",
-    "href": "branch_publish_workflow.html#branch-purpose",
+    "objectID": "branch_publish_workflow.html#strict-branch-split",
+    "href": "branch_publish_workflow.html#strict-branch-split",
     "title": "Branch and Publish Workflow (Local Notes)",
     "section": "",
-    "text": "codex/hpc-test: working branch for script, config, and documentation edits.\ngh-pages: publishing branch for website/docs output only."
+    "text": "codex/hpc-test: code and config only.\ngh-pages: docs source + rendered site output only."
   },
   {
-    "objectID": "branch_publish_workflow.html#standard-work-cycle",
-    "href": "branch_publish_workflow.html#standard-work-cycle",
+    "objectID": "branch_publish_workflow.html#allowed-files-by-branch",
+    "href": "branch_publish_workflow.html#allowed-files-by-branch",
     "title": "Branch and Publish Workflow (Local Notes)",
-    "section": "Standard work cycle",
-    "text": "Standard work cycle\n\nSwitch to work branch:\n\ngit switch codex/hpc-test\n\nMake changes (code/docs/config as needed).\nStage and commit:\n\ngit add &lt;files&gt;\ngit commit -m \"short message\"\n\nPush work branch:\n\ngit push origin codex/hpc-test"
+    "section": "Allowed files by branch",
+    "text": "Allowed files by branch\n\ncodex/hpc-test examples:\nscripts/\nworkflow/\nconfigs/\nenv/\nSnakefiles and helper code\ngh-pages examples:\n*.qmd, *.Rmd, _quarto.yml\ndocs/ rendered output"
   },
   {
-    "objectID": "branch_publish_workflow.html#when-to-publish-to-gh-pages",
-    "href": "branch_publish_workflow.html#when-to-publish-to-gh-pages",
+    "objectID": "branch_publish_workflow.html#daily-code-workflow-strict-split",
+    "href": "branch_publish_workflow.html#daily-code-workflow-strict-split",
     "title": "Branch and Publish Workflow (Local Notes)",
-    "section": "When to publish to gh-pages",
-    "text": "When to publish to gh-pages\nPublish only when website-visible docs changed.\nExamples that should be published: - .qmd, .Rmd, _quarto.yml - content that should appear on the docs site\nExamples that usually should not be published directly: - workflow scripts - pipeline configs - helper CLI code"
+    "section": "Daily code workflow (strict split)",
+    "text": "Daily code workflow (strict split)\ngit switch codex/hpc-test\n# edit code/config only\ngit add &lt;code_or_config_files&gt;\ngit commit -m \"code: ...\"\ngit push origin codex/hpc-test"
   },
   {
-    "objectID": "branch_publish_workflow.html#publish-flow-docs-changed",
-    "href": "branch_publish_workflow.html#publish-flow-docs-changed",
+    "objectID": "branch_publish_workflow.html#daily-docs-publish-workflow-strict-split",
+    "href": "branch_publish_workflow.html#daily-docs-publish-workflow-strict-split",
     "title": "Branch and Publish Workflow (Local Notes)",
-    "section": "Publish flow (docs changed)",
-    "text": "Publish flow (docs changed)\n\nUpdate publishing branch:\n\ngit switch gh-pages\ngit pull origin gh-pages\n\nBring in the docs commit(s):\n\ngit cherry-pick &lt;commit_sha&gt;\n\nRe-render site:\n\nquarto render\n\nCommit and push rendered site:\n\ngit add -A\ngit commit -m \"docs: publish updates\"\ngit push origin gh-pages\n\nSwitch back to work branch:\n\ngit switch codex/hpc-test"
+    "section": "Daily docs publish workflow (strict split)",
+    "text": "Daily docs publish workflow (strict split)\ngit switch gh-pages\ngit pull origin gh-pages\n# edit docs source only\nquarto render\ngit add *.qmd *.Rmd _quarto.yml docs/\ngit commit -m \"docs: publish site update\"\ngit push origin gh-pages"
   },
   {
-    "objectID": "branch_publish_workflow.html#example-changed-docs-and-config-in-one-work-session",
-    "href": "branch_publish_workflow.html#example-changed-docs-and-config-in-one-work-session",
+    "objectID": "branch_publish_workflow.html#if-docs-were-edited-by-mistake-on-codexhpc-test",
+    "href": "branch_publish_workflow.html#if-docs-were-edited-by-mistake-on-codexhpc-test",
     "title": "Branch and Publish Workflow (Local Notes)",
-    "section": "Example: changed docs and config in one work session",
-    "text": "Example: changed docs and config in one work session\nCase: - Docs changed: environment.qmd - Config changed: config.v5.yaml\nRecommended sequence:\n# On work branch\ngit switch codex/hpc-test\n\n# Commit config change first\ngit add config.v5.yaml\ngit commit -m \"config: update v5 settings\"\n\n# Commit docs change separately\ngit add environment.qmd\ngit commit -m \"docs: update environment instructions\"\n\n# Push both commits to work branch\ngit push origin codex/hpc-test\n\n# Publish only docs commit to gh-pages\ngit switch gh-pages\ngit pull origin gh-pages\ngit cherry-pick &lt;docs_commit_sha&gt;\nquarto render\ngit add -A\ngit commit -m \"docs: publish environment update\"\ngit push origin gh-pages\n\n# Continue work\ngit switch codex/hpc-test"
+    "section": "If docs were edited by mistake on codex/hpc-test",
+    "text": "If docs were edited by mistake on codex/hpc-test\nMove docs work to gh-pages without committing docs on codex/hpc-test.\n# 1) While on codex/hpc-test, stash docs-related files only\ngit stash push -u -m \"move-docs-to-gh-pages\" -- \\\n  index.Rmd conda.Rmd HOWTO.Rmd environment.qmd snakemake.Rmd updating_genomes.qmd \\\n  _quarto.yml docs/\n\n# 2) Switch to docs branch and apply\ngit switch gh-pages\ngit pull origin gh-pages\ngit stash pop\n\n# 3) Publish\nquarto render\ngit add *.qmd *.Rmd _quarto.yml docs/\ngit commit -m \"docs: publish site update\"\ngit push origin gh-pages\n\n# 4) Return to code branch\ngit switch codex/hpc-test"
   },
   {
-    "objectID": "branch_publish_workflow.html#notes",
-    "href": "branch_publish_workflow.html#notes",
+    "objectID": "branch_publish_workflow.html#conflict-note-docssearch.json",
+    "href": "branch_publish_workflow.html#conflict-note-docssearch.json",
     "title": "Branch and Publish Workflow (Local Notes)",
-    "section": "Notes",
-    "text": "Notes\n\nDo not use angle brackets around commit SHA in shell commands.\n\nCorrect: git cherry-pick b949dd1\nIncorrect: git cherry-pick &lt;b949dd1&gt;\n\nIf one commit mixes code and docs, split it first or cherry-pick carefully before publishing."
+    "section": "Conflict note (docs/search.json)",
+    "text": "Conflict note (docs/search.json)\nIf stash apply/pop conflicts on docs/search.json while on gh-pages:\ngit checkout --theirs docs/search.json\ngit add docs/search.json\nThen continue staging/commit normally."
   },
   {
-    "objectID": "branch_publish_workflow.html#stash-publish-path-and-recurring-conflict-fix",
-    "href": "branch_publish_workflow.html#stash-publish-path-and-recurring-conflict-fix",
+    "objectID": "branch_publish_workflow.html#non-negotiable-rule",
+    "href": "branch_publish_workflow.html#non-negotiable-rule",
     "title": "Branch and Publish Workflow (Local Notes)",
-    "section": "Stash publish path (and recurring conflict fix)",
-    "text": "Stash publish path (and recurring conflict fix)\nUse this when docs output is already in your working tree on codex/hpc-test and you want to publish to gh-pages.\n# On codex/hpc-test\ngit stash push -u -m \"publish-docs\" -- docs\n\n# Switch and apply on gh-pages\ngit switch gh-pages\ngit stash apply stash@{0}\nIf docs/search.json conflicts after stash apply:\ngit checkout --theirs docs/search.json\ngit add docs/search.json\nWhy --theirs here: - During stash apply, ours = current branch (gh-pages), theirs = stashed content (the docs you prepared on codex/hpc-test). - For publish updates, you usually want the stashed docs version.\nIf stash restore reports “already exists, no checkout” for untracked docs files, just stage them explicitly if needed:\ngit add docs\nThen finish publish:\ngit commit -m \"docs: refresh generated site files\"\ngit push origin gh-pages\ngit stash drop stash@{0}\nFinal cleanup after switching back to codex/hpc-test:\ngit switch codex/hpc-test\ngit restore -- docs\ngit clean -fd docs/site_libs/bootstrap docs/site_libs/quarto-html\ngit status --short"
+    "section": "Non-negotiable rule",
+    "text": "Non-negotiable rule\n\nNever commit docs/ output to codex/hpc-test.\nNever commit code/config pipeline changes to gh-pages."
   },
   {
     "objectID": "index.html",
