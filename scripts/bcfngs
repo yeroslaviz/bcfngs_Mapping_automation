@@ -243,7 +243,10 @@ def cmd_genomes_plan(ctx: RunContext, args: argparse.Namespace) -> None:
 
 
 def cmd_genomes_build(ctx: RunContext, args: argparse.Namespace) -> None:
-    cmd_genomes_plan(ctx, args)
+    if args.no_skip_plan:
+        cmd_genomes_plan(ctx, args)
+    else:
+        print("Skipping genomes plan checks by default; running build directly.")
     genomes_cfg_path = REPO_ROOT / "configs" / "genomes.yaml"
     smk = REPO_ROOT / "workflow" / "genomes.smk"
 
@@ -287,6 +290,12 @@ def main() -> None:
     build_p = genomes_sub.add_parser("build")
     build_p.add_argument("--cores", type=int, default=16)
     build_p.add_argument("--organism", help="Comma-separated subset of organism keys (e.g. Homo_sapiens,Mus_musculus)")
+    build_p.add_argument(
+        "-no-skip-plan",
+        "--no-skip-plan",
+        action="store_true",
+        help="Run plan preflight checks before build (config validation, URL checks, lint, dry-run).",
+    )
 
     args = parser.parse_args()
     ctx = RunContext(profile=args.profile, env_prefix=Path(args.env_prefix))
