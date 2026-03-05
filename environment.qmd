@@ -3,8 +3,7 @@ title: "Environment (micromamba)"
 ---
 
 This workflow uses **micromamba** to create a reproducible environment with all required tools (Snakemake + aligners + utilities).
-Default environment path used for this project:
-`/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes`
+Default environment path used for this project: `~/miniconda3/envs/update_genomes`
 
 ## Installing micromamba
 
@@ -20,13 +19,13 @@ micromamba can be installed from the [github repository](https://github.com/mamb
 From the repo root:
 
 ```bash
-micromamba create -y -p /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes -f env/environment.yml
+micromamba create -y -p ~/miniconda3/envs/update_genomes -f env/environment.yml
 ```
 
 To run commands inside the environment without activating it:
 
 ```bash
-micromamba run -p /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes snakemake --version
+micromamba run -p ~/miniconda3/envs/update_genomes snakemake --version
 ```
 
 ## Update the environment
