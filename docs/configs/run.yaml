@@ -1,13 +1,20 @@
-# Per-project run configuration (STAR mapping). Adjust these for each run.
+# Per-project mapping configuration.
+# Values here can be overridden per run via ./scripts/bcfngs mapping ... flags.
+
+# Project identifier used in output layout: <outdir>/<project>/<organism>/...
 project: "P000"
+
+# Input FASTQ directory.
 path: "/fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/"
+
+# Output root directory.
+outdir: "/fs/pool/pool-bcfngs/mapping"
 
 # Canonical organism identifier (must match a key in configs/genomes.yaml:organisms)
 organism: "Caenorhabditis_elegans"
 
-gzipped: true
+# Mapping threads per job.
 threads: 16
 
-# STAR runtime / sorting RAM (bytes)
+# STAR runtime / sorting RAM (bytes).
 ram_bytes: 168632718037
-
