@@ -130,21 +130,32 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="nav-link active" href="./index.html" aria-current="page"> 
 <span class="menu-text">Home</span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./environment.html"> 
-<span class="menu-text">environment</span></a>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-environment" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">environment</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-environment">    
+        <li>
+    <a class="dropdown-item" href="./environment.html">
+ <span class="dropdown-text">micromamba + bcfngs</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="./conda.html">
+ <span class="dropdown-text">conda</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./snakemake.html">
+ <span class="dropdown-text">snakemake</span></a>
+  </li>  
+    </ul>
+  </li>
   <li class="nav-item">
-    <a class="nav-link" href="./snakemake.html"> 
-<span class="menu-text">snakemake</span></a>
+    <a class="nav-link" href="./updating_genomes.html"> 
+<span class="menu-text">Updating genomes</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./mapping.html"> 
 <span class="menu-text">Mapping</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./updating_genomes.html"> 
-<span class="menu-text">Updating genomes</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
@@ -352,6 +363,35 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Prints pinned genome build release(s), including Ensembl (currently 115 from config).</li>
 <li>Prints configured tool versions for STAR, bwa, and bowtie2.</li>
 </ul></li>
+<li>Added unified mapping workflow: <code>workflow/mapping.smk</code>.</li>
+<li>Added wrapper commands:
+<ul>
+<li><code>./scripts/bcfngs mapping plan</code></li>
+<li><code>./scripts/bcfngs mapping run</code></li>
+</ul></li>
+<li>Added mapper selection via <code>--mapper star,bwa,bowtie2</code> (default <code>star</code>).</li>
+<li>Added unified read-mode selection via <code>--paired-end</code> (default) / <code>--single-end</code>.</li>
+<li>Added single-organism enforcement for mapping runs.</li>
+<li>Added FASTQ auto-detection with ordered pattern matching:
+<ul>
+<li><code>*_R1.fastq.gz</code></li>
+<li><code>*_R1_001.fastq.gz</code></li>
+<li><code>*_L1_R1.fastq.gz</code></li>
+<li><code>*.conc.R1.fastq.gz</code></li>
+</ul></li>
+<li>Replaced <code>bam2wig.py</code> conversion with <code>deeptools bamCoverage</code>.</li>
+<li>Added <code>--keep-intermediary-files</code> (default behavior removes intermediaries).</li>
+<li>Added mapping output layout:
+<ul>
+<li><code>&lt;outdir&gt;/&lt;project&gt;/&lt;organism&gt;/&lt;mapper&gt;/&lt;sample&gt;.bam</code></li>
+<li><code>&lt;outdir&gt;/&lt;project&gt;/&lt;organism&gt;/&lt;mapper&gt;/&lt;sample&gt;.bam.bai</code></li>
+<li><code>&lt;outdir&gt;/&lt;project&gt;/&lt;organism&gt;/&lt;mapper&gt;/bigwig/&lt;sample&gt;.bw</code></li>
+</ul></li>
+<li>Added optional SLURM execution for mapping (<code>--executor slurm</code>) with per-rule resource defaults.</li>
+<li>Added dedicated mapping documentation page: <code>mapping.qmd</code>.</li>
+<li>Updated navigation and examples to reference mapping wrapper commands.</li>
+<li>Added <code>outdir</code> to <code>configs/run.yaml</code>.</li>
+<li>Added <code>deeptools</code> dependency in <code>env/environment.yml</code>.</li>
 <li>Added Snakemake per-rule logging and environment declarations in <code>workflow/genomes.smk</code>:
 <ul>
 <li>Added <code>log:</code> targets for <code>download_sources</code>, <code>star_index</code>, <code>bwa_index</code>, <code>bowtie2_index</code>, and <code>chrom_size</code>.</li>
@@ -363,17 +403,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Updated <code>download_sources</code> log path to include <code>{src_rel}</code> so output and log wildcards match.</li>
 <li>Escaped shell block braces in <code>shell:</code> commands (<code>{ ... }</code>) to avoid Snakemake formatting errors.</li>
 </ul></li>
-<li>Added unified mapping workflow (<code>workflow/mapping.smk</code>) with STAR, bwa, and bowtie2 support.</li>
-<li>Added wrapper commands:
-<ul>
-<li><code>./scripts/bcfngs mapping plan</code></li>
-<li><code>./scripts/bcfngs mapping run</code></li>
-</ul></li>
-<li>Added paired-end/single-end mode as CLI flags (paired-end default).</li>
-<li>Replaced <code>bam2wig.py</code> conversion with <code>deeptools bamCoverage</code>.</li>
-<li>Added FASTQ pattern auto-detection for multiple naming schemes.</li>
 <li>Archived old STAR-only mapping Snakefiles under <code>archive/legacy/mapping/</code>.</li>
-<li>Added dedicated mapping documentation page (<code>mapping.qmd</code>).</li>
 <li>Documented the default cluster micromamba environment path consistently across docs:
 <ul>
 <li><code>/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes</code></li>

@@ -189,3 +189,50 @@ threads: 16
 ```
 
 For more usage details, see [`mapping.qmd`](mapping.qmd).
+
+## Additional Examples Moved From `snakemake.Rmd`
+
+These command blocks were moved here to keep topic-specific examples in one place.
+
+```bash
+# genomes
+./scripts/bcfngs genomes plan
+./scripts/bcfngs genomes build --cores 20
+
+# optional explicit preflight (or use --no-skip-plan on build)
+./scripts/bcfngs genomes build --cores 20 --no-skip-plan
+
+# run jobs through SLURM (instead of local execution)
+./scripts/bcfngs genomes build --executor slurm --jobs 20
+
+# if SLURM executor is reported as unavailable, refresh the env first
+./scripts/bcfngs env update
+
+# override defaults for a specific cluster/queue when needed
+./scripts/bcfngs genomes build --executor slurm --jobs 20 --slurm-partition <other_partition>
+
+# SLURM defaults used automatically in slurm mode:
+# --partition p.hpcl8
+# --mail-user yeroslaviz@biochem.mpg.de
+# --mail-type ALL
+# --time 04:00:00 (240 min)
+# --cpus-per-task 20
+# --mem-per-cpu 20G
+
+# check if a newer Ensembl release exists
+./scripts/bcfngs genomes check-updates
+```
+
+```bash
+# all organisms
+./scripts/bcfngs genomes build --cores 20
+
+# subset
+./scripts/bcfngs genomes build --cores 20 --organism Homo_sapiens,Mus_musculus
+```
+
+```bash
+module load bclconvert/4.3.13 star bowtie2 bwa
+./scripts/bcfngs --profile modules env check
+./scripts/bcfngs --profile modules genomes build --cores 20 --no-skip-plan
+```

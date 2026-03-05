@@ -118,6 +118,29 @@ For any other tools or organisms, please don't hesitate to contact me.
 - Added version reporting in `genomes plan`:
   - Prints pinned genome build release(s), including Ensembl (currently 115 from config).
   - Prints configured tool versions for STAR, bwa, and bowtie2.
+- Added unified mapping workflow: `workflow/mapping.smk`.
+- Added wrapper commands:
+  - `./scripts/bcfngs mapping plan`
+  - `./scripts/bcfngs mapping run`
+- Added mapper selection via `--mapper star,bwa,bowtie2` (default `star`).
+- Added unified read-mode selection via `--paired-end` (default) / `--single-end`.
+- Added single-organism enforcement for mapping runs.
+- Added FASTQ auto-detection with ordered pattern matching:
+  - `*_R1.fastq.gz`
+  - `*_R1_001.fastq.gz`
+  - `*_L1_R1.fastq.gz`
+  - `*.conc.R1.fastq.gz`
+- Replaced `bam2wig.py` conversion with `deeptools bamCoverage`.
+- Added `--keep-intermediary-files` (default behavior removes intermediaries).
+- Added mapping output layout:
+  - `<outdir>/<project>/<organism>/<mapper>/<sample>.bam`
+  - `<outdir>/<project>/<organism>/<mapper>/<sample>.bam.bai`
+  - `<outdir>/<project>/<organism>/<mapper>/bigwig/<sample>.bw`
+- Added optional SLURM execution for mapping (`--executor slurm`) with per-rule resource defaults.
+- Added dedicated mapping documentation page: `mapping.qmd`.
+- Updated navigation and examples to reference mapping wrapper commands.
+- Added `outdir` to `configs/run.yaml`.
+- Added `deeptools` dependency in `env/environment.yml`.
 - Added Snakemake per-rule logging and environment declarations in `workflow/genomes.smk`:
   - Added `log:` targets for `download_sources`, `star_index`, `bwa_index`, `bowtie2_index`, and `chrom_size`.
   - Redirected rule command output to the corresponding log files.
@@ -125,15 +148,7 @@ For any other tools or organisms, please don't hesitate to contact me.
 - Fixed follow-up issues introduced during logging changes:
   - Updated `download_sources` log path to include `{src_rel}` so output and log wildcards match.
   - Escaped shell block braces in `shell:` commands (`{{ ... }}`) to avoid Snakemake formatting errors.
-- Added unified mapping workflow (`workflow/mapping.smk`) with STAR, bwa, and bowtie2 support.
-- Added wrapper commands:
-  - `./scripts/bcfngs mapping plan`
-  - `./scripts/bcfngs mapping run`
-- Added paired-end/single-end mode as CLI flags (paired-end default).
-- Replaced `bam2wig.py` conversion with `deeptools bamCoverage`.
-- Added FASTQ pattern auto-detection for multiple naming schemes.
 - Archived old STAR-only mapping Snakefiles under `archive/legacy/mapping/`.
-- Added dedicated mapping documentation page (`mapping.qmd`).
 - Documented the default cluster micromamba environment path consistently across docs:
   - `/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes`
 - Updated environment/setup command examples in:
@@ -182,4 +197,3 @@ The workflow now should work on the HPC cluster of the MPI. For that reason some
 3. The workflow will create a new folder with the structure `ProjectNumber/Organism/` where it will save two new folders for the star mapping results and the bigwig files.
 4. the first script to get the genomes should be only run once, or when the genome version must be updated.
 5. The second script was split into single-end and paired-end versions and should be run accordingly.
-

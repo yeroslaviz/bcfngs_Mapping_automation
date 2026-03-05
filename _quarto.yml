@@ -38,13 +38,17 @@ website:
       - text: "Home"
         href: index.html
       - text: "environment"
-        href: environment.html
-      - text: "snakemake"
-        href: snakemake.html
-      - text: "Mapping"
-        href: mapping.html
+        menu:
+          - text: "micromamba + bcfngs"
+            href: environment.html
+          - text: "conda"
+            href: conda.html
+          - text: "snakemake"
+            href: snakemake.html
       - text: "Updating genomes"
         href: updating_genomes.html
+      - text: "Mapping"
+        href: mapping.html
     right:
       - icon: envelope
         href: "mailto:yeroslaviz@biochem.mpg.de"

@@ -9,68 +9,93 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+## Conda guide for this workflow
 
-## conda - how to
+This page explains how to create and maintain the workflow environment using **conda** commands.
 
-The first step is to create a conda environment, containing the necessary tools for the required analysis. In this workflow, we use the `snakemake` package to help running the workflow, as well as some mappers. 
-To learn more about the conda environment and its advantages, take a look at the [conda web site](https://conda.io/en/latest/).
+The repository environment is defined in:
 
-Environments can be created with the help of a file, e.g. `environment.yaml` using the following command
+- `env/environment.yml`
 
-```{r, engine='bash', eval=FALSE}
-conda env create --name Project0815 --file environment.yaml
-```
-This file would look like that:
+It includes `snakemake`, aligners (`STAR`, `bwa`, `bowtie2`), and supporting tools (`samtools`, `bedtools`, `curl`, `wget`, etc.).
 
-```
-name: Project0815
-channels:
-   - bioconda
-   - conda-forge
-   - r
-   - bioinfo
-dependencies:
-   - snakemake-minimal =5.2.4
-   - python =3.6
-   - star =2.7.2c
-   - samtools =1.9
-   - bowtie2 =2.3.5
-   - bwa =0.7.17
+To learn more about conda, see the [official documentation](https://docs.conda.io/).
+
+## 1) Create the environment
+
+You can create it either by **name** or by **path prefix**.
+
+By name:
+
+```bash
+conda env create --name bcfngs-mapping --file env/environment.yml
 ```
 
-The first row of the file contains the name of the project, i.e. the name of the conda environment created. Next are the `channels` listed, from which the conda environment should look for the tools needed for the analysis.
+By prefix (useful on shared systems):
 
-the last part of the environment file is a list of the needed `dependencies`. Each one of them has its version attached to it. This can be very helpful, when a data set needs to be re-analyzed to check for problems or conflicts with older/newer results or for debugging purposes.
-In this workflow we will use the `snakemake` package as well as `python` version 3.6. we also install here the mappers `star`, `bwa` and `bowtie2`. WE also need the `samtool` package for the manipulation of the bam files (sorting, filtering, etc.). 
-
-After this was done *one must activate the environment* using the command
-
-```{r, engine='bash', eval=FALSE}
-source activate Project0815
+```bash
+conda env create --prefix ~/miniconda3/envs/update_genomes --file env/environment.yml
 ```
 
-If one look at the command line one can now see this
+## 2) Activate the environment
 
-```
-(Project0815) USER@SERVERNAME:Project0815$ ..
-```
+By name:
 
-The brackets on the left side must contains the name of the environment. 
-
-If, after the environment was created, new tools must be added, they can just be added to the list of tools in the `environment.yaml` file and than the conda environment must be updated, using the command
-
-```{r, engine='bash', eval=FALSE}	
-conda env update -f environment.yaml 
+```bash
+conda activate bcfngs-mapping
 ```
 
-The conda environment should be created only once, but with each login one must activate it, so that the snakemake script can be run from the correct paths.
+By prefix:
 
+```bash
+conda activate ~/miniconda3/envs/update_genomes
+```
 
+If activation fails in a fresh shell, initialize conda once:
 
+```bash
+conda init
+```
 
+Then open a new terminal and activate again.
 
+## 3) Verify the installation
 
+```bash
+python --version
+snakemake --version
+STAR --version
+bowtie2-build --version
+samtools --version
+```
 
+## 4) Update the environment after changes
 
+When `env/environment.yml` is updated, run:
 
+```bash
+conda env update --name bcfngs-mapping --file env/environment.yml --prune
+```
 
+Or (prefix-based):
+
+```bash
+conda env update --prefix ~/miniconda3/envs/update_genomes --file env/environment.yml --prune
+```
+
+`--prune` removes packages that are no longer listed in the file.
+
+## 5) Optional: export explicit package lists
+
+For reproducibility snapshots:
+
+```bash
+mkdir -p env/locks
+conda list --explicit --name bcfngs-mapping > env/locks/explicit-conda-YYYY-MM-DD.txt
+```
+
+## Notes
+
+- Create once, then activate on each new login/session.
+- Keep `env/environment.yml` as the source of truth.
+- In this repository, `./scripts/bcfngs env ...` is implemented with micromamba. This page provides equivalent conda-native commands.

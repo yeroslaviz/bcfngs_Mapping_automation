@@ -9,210 +9,89 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-This repository uses `snakemake` for:
+## What is Snakemake?
 
-1. **Genome download + indexing** (STAR, bwa, bowtie2) with versioned index folders and stable symlinks.
-2. **Mapping** using STAR, bwa, and/or bowtie2 with unified paired/single-end support.
+`snakemake` is a workflow engine for reproducible data analysis pipelines.
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-For non-experts, prefer the single wrapper command `./scripts/bcfngs` (plan checks + build execution, local or SLURM).
-=======
-Use the wrapper command `./scripts/bcfngs`.
->>>>>>> Stashed changes
-=======
-For non-experts, prefer the single wrapper command `./scripts/bcfngs` (runs checks, then snakemake).
-Default environment path used on the cluster:
-`/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes`
->>>>>>> Stashed changes
+At a high level, you define analysis steps as rules with inputs/outputs, and Snakemake:
 
-## Quickstart
+- resolves dependencies automatically,
+- runs only what is missing or outdated,
+- supports dry-runs and lint checks,
+- scales from local execution to cluster schedulers.
+
+This makes it useful for routine, repeatable analyses where the same logic is applied to many projects.
+
+## How this project uses Snakemake
+
+This repository has two main Snakemake workflows:
+
+1. Genome source download + index building:
+   - `workflow/genomes.smk`
+   - config: `configs/genomes.yaml`
+2. Sample mapping and coverage generation:
+   - `workflow/mapping.smk`
+   - config: `configs/run.yaml`
+
+For most users, the recommended entrypoint is the wrapper:
 
 ```bash
-<<<<<<< Updated upstream
+./scripts/bcfngs
+```
+
+It adds preflight checks and standard defaults around Snakemake execution.
+
+## Core Snakemake commands (general examples)
+
+Lint a workflow:
+
+```bash
+snakemake --lint -s workflow/genomes.smk
+```
+
+Preview what would run (dry-run + print commands + reason summary):
+
+```bash
+snakemake -npr -s workflow/genomes.smk --configfile configs/genomes.yaml
+```
+
+Run locally with a fixed number of cores:
+
+```bash
+snakemake -pr -j 20 -s workflow/genomes.smk --configfile configs/genomes.yaml
+```
+
+Dry-run mapping workflow with current run configuration:
+
+```bash
+snakemake -npr -s workflow/mapping.smk --configfile configs/run.yaml
+```
+
+## Typical ways to use it in this project
+
+Use `bcfngs` for day-to-day operations:
+
+```bash
 # environment
-./scripts/bcfngs env create
 ./scripts/bcfngs env check
-=======
-# 1) create/update env (only once, then as needed)
-./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env create
-./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env check
->>>>>>> Stashed changes
 
-<<<<<<< Updated upstream
-# 2) (optional) check if a newer Ensembl release exists
-./scripts/bcfngs genomes check-updates
-
-# 3) (optional) preflight checks + snakemake lint + dry-run
-=======
 # genomes
->>>>>>> Stashed changes
 ./scripts/bcfngs genomes plan
 ./scripts/bcfngs genomes build --cores 20
 
-<<<<<<< Updated upstream
-# 4b) force preflight checks + build in one command
-./scripts/bcfngs genomes build --cores 20 --no-skip-plan
-
-# 4c) run jobs through SLURM (instead of local execution)
-./scripts/bcfngs genomes build --executor slurm --jobs 20
-
-# if SLURM executor is reported as unavailable, refresh the env first
-./scripts/bcfngs env update
-
-# 4d) override defaults for a specific cluster/queue when needed
-./scripts/bcfngs genomes build --executor slurm --jobs 20 --slurm-partition <other_partition>
-
-# SLURM defaults used automatically in slurm mode:
-# --partition p.hpcl8
-# --mail-user yeroslaviz@biochem.mpg.de
-# --mail-type ALL
-# --time 04:00:00 (240 min)
-# --cpus-per-task 20
-# --mem-per-cpu 20G
-=======
 # mapping
 ./scripts/bcfngs mapping plan
 ./scripts/bcfngs mapping run
->>>>>>> Stashed changes
 ```
 
-## Configuration files
+Use direct Snakemake commands when you want lower-level control, debugging, or development work.
 
-1. Genome configuration: [`configs/genomes.yaml`](configs/genomes.yaml){target="_blank"}
-2. Per-run mapping configuration: [`configs/run.yaml`](configs/run.yaml){target="_blank"}
+## Where to find task-specific instructions
 
-## Genome workflow
+This page is the Snakemake overview.
 
-Workflow file: [`workflow/genomes.smk`](workflow/genomes.smk){target="_blank"}
+For detailed procedures, use:
 
-Examples:
-
-```bash
-<<<<<<< Updated upstream
-./scripts/bcfngs genomes build --cores 20
-
-# optional explicit preflight (or use --no-skip-plan on build)
-./scripts/bcfngs genomes plan
-```
-=======
-# all organisms
-./scripts/bcfngs genomes build --cores 20
->>>>>>> Stashed changes
-
-# subset
-./scripts/bcfngs genomes build --cores 20 --organism Homo_sapiens,Mus_musculus
-```
-
-## Mapping workflow
-
-Workflow file: [`workflow/mapping.smk`](workflow/mapping.smk){target="_blank"}
-
-Mapping supports:
-
-- `--mapper star,bwa,bowtie2` (default: `star`)
-- `--paired-end` (default) / `--single-end`
-- `samtools index`
-- `deeptools` `bamCoverage` for bigWig
-
-The old STAR-only Snakefiles were archived under `archive/legacy/mapping/`.
-
-### Dry-run and execution
-
-```bash
-# default (paired-end, STAR)
-./scripts/bcfngs mapping plan
-./scripts/bcfngs mapping run
-
-# one mapper
-./scripts/bcfngs mapping run --mapper bwa
-
-# all mappers
-./scripts/bcfngs mapping run --mapper star,bwa,bowtie2
-```
-
-### Override config values for one run
-
-```bash
-<<<<<<< Updated upstream
-./scripts/bcfngs genomes build --cores 20 --no-skip-plan
-=======
-./scripts/bcfngs mapping plan \
-  --project P152 \
-  --organism Drosophila_melanogaster \
-  --fastq-dir /fs/pool/pool-bcfngs/fastq_files/P152/conc.fastq \
-  --outdir /fs/pool/pool-bcfngs/mapping
->>>>>>> Stashed changes
-```
-
-### SLURM mode
-
-```bash
-<<<<<<< Updated upstream
-./scripts/bcfngs mapping plan --executor slurm --jobs 20
-./scripts/bcfngs mapping run  --executor slurm --jobs 20
-=======
-./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env update
-./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env check
->>>>>>> Stashed changes
-```
-
-Default SLURM settings:
-
-- partition `p.hpcl8`
-- mail user `yeroslaviz@biochem.mpg.de`
-- mail type `ALL`
-- time `04:00:00`
-
-### FASTQ pattern auto-detection
-
-The workflow checks these patterns in order:
-
-1. `*_R1.fastq.gz`
-2. `*_R1_001.fastq.gz`
-3. `*_L1_R1.fastq.gz`
-4. `*.conc.R1.fastq.gz`
-
-<<<<<<< Updated upstream
-This still uses the micromamba env for python/snakemake, but loads vendor tools via modules:
-
-```bash
-module load bclconvert/4.3.13 star bowtie2 bwa
-./scripts/bcfngs --profile modules env check
-./scripts/bcfngs --profile modules genomes build --cores 20 --no-skip-plan
-```
-
-## Genome download + indexing
-
-Workflow file: [workflow/genomes.smk](workflow/genomes.smk){target="_blank"}
-
-### Mapping the samples with the `STAR`
-
-[mapping the samples in a paired-end format](Star.MappingQuant.PairedEndFastq.Snakefile){target="_blank"}
-
-This script contains three (four) steps. in the first step the `fastq` samples are mapped to the indexed genome. Then, they are being indexed. Last, after creating a chromosome-size file, the `bam` files are converted into `bigwig` files for better visualization using the [UCSC browser](http://genome.ucsc.edu/cgi-bin/hgTracks).
-
-We have two separate scripts for single-end and paired-end runs. The PE run looks for both R1 and R2 fastq files, while the SE script will ignore all R2 samples. 
-
-After the environment was created **and activated**, one must change to the directory of the concatenated fast files. E.g.
-
-```bash
-cd /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/
-```
-
-To run mapping, update `configs/run.yaml` in the repo, then run one of these Snakefiles.
-
-```bash
-# for single-end samples
-snakemake -nps /path/to/repo/Star.MappingQuant.SingleEndFastq.Snakefile -j 50
-# for paired-end samples
-snakemake -nps /path/to/repo/Star.MappingQuant.PairedEndFastq.Snakefile -j 50
-```
-
-* `-n` - dry-run. This parameter will only output the command, but execute them. This should be used to test the parameters, but must be removed for the analysis to be done.
-* `-p` -  Print the commands to be execute.
-* `-s` - the name of the snakeake file to be executed. 
-* `-j` - #cores. How many cores should be used in the run. 
-=======
-In paired-end mode, matching R2 files are required.
->>>>>>> Stashed changes
+- [Environment setup](environment.html)
+- [Updating genomes and indices](updating_genomes.html)
+- [Mapping workflow](mapping.html)

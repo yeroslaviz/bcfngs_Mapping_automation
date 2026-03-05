@@ -2,18 +2,15 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.9.23">
+<meta name="generator" content="quarto-1.8.27">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="AY">
-<meta name="dcterms.date" content="2026-03-04">
+<meta name="dcterms.date" content="2026-03-05">
 
 <title>conda – Bioinformatics Core Facility MPI Biochemistry</title>
 <style>
-/* Default styles provided by pandoc.
-** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
-*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -79,7 +76,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-8e955b7ce0181ffea43a0319902a8cc0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-9cc46d4bd74022fbb745545fb6c4cdfc.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -133,21 +130,32 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="nav-link" href="./index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./environment.html"> 
-<span class="menu-text">environment</span></a>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-environment" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">environment</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-environment">    
+        <li>
+    <a class="dropdown-item" href="./environment.html">
+ <span class="dropdown-text">micromamba + bcfngs</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="./conda.html">
+ <span class="dropdown-text">conda</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./snakemake.html">
+ <span class="dropdown-text">snakemake</span></a>
+  </li>  
+    </ul>
+  </li>
   <li class="nav-item">
-    <a class="nav-link" href="./snakemake.html"> 
-<span class="menu-text">snakemake</span></a>
+    <a class="nav-link" href="./updating_genomes.html"> 
+<span class="menu-text">Updating genomes</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./mapping.html"> 
 <span class="menu-text">Mapping</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./updating_genomes.html"> 
-<span class="menu-text">Updating genomes</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
@@ -186,7 +194,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#conda---how-to" id="toc-conda---how-to" class="nav-link active" data-scroll-target="#conda---how-to">conda - how to</a></li>
+  <li><a href="#conda-guide-for-this-workflow" id="toc-conda-guide-for-this-workflow" class="nav-link active" data-scroll-target="#conda-guide-for-this-workflow">Conda guide for this workflow</a></li>
+  <li><a href="#create-the-environment" id="toc-create-the-environment" class="nav-link" data-scroll-target="#create-the-environment">1) Create the environment</a></li>
+  <li><a href="#activate-the-environment" id="toc-activate-the-environment" class="nav-link" data-scroll-target="#activate-the-environment">2) Activate the environment</a></li>
+  <li><a href="#verify-the-installation" id="toc-verify-the-installation" class="nav-link" data-scroll-target="#verify-the-installation">3) Verify the installation</a></li>
+  <li><a href="#update-the-environment-after-changes" id="toc-update-the-environment-after-changes" class="nav-link" data-scroll-target="#update-the-environment-after-changes">4) Update the environment after changes</a></li>
+  <li><a href="#optional-export-explicit-package-lists" id="toc-optional-export-explicit-package-lists" class="nav-link" data-scroll-target="#optional-export-explicit-package-lists">5) Optional: export explicit package lists</a></li>
+  <li><a href="#notes" id="toc-notes" class="nav-link" data-scroll-target="#notes">Notes</a></li>
   </ul>
 </nav>
     </div>
@@ -212,7 +226,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 4, 2026</p>
+      <p class="date">March 5, 2026</p>
     </div>
   </div>
   
@@ -224,41 +238,63 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="conda---how-to" class="level2">
-<h2 class="anchored" data-anchor-id="conda---how-to">conda - how to</h2>
-<p>The first step is to create a conda environment, containing the necessary tools for the required analysis. In this workflow, we use the <code>snakemake</code> package to help running the workflow, as well as some mappers. To learn more about the conda environment and its advantages, take a look at the <a href="https://conda.io/en/latest/">conda web site</a>.</p>
-<p>Environments can be created with the help of a file, e.g.&nbsp;<code>environment.yaml</code> using the following command</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> env create <span class="at">--name</span> Project0815 <span class="at">--file</span> environment.yaml</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<p>This file would look like that:</p>
-<pre><code>name: Project0815
-channels:
-   - bioconda
-   - conda-forge
-   - r
-   - bioinfo
-dependencies:
-   - snakemake-minimal =5.2.4
-   - python =3.6
-   - star =2.7.2c
-   - samtools =1.9
-   - bowtie2 =2.3.5
-   - bwa =0.7.17</code></pre>
-<p>The first row of the file contains the name of the project, i.e.&nbsp;the name of the conda environment created. Next are the <code>channels</code> listed, from which the conda environment should look for the tools needed for the analysis.</p>
-<p>the last part of the environment file is a list of the needed <code>dependencies</code>. Each one of them has its version attached to it. This can be very helpful, when a data set needs to be re-analyzed to check for problems or conflicts with older/newer results or for debugging purposes. In this workflow we will use the <code>snakemake</code> package as well as <code>python</code> version 3.6. we also install here the mappers <code>star</code>, <code>bwa</code> and <code>bowtie2</code>. WE also need the <code>samtool</code> package for the manipulation of the bam files (sorting, filtering, etc.).</p>
-<p>After this was done <em>one must activate the environment</em> using the command</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> activate Project0815</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<p>If one look at the command line one can now see this</p>
-<pre><code>(Project0815) USER@SERVERNAME:Project0815$ ..</code></pre>
-<p>The brackets on the left side must contains the name of the environment.</p>
-<p>If, after the environment was created, new tools must be added, they can just be added to the list of tools in the <code>environment.yaml</code> file and than the conda environment must be updated, using the command</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> env update <span class="at">-f</span> environment.yaml </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<p>The conda environment should be created only once, but with each login one must activate it, so that the snakemake script can be run from the correct paths.</p>
+<section id="conda-guide-for-this-workflow" class="level2">
+<h2 class="anchored" data-anchor-id="conda-guide-for-this-workflow">Conda guide for this workflow</h2>
+<p>This page explains how to create and maintain the workflow environment using <strong>conda</strong> commands.</p>
+<p>The repository environment is defined in:</p>
+<ul>
+<li><code>env/environment.yml</code></li>
+</ul>
+<p>It includes <code>snakemake</code>, aligners (<code>STAR</code>, <code>bwa</code>, <code>bowtie2</code>), and supporting tools (<code>samtools</code>, <code>bedtools</code>, <code>curl</code>, <code>wget</code>, etc.).</p>
+<p>To learn more about conda, see the <a href="https://docs.conda.io/">official documentation</a>.</p>
+</section>
+<section id="create-the-environment" class="level2">
+<h2 class="anchored" data-anchor-id="create-the-environment">1) Create the environment</h2>
+<p>You can create it either by <strong>name</strong> or by <strong>path prefix</strong>.</p>
+<p>By name:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> env create <span class="at">--name</span> bcfngs-mapping <span class="at">--file</span> env/environment.yml</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>By prefix (useful on shared systems):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> env create <span class="at">--prefix</span> ~/miniconda3/envs/update_genomes <span class="at">--file</span> env/environment.yml</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="activate-the-environment" class="level2">
+<h2 class="anchored" data-anchor-id="activate-the-environment">2) Activate the environment</h2>
+<p>By name:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> activate bcfngs-mapping</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>By prefix:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> activate ~/miniconda3/envs/update_genomes</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>If activation fails in a fresh shell, initialize conda once:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> init</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Then open a new terminal and activate again.</p>
+</section>
+<section id="verify-the-installation" class="level2">
+<h2 class="anchored" data-anchor-id="verify-the-installation">3) Verify the installation</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">--version</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--version</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">STAR</span> <span class="at">--version</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="ex">bowtie2-build</span> <span class="at">--version</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">samtools</span> <span class="at">--version</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="update-the-environment-after-changes" class="level2">
+<h2 class="anchored" data-anchor-id="update-the-environment-after-changes">4) Update the environment after changes</h2>
+<p>When <code>env/environment.yml</code> is updated, run:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> env update <span class="at">--name</span> bcfngs-mapping <span class="at">--file</span> env/environment.yml <span class="at">--prune</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Or (prefix-based):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> env update <span class="at">--prefix</span> ~/miniconda3/envs/update_genomes <span class="at">--file</span> env/environment.yml <span class="at">--prune</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>--prune</code> removes packages that are no longer listed in the file.</p>
+</section>
+<section id="optional-export-explicit-package-lists" class="level2">
+<h2 class="anchored" data-anchor-id="optional-export-explicit-package-lists">5) Optional: export explicit package lists</h2>
+<p>For reproducibility snapshots:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> env/locks</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> list <span class="at">--explicit</span> <span class="at">--name</span> bcfngs-mapping <span class="op">&gt;</span> env/locks/explicit-conda-YYYY-MM-DD.txt</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="notes" class="level2">
+<h2 class="anchored" data-anchor-id="notes">Notes</h2>
+<ul>
+<li>Create once, then activate on each new login/session.</li>
+<li>Keep <code>env/environment.yml</code> as the source of truth.</li>
+<li>In this repository, <code>./scripts/bcfngs env ...</code> is implemented with micromamba. This page provides equivalent conda-native commands.</li>
+</ul>
 
 
 </section>

@@ -133,3 +133,50 @@ Key SLURM overrides:
 ```
 
 The wrapper sets per-rule resources so lightweight rules (indexing and bamCoverage) do not request mapper-level memory.
+
+## Additional Examples Moved From `snakemake.Rmd`
+
+These command blocks were moved here to keep mapping examples in one place.
+
+```bash
+# default (paired-end, STAR)
+./scripts/bcfngs mapping plan
+./scripts/bcfngs mapping run
+
+# one mapper
+./scripts/bcfngs mapping run --mapper bwa
+
+# all mappers
+./scripts/bcfngs mapping run --mapper star,bwa,bowtie2
+```
+
+```bash
+./scripts/bcfngs mapping plan \
+  --project P152 \
+  --organism Drosophila_melanogaster \
+  --fastq-dir /fs/pool/pool-bcfngs/fastq_files/P152/conc.fastq \
+  --outdir /fs/pool/pool-bcfngs/mapping
+```
+
+```bash
+./scripts/bcfngs mapping plan --executor slurm --jobs 20
+./scripts/bcfngs mapping run  --executor slurm --jobs 20
+```
+
+Legacy STAR-only direct Snakemake examples:
+
+```bash
+cd /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/
+
+# for single-end samples
+snakemake -nps /path/to/repo/Star.MappingQuant.SingleEndFastq.Snakefile -j 50
+# for paired-end samples
+snakemake -nps /path/to/repo/Star.MappingQuant.PairedEndFastq.Snakefile -j 50
+```
+
+Flag meanings for the legacy command style:
+
+- `-n`: dry-run
+- `-p`: print shell commands
+- `-s`: snakefile path
+- `-j`: number of cores/jobs
