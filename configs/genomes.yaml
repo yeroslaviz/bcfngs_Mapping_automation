@@ -34,6 +34,7 @@ organisms:
     fasta_kind: dna.primary_assembly
     gtf_kind: gtf
     sa_index: 14
+    bwa_index_algorithm: bwtsw
   Danio_rerio:
     source: ensembl
     species: danio_rerio
@@ -41,6 +42,7 @@ organisms:
     fasta_kind: dna.primary_assembly
     gtf_kind: gtf
     sa_index: 14
+    bwa_index_algorithm: bwtsw
   Gallus_gallus:
     source: ensembl
     species: gallus_gallus
@@ -48,6 +50,7 @@ organisms:
     fasta_kind: dna.toplevel
     gtf_kind: gtf
     sa_index: 12
+    bwa_index_algorithm: bwtsw
   Caenorhabditis_elegans:
     source: ensembl
     species: caenorhabditis_elegans
