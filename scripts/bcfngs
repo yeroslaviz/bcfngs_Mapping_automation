@@ -18,11 +18,12 @@ CLUSTER_ENV_PREFIX = Path("/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/minic
 DEFAULT_ENV_PREFIX = CLUSTER_ENV_PREFIX if CLUSTER_ENV_PREFIX.exists() else REPO_ROOT / ".mamba" / "env"
 ALLOWED_MAPPERS = {"star", "bwa", "bowtie2"}
 
-DEFAULT_SLURM_PARTITION = "p.hpcl8"
+DEFAULT_SLURM_PARTITION = "p.hpcl93"
 DEFAULT_SLURM_MAIL_USER = "yeroslaviz@biochem.mpg.de"
 DEFAULT_SLURM_MAIL_TYPE = "ALL"
 DEFAULT_SLURM_TIME = "04:00:00"
 DEFAULT_SLURM_MEM_PER_CPU_MB = 20480
+DEFAULT_SLURM_MEM_MB = 409600
 
 
 @dataclass(frozen=True)
@@ -490,17 +491,7 @@ def cmd_genomes_build(ctx: RunContext, args: argparse.Namespace) -> None:
             "bwa_index:cpus_per_task=1",
         ]
 
-        if args.slurm_mem is not None:
-            mem_mb = _as_int(args.slurm_mem, field="slurm_mem", minimum=1)
-            light_mem = min(mem_mb, 4096)
-            set_resources += [
-                f"star_index:mem_mb={mem_mb}",
-                f"bowtie2_index:mem_mb={mem_mb}",
-                f"bwa_index:mem_mb={mem_mb}",
-                f"download_sources:mem_mb={light_mem}",
-                f"chrom_size:mem_mb={light_mem}",
-            ]
-        else:
+        if args.slurm_mem_per_cpu is not None:
             mem_per_cpu = _as_int(args.slurm_mem_per_cpu, field="slurm_mem_per_cpu", minimum=1)
             light_mem = min(mem_per_cpu, 4096)
             set_resources += [
@@ -509,6 +500,16 @@ def cmd_genomes_build(ctx: RunContext, args: argparse.Namespace) -> None:
                 f"bwa_index:mem_mb_per_cpu={mem_per_cpu}",
                 f"download_sources:mem_mb_per_cpu={light_mem}",
                 f"chrom_size:mem_mb_per_cpu={light_mem}",
+            ]
+        else:
+            mem_mb = _as_int(args.slurm_mem, field="slurm_mem", minimum=1)
+            light_mem = min(mem_mb, 4096)
+            set_resources += [
+                f"star_index:mem_mb={mem_mb}",
+                f"bowtie2_index:mem_mb={mem_mb}",
+                f"bwa_index:mem_mb={mem_mb}",
+                f"download_sources:mem_mb={light_mem}",
+                f"chrom_size:mem_mb={light_mem}",
             ]
 
         snakemake_cmd += ["--default-resources", *default_resources, "--set-resources", *set_resources]
@@ -890,13 +891,14 @@ def main() -> None:
     build_p.add_argument(
         "--slurm-mem-per-cpu",
         type=int,
-        default=DEFAULT_SLURM_MEM_PER_CPU_MB,
-        help="SLURM mem-per-cpu in MB for --executor slurm (default: 20480 = 20G). Ignored if --slurm-mem is set.",
+        default=None,
+        help="SLURM mem-per-cpu in MB for --executor slurm (optional). If set, this overrides --slurm-mem.",
     )
     build_p.add_argument(
         "--slurm-mem",
         type=int,
-        help="SLURM total memory (--mem) in MB for heavy index rules; use this to decouple memory from CPU count.",
+        default=DEFAULT_SLURM_MEM_MB,
+        help=f"SLURM total memory (--mem) in MB for heavy index rules (default: {DEFAULT_SLURM_MEM_MB} ~= 400G). Ignored when --slurm-mem-per-cpu is set.",
     )
     build_p.add_argument(
         "--slurm-exclusive",
