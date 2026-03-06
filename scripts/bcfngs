@@ -7,6 +7,7 @@ import re
 import shlex
 import shutil
 import subprocess
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
@@ -142,13 +143,120 @@ def _require_tools(ctx: RunContext, tools: Iterable[str]) -> None:
         raise SystemExit(f"Missing tools in environment: {', '.join(missing)}")
 
 
+def _first_nonempty_line(text: str) -> str:
+    for line in text.splitlines():
+        line = line.strip()
+        if line:
+            return line
+    return ""
+
+
+def _extract_version_token(text: str) -> str:
+    match = re.search(r"\b\d+(?:\.\d+)+(?:[A-Za-z0-9._-]*)\b", text)
+    if match:
+        return match.group(0).strip()
+    return ""
+
+
+def _extract_bwa_version(out: subprocess.CompletedProcess) -> str:
+    combined = f"{out.stdout or ''}\n{out.stderr or ''}"
+    for line in combined.splitlines():
+        match = re.search(r"\bVersion:\s*([^\s]+)", line)
+        if match:
+            token = _extract_version_token(match.group(1))
+            if token:
+                return token
+    return _extract_version_token(combined)
+
+
+def _extract_bowtie2_version(out: subprocess.CompletedProcess) -> str:
+    combined = f"{out.stdout or ''}\n{out.stderr or ''}"
+    for line in combined.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        match = re.search(r"\bversion\s+([^\s]+)", line, flags=re.IGNORECASE)
+        if match:
+            token = _extract_version_token(match.group(1))
+            if token:
+                return token
+    return _extract_version_token(combined)
+
+
+def _extract_star_version(out: subprocess.CompletedProcess) -> str:
+    combined = f"{out.stdout or ''}\n{out.stderr or ''}"
+    return _extract_version_token(combined)
+
+
+def _resolve_genomes_index_versions(ctx: RunContext, genomes_cfg_path: Path) -> tuple[dict, dict[str, str]]:
+    cfg = _load_yaml(ctx, genomes_cfg_path)
+    raw_versions = cfg.get("index_versions")
+    if not isinstance(raw_versions, dict):
+        raw_versions = {}
+
+    versions = {
+        "star": str(raw_versions.get("star", "") or "").strip(),
+        "bwa": str(raw_versions.get("bwa", "") or "").strip(),
+        "bowtie2": str(raw_versions.get("bowtie2", "") or "").strip(),
+    }
+    detected: dict[str, str] = {}
+
+    if not versions["star"]:
+        star_out = _run_tool(ctx, ["STAR", "--version"], check=False, capture=True)
+        star_ver = _extract_star_version(star_out)
+        if star_ver:
+            versions["star"] = star_ver
+            detected["star"] = star_ver
+
+    if not versions["bwa"]:
+        bwa_out = _run_tool(ctx, ["bwa"], check=False, capture=True)
+        bwa_ver = _extract_bwa_version(bwa_out)
+        if bwa_ver:
+            versions["bwa"] = bwa_ver
+            detected["bwa"] = bwa_ver
+
+    if not versions["bowtie2"]:
+        bowtie2_out = _run_tool(ctx, ["bowtie2-build", "--version"], check=False, capture=True)
+        bowtie2_ver = _extract_bowtie2_version(bowtie2_out)
+        if bowtie2_ver:
+            versions["bowtie2"] = bowtie2_ver
+            detected["bowtie2"] = bowtie2_ver
+
+    missing = [tool for tool, ver in versions.items() if not ver]
+    if missing:
+        missing_csv = ", ".join(missing)
+        raise SystemExit(
+            "Missing genomes index_versions for "
+            f"{missing_csv}. Set configs/genomes.yaml:index_versions or ensure those tools are available "
+            "in the selected environment so versions can be auto-detected."
+        )
+
+    cfg["index_versions"] = versions
+    return cfg, detected
+
+
+def _write_temp_config_json(data: dict) -> Path:
+    fh = tempfile.NamedTemporaryFile(
+        mode="w",
+        prefix="bcfngs-genomes-",
+        suffix=".json",
+        delete=False,
+    )
+    with fh:
+        json.dump(data, fh)
+    return Path(fh.name)
+
+
 def cmd_env_check(ctx: RunContext, args: argparse.Namespace) -> None:
     _require_tools(ctx, ["python", "snakemake", "STAR", "bwa", "bowtie2-build", "samtools", "curl", "bamCoverage"])
+    bwa_out = _run_tool(ctx, ["bwa"], check=False, capture=True)
+    star_out = _run_tool(ctx, ["STAR", "--version"], check=False, capture=True)
+    bowtie2_out = _run_tool(ctx, ["bowtie2-build", "--version"], check=False, capture=True)
     versions = {
         "snakemake": _run_tool(ctx, ["snakemake", "--version"], capture=True).stdout.strip(),
-        "STAR": _run_tool(ctx, ["STAR", "--version"], capture=True).stdout.strip(),
-        "bwa": (_run_tool(ctx, ["bwa"], check=False, capture=True).stderr.splitlines() or [""])[0].strip(),
-        "bowtie2": (_run_tool(ctx, ["bowtie2-build", "--version"], check=False, capture=True).stdout.splitlines() or [""])[0].strip(),
+        "STAR": _extract_star_version(star_out),
+        "bwa": _extract_bwa_version(bwa_out),
+        "bowtie2": _extract_bowtie2_version(bowtie2_out),
         "samtools": (_run_tool(ctx, ["samtools", "--version"], capture=True).stdout.splitlines() or [""])[0].strip(),
         "bamCoverage": _run_tool(ctx, ["bamCoverage", "--version"], capture=True).stdout.strip(),
     }
@@ -282,6 +390,13 @@ def cmd_genomes_build(ctx: RunContext, args: argparse.Namespace) -> None:
     else:
         print("Skipping genomes plan checks by default; running build directly.")
     genomes_cfg_path = REPO_ROOT / "configs" / "genomes.yaml"
+    genomes_cfg, detected_versions = _resolve_genomes_index_versions(ctx, genomes_cfg_path)
+    versions = genomes_cfg["index_versions"]
+    if detected_versions:
+        detected_txt = ", ".join(f"{tool}={ver}" for tool, ver in detected_versions.items())
+        print(f"Auto-detected missing index_versions from environment: {detected_txt}")
+    print("Using index versions:", json.dumps(versions, indent=2))
+    tmp_genomes_cfg_path = _write_temp_config_json(genomes_cfg)
     smk = REPO_ROOT / "workflow" / "genomes.smk"
 
     extra: list[str] = []
@@ -350,8 +465,11 @@ def cmd_genomes_build(ctx: RunContext, args: argparse.Namespace) -> None:
     else:
         snakemake_cmd += ["--cores", str(args.cores)]
 
-    snakemake_cmd += ["-s", str(smk), "--configfile", str(genomes_cfg_path), *extra]
-    _run_tool(ctx, snakemake_cmd)
+    snakemake_cmd += ["-s", str(smk), "--configfile", str(tmp_genomes_cfg_path), *extra]
+    try:
+        _run_tool(ctx, snakemake_cmd)
+    finally:
+        tmp_genomes_cfg_path.unlink(missing_ok=True)
 
 
 def _as_int(value: object, *, field: str, minimum: int | None = None) -> int:
