@@ -3,27 +3,25 @@ title: "Mapping Workflow"
 author: "AY"
 ---
 
-This page documents the unified mapping workflow (`STAR`, `bwa`, `bowtie2`) driven via `./scripts/bcfngs`.
+This page documents the current mapping workflow in this repository.
 
 ## Overview
 
-- One workflow file: `workflow/mapping.smk`
-- One CLI entrypoint:
-  - `./scripts/bcfngs mapping plan`
-  - `./scripts/bcfngs mapping run`
-- Default mapper: `star`
-- Default read mode: paired-end
-- Default bigWig conversion: `bamCoverage --normalizeUsing CPM --binSize 10`
+- Genome download and indexing are handled by `./scripts/bcfngs`.
+- Mapping is still run directly through the STAR Snakefiles already present in the repository:
+  - `Star.MappingQuant.PairedEndFastq.Snakefile`
+  - `Star.MappingQuant.SingleEndFastq.Snakefile`
+- Current mapping support is STAR-based. The genome preparation workflow creates additional bwa and bowtie2 indices for future use, but those mappers are not yet wired into a mapping wrapper.
 
 Output layout:
 
 ```text
-<outdir>/<project>/<organism>/<mapper>/<sample>.bam
-<outdir>/<project>/<organism>/<mapper>/<sample>.bam.bai
-<outdir>/<project>/<organism>/<mapper>/bigwig/<sample>.bw
+<workdir>/<project>/<organism>/star_mapping/<sample>.bam
+<workdir>/<project>/<organism>/star_mapping/<sample>.bam.bai
+<workdir>/<project>/<organism>/bigwig/<sample>.bw
 ```
 
-For `STAR`, the workflow also keeps:
+The STAR workflow also keeps:
 
 - `<sample>.counts.tab`
 - `<sample>.SJ.out.tab`
@@ -41,140 +39,40 @@ threads: 16
 ram_bytes: 168632718037
 ```
 
-`organism` must be a single organism key from `configs/genomes.yaml`.
+`organism` must be one organism key from `configs/genomes.yaml`, using the scientific-name format such as `Homo_sapiens` or `Mus_musculus`.
 
 ## FASTQ pattern auto-detection
 
-The workflow detects input naming in this fixed order:
+The legacy STAR Snakefiles expect concatenated FASTQ files in the working directory. The important patterns are:
 
-1. `*_R1.fastq.gz`
-2. `*_R1_001.fastq.gz`
-3. `*_L1_R1.fastq.gz`
-4. `*.conc.R1.fastq.gz`
+1. `*.conc.R1.fastq.gz`
+2. `*.conc.R2.fastq.gz` for paired-end runs
 
-In paired-end mode, the corresponding `R2` file must exist.
+The single-end Snakefile ignores `R2`, while the paired-end Snakefile requires both mates.
 
 ## Basic usage
 
 Dry-run first:
 
 ```bash
-./scripts/bcfngs mapping plan
-```
-
-Run:
-
-```bash
-./scripts/bcfngs mapping run
-```
-
-Select mapper(s):
-
-```bash
-./scripts/bcfngs mapping plan --mapper star,bwa,bowtie2
-./scripts/bcfngs mapping run  --mapper bwa
-```
-
-Read mode:
-
-```bash
-./scripts/bcfngs mapping run --single-end
-./scripts/bcfngs mapping run --paired-end
-```
-
-Override config values for a single run:
-
-```bash
-./scripts/bcfngs mapping plan \
-  --project P152 \
-  --organism Drosophila_melanogaster \
-  --fastq-dir /fs/pool/pool-bcfngs/fastq_files/P152/conc.fastq \
-  --outdir /fs/pool/pool-bcfngs/mapping
-```
-
-Keep intermediary files (default is cleanup):
-
-```bash
-./scripts/bcfngs mapping run --keep-intermediary-files
-```
-
-Tune bigWig options:
-
-```bash
-./scripts/bcfngs mapping run --bw-normalization CPM --bw-bin-size 10
-```
-
-## SLURM execution
-
-Run mapping on SLURM:
-
-```bash
-./scripts/bcfngs mapping plan --executor slurm --jobs 20
-./scripts/bcfngs mapping run  --executor slurm --jobs 20
-```
-
-Defaults:
-
-- Partition: `p.hpcl8`
-- Mail user: `yeroslaviz@biochem.mpg.de`
-- Mail type: `ALL`
-- Time: `04:00:00`
-
-Key SLURM overrides:
-
-```bash
-./scripts/bcfngs mapping run \
-  --executor slurm \
-  --slurm-partition p.hpcl8 \
-  --slurm-time 04:00:00 \
-  --slurm-cpus-per-task 20 \
-  --slurm-star-mem-mb 64000 \
-  --slurm-aligner-mem-mb 32000
-```
-
-The wrapper sets per-rule resources so lightweight rules (indexing and bamCoverage) do not request mapper-level memory.
-
-## Additional Examples Moved From `snakemake.Rmd`
-
-These command blocks were moved here to keep mapping examples in one place.
-
-```bash
-# default (paired-end, STAR)
-./scripts/bcfngs mapping plan
-./scripts/bcfngs mapping run
-
-# one mapper
-./scripts/bcfngs mapping run --mapper bwa
-
-# all mappers
-./scripts/bcfngs mapping run --mapper star,bwa,bowtie2
-```
-
-```bash
-./scripts/bcfngs mapping plan \
-  --project P152 \
-  --organism Drosophila_melanogaster \
-  --fastq-dir /fs/pool/pool-bcfngs/fastq_files/P152/conc.fastq \
-  --outdir /fs/pool/pool-bcfngs/mapping
-```
-
-```bash
-./scripts/bcfngs mapping plan --executor slurm --jobs 20
-./scripts/bcfngs mapping run  --executor slurm --jobs 20
-```
-
-Legacy STAR-only direct Snakemake examples:
-
-```bash
 cd /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/
 
-# for single-end samples
-snakemake -nps /path/to/repo/Star.MappingQuant.SingleEndFastq.Snakefile -j 50
-# for paired-end samples
-snakemake -nps /path/to/repo/Star.MappingQuant.PairedEndFastq.Snakefile -j 50
+# paired-end
+snakemake -nps /path/to/repo/Star.MappingQuant.PairedEndFastq.Snakefile -j 20
+
+# single-end
+snakemake -nps /path/to/repo/Star.MappingQuant.SingleEndFastq.Snakefile -j 20
 ```
 
-Flag meanings for the legacy command style:
+Remove `-n` after the dry-run looks correct.
+
+## Notes
+
+- Run `./scripts/bcfngs env check` first to confirm the required tools are available in `~/miniconda3/envs/update_genomes`.
+- The mapping Snakefiles use the stable STAR index symlink under `/fs/pool/pool-bcfngs/genomes/<Organism>/starIndex`.
+- `wigToBigwig` and `bam2wig.py` must be available in the same environment.
+
+## Flag meanings
 
 - `-n`: dry-run
 - `-p`: print shell commands

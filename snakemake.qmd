@@ -13,6 +13,8 @@ This repository uses `snakemake` for:
 
 For non-experts, prefer the single wrapper command `./scripts/bcfngs` (runs checks, then snakemake).
 
+By default, `./scripts/bcfngs` uses the micromamba environment at `~/miniconda3/envs/update_genomes`. If your environment is elsewhere, add `--env-prefix /path/to/env`.
+
 ## Quickstart
 
 ```bash

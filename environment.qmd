@@ -2,39 +2,60 @@
 title: "Environment (micromamba)"
 ---
 
-This workflow uses **micromamba** to create a reproducible environment with all required tools (Snakemake + aligners + utilities).
+This workflow uses **micromamba** to create a reproducible environment with all required tools.
+
+## Default environment location
+
+The commands in this repository assume this default path:
+
+```text
+~/miniconda3/envs/update_genomes
+```
+
+On the HPC cluster this expands to:
+
+```text
+/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes
+```
+
+The wrapper `./scripts/bcfngs` uses the same path by default. If you keep the environment somewhere else, add `--env-prefix /path/to/env`.
 
 ## Installing micromamba
 
 micromamba can be installed from the [github repository](https://github.com/mamba-org/micromamba-releases).
 
-
 ```bash
 "${SHELL}" <(curl -L https://micro.mamba.pm/install.sh)
 ```
 
-## Create the workflow environment (project-local)
+## Create the workflow environment
 
 From the repo root:
 
 ```bash
-# micromamba create -y -p .mamba/env -f env/environment.yml # save the env under the path ./mamba/env
-
-micromamba create -y -n update_genomes -f env/environment.yml # save the env under the default path of miniconda3
+micromamba create -y -p ~/miniconda3/envs/update_genomes -f env/environment.yml
 ```
 
-To run commands inside the environment without activating it:
+If your micromamba root prefix is already `~/miniconda3`, the equivalent named-environment command is:
 
 ```bash
-micromamba run -p .mamba/env snakemake --version
+micromamba create -y -n update_genomes -f env/environment.yml
+```
+
+## Run commands without activating the environment
+
+```bash
+micromamba run -p ~/miniconda3/envs/update_genomes snakemake --version
+micromamba run -p ~/miniconda3/envs/update_genomes STAR --version
 ```
 
 ## Update the environment
 
-If `env/environment.yml` changes (new tools, version bumps):
+If `env/environment.yml` changes:
 
 ```bash
-micromamba update -y -p .mamba/env -f env/environment.yml
+micromamba update -y -p ~/miniconda3/envs/update_genomes -f env/environment.yml
+./scripts/bcfngs env check
 ```
 
 ## Health checks
@@ -43,95 +64,84 @@ micromamba update -y -p .mamba/env -f env/environment.yml
 ./scripts/bcfngs env check
 ```
 
-This step goes through the needed tools for the workflow and output if the tool versions. you should see something like that:
+Example output:
 
-```
+```json
 {
   "snakemake": "8.30.0",
   "STAR": "2.7.11b",
   "bwa": "",
   "bowtie2": "/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes/bin/bowtie2-build-s version 2.5.5",
-  "samtools": "samtools 1.23",
-  "bamCoverage": "bamCoverage 3.x.x"
+  "samtools": "samtools 1.23"
 }
 ```
 
-### Troubleshooting: missing `bamCoverage` / `deeptools`
+## Troubleshooting missing tools
 
-If `./scripts/bcfngs env check` reports:
+If `./scripts/bcfngs env check` reports a missing tool:
 
-```text
-Missing tools in environment: bamCoverage
-```
-
-use this sequence:
-
-1. Update the environment from `env/environment.yml`:
+1. Update the environment:
 
 ```bash
 ./scripts/bcfngs env update
 ./scripts/bcfngs env check
 ```
 
-2. If you use a non-default environment location, pass it explicitly:
+2. If you use a non-default location, pass it explicitly:
 
 ```bash
 ./scripts/bcfngs --env-prefix /path/to/your/env env update
 ./scripts/bcfngs --env-prefix /path/to/your/env env check
 ```
 
-3. Verify `deeptools` is actually installed in that environment:
+3. Verify the package is installed in the expected environment:
 
 ```bash
-micromamba list -p .mamba/env | grep -i deeptools
-micromamba run -p .mamba/env bamCoverage --version
+micromamba list -p ~/miniconda3/envs/update_genomes | grep -Ei 'snakemake|star|bwa|bowtie2|samtools|rseqc'
+micromamba run -p ~/miniconda3/envs/update_genomes snakemake --version
 ```
 
-4. If still missing, recreate the environment:
+4. If needed, recreate the environment:
 
 ```bash
-rm -rf .mamba/env
+rm -rf ~/miniconda3/envs/update_genomes
 ./scripts/bcfngs env create
 ./scripts/bcfngs env check
 ```
 
-`bamCoverage` is provided by the `deeptools` package in `env/environment.yml`.
-
 ## How-to (common scenarios)
 
-### I’m new / first time setup
+### First-time setup
 
 ```bash
-micromamba create -y -p .mamba/env -f env/environment.yml
+./scripts/bcfngs env create
 ./scripts/bcfngs env check
 ```
 
 ### Run a one-off command without activating
 
 ```bash
-micromamba run -p .mamba/env snakemake --help
-micromamba run -p .mamba/env STAR --version
+micromamba run -p ~/miniconda3/envs/update_genomes snakemake --help
+micromamba run -p ~/miniconda3/envs/update_genomes STAR --version
 ```
 
-### Keep tools up-to-date (routine)
-
-1. Update the environment:
+### Keep tools up to date
 
 ```bash
-micromamba update -y -p .mamba/env -f env/environment.yml
+./scripts/bcfngs env update
 ./scripts/bcfngs env check
 ```
 
-2. (Optional) record an explicit lockfile for reproducibility:
+Optional lockfile:
 
 ```bash
 mkdir -p env/locks
-micromamba list -p .mamba/env --explicit > env/locks/explicit-YYYY-MM-DD.txt
+micromamba list -p ~/miniconda3/envs/update_genomes --explicit > env/locks/explicit-YYYY-MM-DD.txt
 ```
 
-### I want to use HPC modules for vendor tools
+### Use HPC modules for vendor tools
 
-You still need the micromamba env for `python` + `snakemake`, but aligners can come from modules:
+You can keep `python` and `snakemake` in micromamba while loading aligners from modules:
 
 ```bash
 module load bclconvert/4.3.13 star bowtie2 bwa
@@ -140,26 +150,11 @@ module load bclconvert/4.3.13 star bowtie2 bwa
 ./scripts/bcfngs --profile modules genomes build --cores 20
 ```
 
-### Demultiplexing with bcl-convert (modules)
+### Demultiplexing with `bcl-convert`
 
-This repo doesn’t automate demultiplexing yet, but the typical pattern is:
+This repo does not automate demultiplexing yet. Typical usage on the cluster is:
 
 ```bash
 module load bclconvert/4.3.13
 bcl-convert --help
-
-# Example placeholders (adjust to your run folder / SampleSheet):
-# bcl-convert --bcl-input-directory /path/to/runfolder \
-#            --output-directory /path/to/output \
-#            --sample-sheet /path/to/SampleSheet.csv
 ```
-
-## HPC modules fallback (optional)
-
-If you prefer using HPC modules for vendor tools, you can load:
-
-```bash
-module load bclconvert/4.3.13 star bowtie2 bwa
-```
-
-You can still run Snakemake/python from micromamba (recommended).

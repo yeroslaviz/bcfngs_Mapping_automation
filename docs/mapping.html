@@ -200,8 +200,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#required-configuration" id="toc-required-configuration" class="nav-link" data-scroll-target="#required-configuration">Required configuration</a></li>
   <li><a href="#fastq-pattern-auto-detection" id="toc-fastq-pattern-auto-detection" class="nav-link" data-scroll-target="#fastq-pattern-auto-detection">FASTQ pattern auto-detection</a></li>
   <li><a href="#basic-usage" id="toc-basic-usage" class="nav-link" data-scroll-target="#basic-usage">Basic usage</a></li>
-  <li><a href="#slurm-execution" id="toc-slurm-execution" class="nav-link" data-scroll-target="#slurm-execution">SLURM execution</a></li>
-  <li><a href="#additional-examples-moved-from-snakemake.rmd" id="toc-additional-examples-moved-from-snakemake.rmd" class="nav-link" data-scroll-target="#additional-examples-moved-from-snakemake.rmd">Additional Examples Moved From <code>snakemake.Rmd</code></a></li>
+  <li><a href="#notes" id="toc-notes" class="nav-link" data-scroll-target="#notes">Notes</a></li>
+  <li><a href="#flag-meanings" id="toc-flag-meanings" class="nav-link" data-scroll-target="#flag-meanings">Flag meanings</a></li>
   </ul>
 </nav>
     </div>
@@ -233,25 +233,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>This page documents the unified mapping workflow (<code>STAR</code>, <code>bwa</code>, <code>bowtie2</code>) driven via <code>./scripts/bcfngs</code>.</p>
+<p>This page documents the current mapping workflow in this repository.</p>
 <section id="overview" class="level2">
 <h2 class="anchored" data-anchor-id="overview">Overview</h2>
 <ul>
-<li>One workflow file: <code>workflow/mapping.smk</code></li>
-<li>One CLI entrypoint:
+<li>Genome download and indexing are handled by <code>./scripts/bcfngs</code>.</li>
+<li>Mapping is still run directly through the STAR Snakefiles already present in the repository:
 <ul>
-<li><code>./scripts/bcfngs mapping plan</code></li>
-<li><code>./scripts/bcfngs mapping run</code></li>
+<li><code>Star.MappingQuant.PairedEndFastq.Snakefile</code></li>
+<li><code>Star.MappingQuant.SingleEndFastq.Snakefile</code></li>
 </ul></li>
-<li>Default mapper: <code>star</code></li>
-<li>Default read mode: paired-end</li>
-<li>Default bigWig conversion: <code>bamCoverage --normalizeUsing CPM --binSize 10</code></li>
+<li>Current mapping support is STAR-based. The genome preparation workflow creates additional bwa and bowtie2 indices for future use, but those mappers are not yet wired into a mapping wrapper.</li>
 </ul>
 <p>Output layout:</p>
-<pre class="text"><code>&lt;outdir&gt;/&lt;project&gt;/&lt;organism&gt;/&lt;mapper&gt;/&lt;sample&gt;.bam
-&lt;outdir&gt;/&lt;project&gt;/&lt;organism&gt;/&lt;mapper&gt;/&lt;sample&gt;.bam.bai
-&lt;outdir&gt;/&lt;project&gt;/&lt;organism&gt;/&lt;mapper&gt;/bigwig/&lt;sample&gt;.bw</code></pre>
-<p>For <code>STAR</code>, the workflow also keeps:</p>
+<pre class="text"><code>&lt;workdir&gt;/&lt;project&gt;/&lt;organism&gt;/star_mapping/&lt;sample&gt;.bam
+&lt;workdir&gt;/&lt;project&gt;/&lt;organism&gt;/star_mapping/&lt;sample&gt;.bam.bai
+&lt;workdir&gt;/&lt;project&gt;/&lt;organism&gt;/bigwig/&lt;sample&gt;.bw</code></pre>
+<p>The STAR workflow also keeps:</p>
 <ul>
 <li><code>&lt;sample&gt;.counts.tab</code></li>
 <li><code>&lt;sample&gt;.SJ.out.tab</code></li>
@@ -266,91 +264,39 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">organism</span><span class="kw">:</span><span class="at"> </span><span class="st">"Caenorhabditis_elegans"</span></span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">threads</span><span class="kw">:</span><span class="at"> </span><span class="dv">16</span></span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ram_bytes</span><span class="kw">:</span><span class="at"> </span><span class="dv">168632718037</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><code>organism</code> must be a single organism key from <code>configs/genomes.yaml</code>.</p>
+<p><code>organism</code> must be one organism key from <code>configs/genomes.yaml</code>, using the scientific-name format such as <code>Homo_sapiens</code> or <code>Mus_musculus</code>.</p>
 </section>
 <section id="fastq-pattern-auto-detection" class="level2">
 <h2 class="anchored" data-anchor-id="fastq-pattern-auto-detection">FASTQ pattern auto-detection</h2>
-<p>The workflow detects input naming in this fixed order:</p>
+<p>The legacy STAR Snakefiles expect concatenated FASTQ files in the working directory. The important patterns are:</p>
 <ol type="1">
-<li><code>*_R1.fastq.gz</code></li>
-<li><code>*_R1_001.fastq.gz</code></li>
-<li><code>*_L1_R1.fastq.gz</code></li>
 <li><code>*.conc.R1.fastq.gz</code></li>
+<li><code>*.conc.R2.fastq.gz</code> for paired-end runs</li>
 </ol>
-<p>In paired-end mode, the corresponding <code>R2</code> file must exist.</p>
+<p>The single-end Snakefile ignores <code>R2</code>, while the paired-end Snakefile requires both mates.</p>
 </section>
 <section id="basic-usage" class="level2">
 <h2 class="anchored" data-anchor-id="basic-usage">Basic usage</h2>
 <p>Dry-run first:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping plan</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Run:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Select mapper(s):</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping plan <span class="at">--mapper</span> star,bwa,bowtie2</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run  <span class="at">--mapper</span> bwa</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Read mode:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run <span class="at">--single-end</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run <span class="at">--paired-end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Override config values for a single run:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping plan <span class="dt">\</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--project</span> P152 <span class="dt">\</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--organism</span> Drosophila_melanogaster <span class="dt">\</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--fastq-dir</span> /fs/pool/pool-bcfngs/fastq_files/P152/conc.fastq <span class="dt">\</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--outdir</span> /fs/pool/pool-bcfngs/mapping</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Keep intermediary files (default is cleanup):</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run <span class="at">--keep-intermediary-files</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Tune bigWig options:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run <span class="at">--bw-normalization</span> CPM <span class="at">--bw-bin-size</span> 10</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># paired-end</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-nps</span> /path/to/repo/Star.MappingQuant.PairedEndFastq.Snakefile <span class="at">-j</span> 20</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># single-end</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-nps</span> /path/to/repo/Star.MappingQuant.SingleEndFastq.Snakefile <span class="at">-j</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Remove <code>-n</code> after the dry-run looks correct.</p>
 </section>
-<section id="slurm-execution" class="level2">
-<h2 class="anchored" data-anchor-id="slurm-execution">SLURM execution</h2>
-<p>Run mapping on SLURM:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping plan <span class="at">--executor</span> slurm <span class="at">--jobs</span> 20</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run  <span class="at">--executor</span> slurm <span class="at">--jobs</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Defaults:</p>
+<section id="notes" class="level2">
+<h2 class="anchored" data-anchor-id="notes">Notes</h2>
 <ul>
-<li>Partition: <code>p.hpcl8</code></li>
-<li>Mail user: <code>yeroslaviz@biochem.mpg.de</code></li>
-<li>Mail type: <code>ALL</code></li>
-<li>Time: <code>04:00:00</code></li>
+<li>Run <code>./scripts/bcfngs env check</code> first to confirm the required tools are available in <code>~/miniconda3/envs/update_genomes</code>.</li>
+<li>The mapping Snakefiles use the stable STAR index symlink under <code>/fs/pool/pool-bcfngs/genomes/&lt;Organism&gt;/starIndex</code>.</li>
+<li><code>wigToBigwig</code> and <code>bam2wig.py</code> must be available in the same environment.</li>
 </ul>
-<p>Key SLURM overrides:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run <span class="dt">\</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--executor</span> slurm <span class="dt">\</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--slurm-partition</span> p.hpcl8 <span class="dt">\</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--slurm-time</span> 04:00:00 <span class="dt">\</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--slurm-cpus-per-task</span> 20 <span class="dt">\</span></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--slurm-star-mem-mb</span> 64000 <span class="dt">\</span></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">--slurm-aligner-mem-mb</span> 32000</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>The wrapper sets per-rule resources so lightweight rules (indexing and bamCoverage) do not request mapper-level memory.</p>
 </section>
-<section id="additional-examples-moved-from-snakemake.rmd" class="level2">
-<h2 class="anchored" data-anchor-id="additional-examples-moved-from-snakemake.rmd">Additional Examples Moved From <code>snakemake.Rmd</code></h2>
-<p>These command blocks were moved here to keep mapping examples in one place.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># default (paired-end, STAR)</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping plan</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co"># one mapper</span></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run <span class="at">--mapper</span> bwa</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co"># all mappers</span></span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run <span class="at">--mapper</span> star,bwa,bowtie2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping plan <span class="dt">\</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--project</span> P152 <span class="dt">\</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--organism</span> Drosophila_melanogaster <span class="dt">\</span></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--fastq-dir</span> /fs/pool/pool-bcfngs/fastq_files/P152/conc.fastq <span class="dt">\</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--outdir</span> /fs/pool/pool-bcfngs/mapping</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping plan <span class="at">--executor</span> slurm <span class="at">--jobs</span> 20</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run  <span class="at">--executor</span> slurm <span class="at">--jobs</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Legacy STAR-only direct Snakemake examples:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co"># for single-end samples</span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-nps</span> /path/to/repo/Star.MappingQuant.SingleEndFastq.Snakefile <span class="at">-j</span> 50</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co"># for paired-end samples</span></span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-nps</span> /path/to/repo/Star.MappingQuant.PairedEndFastq.Snakefile <span class="at">-j</span> 50</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Flag meanings for the legacy command style:</p>
+<section id="flag-meanings" class="level2">
+<h2 class="anchored" data-anchor-id="flag-meanings">Flag meanings</h2>
 <ul>
 <li><code>-n</code>: dry-run</li>
 <li><code>-p</code>: print shell commands</li>

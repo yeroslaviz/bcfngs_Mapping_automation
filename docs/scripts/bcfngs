@@ -14,7 +14,7 @@ from typing import Iterable
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_ENV_PREFIX = REPO_ROOT / ".mamba" / "env"
+DEFAULT_ENV_PREFIX = Path.home() / "miniconda3" / "envs" / "update_genomes"
 
 
 @dataclass(frozen=True)
@@ -101,14 +101,22 @@ def _require_tools(ctx: RunContext, tools: Iterable[str]) -> None:
         raise SystemExit(f"Missing tools in environment: {', '.join(missing)}")
 
 
+def _extract_version(text: str) -> str:
+    m = re.search(r"\b(\d+(?:\.\d+)+(?:[-+._A-Za-z0-9]*)?)\b", text)
+    if m:
+        return m.group(1)
+    return text.strip()
+
+
 def cmd_env_check(ctx: RunContext, args: argparse.Namespace) -> None:
     _require_tools(ctx, ["python", "snakemake", "STAR", "bwa", "bowtie2-build", "samtools", "curl"])
+    samtools_line = (_run_tool(ctx, ["samtools", "--version"], capture=True).stdout.splitlines() or [""])[0].strip()
     versions = {
         "snakemake": _run_tool(ctx, ["snakemake", "--version"], capture=True).stdout.strip(),
         "STAR": _run_tool(ctx, ["STAR", "--version"], capture=True).stdout.strip(),
         "bwa": (_run_tool(ctx, ["bwa"], check=False, capture=True).stderr.splitlines() or [""])[0].strip(),
         "bowtie2": (_run_tool(ctx, ["bowtie2-build", "--version"], check=False, capture=True).stdout.splitlines() or [""])[0].strip(),
-        "samtools": (_run_tool(ctx, ["samtools", "--version"], capture=True).stdout.splitlines() or [""])[0].strip(),
+        "samtools": _extract_version(samtools_line),
     }
     print(json.dumps(versions, indent=2))
 
@@ -210,7 +218,11 @@ def cmd_genomes_build(ctx: RunContext, args: argparse.Namespace) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(prog="bcfngs")
     parser.add_argument("--profile", choices=["micromamba", "modules"], default="micromamba")
-    parser.add_argument("--env-prefix", default=str(DEFAULT_ENV_PREFIX))
+    parser.add_argument(
+        "--env-prefix",
+        default=str(DEFAULT_ENV_PREFIX),
+        help="Micromamba environment prefix (default: ~/miniconda3/envs/update_genomes)",
+    )
 
     sub = parser.add_subparsers(dest="cmd", required=True)
 

@@ -17,7 +17,10 @@ Once every few years the genomic sequences must be updated. Also the STAR versio
 ## Prerequisites / where to run
 
 You can use any server as long as you can run `snakemake` and the required tools. The recommended method is **micromamba** (see [environment](environment.html)).
-Default environment path used on the cluster:
+Default environment path:
+`~/miniconda3/envs/update_genomes`
+
+On the HPC cluster this expands to:
 `/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes`
 
 ## How-to (by scenario)
@@ -25,17 +28,15 @@ Default environment path used on the cluster:
 ### First time setup (recommended)
 
 ```bash
-./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env create
-./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env check
+./scripts/bcfngs env create
+./scripts/bcfngs env check
 ```
 
 ### Routine: re-run indexing (no config changes)
 
 ```bash
-./scripts/bcfngs genomes build --cores 20
-
-# optional explicit preflight (or use --no-skip-plan on build)
 ./scripts/bcfngs genomes plan
+./scripts/bcfngs genomes build --cores 20
 ```
 
 ### Only rebuild one or two organisms
@@ -56,7 +57,8 @@ Default environment path used on the cluster:
 3. Then:
 
 ```bash
-./scripts/bcfngs genomes build --cores 20 --no-skip-plan
+./scripts/bcfngs genomes plan
+./scripts/bcfngs genomes build --cores 20
 ```
 
 ### You updated STAR/bwa/bowtie2 (rebuild indices into new versioned folders)
@@ -64,8 +66,8 @@ Default environment path used on the cluster:
 1. Update tools:
 
 ```bash
-./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env update
-./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env check
+./scripts/bcfngs env update
+./scripts/bcfngs env check
 ```
 
 2. Update `index_versions` in `configs/genomes.yaml` (these strings are used in output folder names).
@@ -80,14 +82,15 @@ Default environment path used on the cluster:
 ```bash
 module load bclconvert/4.3.13 star bowtie2 bwa
 ./scripts/bcfngs --profile modules env check
-./scripts/bcfngs --profile modules genomes build --cores 20 --no-skip-plan
+./scripts/bcfngs --profile modules genomes plan
+./scripts/bcfngs --profile modules genomes build --cores 20
 ```
 
 ### Recommended (micromamba)
 
 ```bash
-./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env create
-./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env check
+./scripts/bcfngs env create
+./scripts/bcfngs env check
 ```
 
 ### HPC modules fallback (optional)
@@ -116,25 +119,16 @@ To add or update a genome:
 
 ## 3) Build genomes + indices (safe workflow)
 
-Build directly (default behavior skips preflight plan checks):
+Run preflight checks first:
+
+```bash
+./scripts/bcfngs genomes plan
+```
+
+Then build:
 
 ```bash
 ./scripts/bcfngs genomes build --cores 20
-```
-
-Force preflight checks + lint + dry-run before build:
-
-```bash
-./scripts/bcfngs genomes build --cores 20 --no-skip-plan
-```
-
-Run through SLURM instead of local execution:
-
-```bash
-./scripts/bcfngs genomes build --executor slurm --jobs 20
-
-# if SLURM executor is unavailable, refresh the environment first
-./scripts/bcfngs env update
 ```
 
 To build only a subset:
@@ -155,12 +149,7 @@ Symlinks are updated automatically by the Snakemake workflow after successful in
 
 ## 5) Mapping (per project)
 
-Mapping is now handled by a unified workflow (`workflow/mapping.smk`) and wrapper commands:
-
-- `./scripts/bcfngs mapping plan`
-- `./scripts/bcfngs mapping run`
-
-Supported mappers are `STAR`, `bwa`, and `bowtie2` (selectable by `--mapper`).
+Genome download and indexing are handled by `./scripts/bcfngs`. Mapping is still run through the STAR Snakefiles already in the repository.
 
 ### Change parameters before mapping
 
@@ -177,62 +166,13 @@ threads: 16
 ### Run mapping (dry-run first)
 
 ```bash
-# default mapper and mode (STAR, paired-end)
-./scripts/bcfngs mapping plan
-./scripts/bcfngs mapping run
+cd /fs/pool/pool-bcfngs/fastq_files/P152/conc.fastq/
 
-# choose mapper(s)
-./scripts/bcfngs mapping run --mapper star,bwa,bowtie2
+# paired-end
+snakemake -nps /path/to/repo/Star.MappingQuant.PairedEndFastq.Snakefile -j 20
 
-# single-end mode
-./scripts/bcfngs mapping run --single-end
+# single-end
+snakemake -nps /path/to/repo/Star.MappingQuant.SingleEndFastq.Snakefile -j 20
 ```
 
-For more usage details, see [`mapping.qmd`](mapping.qmd).
-
-## Additional Examples Moved From `snakemake.Rmd`
-
-These command blocks were moved here to keep topic-specific examples in one place.
-
-```bash
-# genomes
-./scripts/bcfngs genomes plan
-./scripts/bcfngs genomes build --cores 20
-
-# optional explicit preflight (or use --no-skip-plan on build)
-./scripts/bcfngs genomes build --cores 20 --no-skip-plan
-
-# run jobs through SLURM (instead of local execution)
-./scripts/bcfngs genomes build --executor slurm --jobs 20
-
-# if SLURM executor is reported as unavailable, refresh the env first
-./scripts/bcfngs env update
-
-# override defaults for a specific cluster/queue when needed
-./scripts/bcfngs genomes build --executor slurm --jobs 20 --slurm-partition <other_partition>
-
-# SLURM defaults used automatically in slurm mode:
-# --partition p.hpcl8
-# --mail-user yeroslaviz@biochem.mpg.de
-# --mail-type ALL
-# --time 04:00:00 (240 min)
-# --cpus-per-task 20
-# --mem-per-cpu 20G
-
-# check if a newer Ensembl release exists
-./scripts/bcfngs genomes check-updates
-```
-
-```bash
-# all organisms
-./scripts/bcfngs genomes build --cores 20
-
-# subset
-./scripts/bcfngs genomes build --cores 20 --organism Homo_sapiens,Mus_musculus
-```
-
-```bash
-module load bclconvert/4.3.13 star bowtie2 bwa
-./scripts/bcfngs --profile modules env check
-./scripts/bcfngs --profile modules genomes build --cores 20 --no-skip-plan
-```
+Remove `-n` to run the mapping for real after the dry-run looks correct.

@@ -258,6 +258,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>Mapping</strong> (currently STAR) using per-project run settings.</li>
 </ol>
 <p>For non-experts, prefer the single wrapper command <code>./scripts/bcfngs</code> (runs checks, then snakemake).</p>
+<p>By default, <code>./scripts/bcfngs</code> uses the micromamba environment at <code>~/miniconda3/envs/update_genomes</code>. If your environment is elsewhere, add <code>--env-prefix /path/to/env</code>.</p>
 <section id="quickstart" class="level2">
 <h2 class="anchored" data-anchor-id="quickstart">Quickstart</h2>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1) create/update env (only once, then as needed)</span></span>
