@@ -244,11 +244,16 @@ def _resolve_genomes_index_versions(ctx: RunContext, genomes_cfg_path: Path) -> 
 
 
 def _write_temp_config_json(data: dict) -> Path:
+    # Use a shared path (repo/.snakemake) instead of system /tmp so
+    # nested Snakemake invocations on SLURM nodes can read the config.
+    tmp_dir = REPO_ROOT / ".snakemake" / "bcfngs_tmp"
+    _ensure_dir(tmp_dir)
     fh = tempfile.NamedTemporaryFile(
         mode="w",
         prefix="bcfngs-genomes-",
         suffix=".json",
         delete=False,
+        dir=tmp_dir,
     )
     with fh:
         json.dump(data, fh)
