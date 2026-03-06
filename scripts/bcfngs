@@ -188,6 +188,13 @@ def _extract_star_version(out: subprocess.CompletedProcess) -> str:
     return _extract_version_token(combined)
 
 
+def _extract_plain_version(text: str) -> str:
+    token = _extract_version_token(text)
+    if token:
+        return token
+    return text.strip()
+
+
 def _resolve_genomes_index_versions(ctx: RunContext, genomes_cfg_path: Path) -> tuple[dict, dict[str, str]]:
     cfg = _load_yaml(ctx, genomes_cfg_path)
     raw_versions = cfg.get("index_versions")
@@ -252,13 +259,16 @@ def cmd_env_check(ctx: RunContext, args: argparse.Namespace) -> None:
     bwa_out = _run_tool(ctx, ["bwa"], check=False, capture=True)
     star_out = _run_tool(ctx, ["STAR", "--version"], check=False, capture=True)
     bowtie2_out = _run_tool(ctx, ["bowtie2-build", "--version"], check=False, capture=True)
+    samtools_line = (_run_tool(ctx, ["samtools", "--version"], capture=True).stdout.splitlines() or [""])[0].strip()
+    bamcoverage_out = _run_tool(ctx, ["bamCoverage", "--version"], check=False, capture=True)
+    bamcoverage_line = _first_nonempty_line(f"{bamcoverage_out.stdout or ''}\n{bamcoverage_out.stderr or ''}")
     versions = {
         "snakemake": _run_tool(ctx, ["snakemake", "--version"], capture=True).stdout.strip(),
         "STAR": _extract_star_version(star_out),
         "bwa": _extract_bwa_version(bwa_out),
         "bowtie2": _extract_bowtie2_version(bowtie2_out),
-        "samtools": (_run_tool(ctx, ["samtools", "--version"], capture=True).stdout.splitlines() or [""])[0].strip(),
-        "bamCoverage": _run_tool(ctx, ["bamCoverage", "--version"], capture=True).stdout.strip(),
+        "samtools": _extract_plain_version(samtools_line),
+        "bamCoverage": _extract_plain_version(bamcoverage_line),
     }
     print(json.dumps(versions, indent=2))
 
@@ -317,6 +327,12 @@ def cmd_genomes_check_updates(ctx: RunContext, args: argparse.Namespace) -> None
 
 
 def _genomes_urls_from_cfg(cfg: dict) -> list[str]:
+    def species_prefix(species: str) -> str:
+        parts = species.split("_")
+        if not parts:
+            return species
+        return "_".join([parts[0].capitalize(), *parts[1:]])
+
     urls: list[str] = []
     for org in cfg["organisms"].values():
         if org.get("source") == "ensemblgenomes":
@@ -326,7 +342,7 @@ def _genomes_urls_from_cfg(cfg: dict) -> list[str]:
         rel = int(cfg["releases"]["ensembl"])
         root = f"https://ftp.ensembl.org/pub/release-{rel}"
         species = org["species"]
-        cap = "_".join([s.capitalize() for s in species.split("_")])
+        cap = species_prefix(species)
         assembly = org["assembly"]
         fasta_kind = org.get("fasta_kind", "dna.toplevel")
         urls.append(f"{root}/fasta/{species}/dna/{cap}.{assembly}.{fasta_kind}.fa.gz")
@@ -782,7 +798,11 @@ def _add_mapping_args(parser: argparse.ArgumentParser) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(prog="bcfngs")
     parser.add_argument("--profile", choices=["micromamba", "modules"], default="micromamba")
-    parser.add_argument("--env-prefix", default=str(DEFAULT_ENV_PREFIX))
+    parser.add_argument(
+        "--env-prefix",
+        default=str(DEFAULT_ENV_PREFIX),
+        help="Micromamba environment prefix (default: cluster env if present, else .mamba/env).",
+    )
 
     sub = parser.add_subparsers(dest="cmd", required=True)
 
