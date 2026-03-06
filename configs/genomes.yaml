@@ -11,11 +11,13 @@ default_ram_bytes: 168632718037
 bwa_index_algorithm: bwtsw
 bwa_index_mem_mb: 16000
 
-# Versions are used for versioned output directories (and symlink targets).
-index_versions:
-  star: "2.7.11b"
-  bwa: "0.7.18"
-  bowtie2: "2.5.4"
+# Tool versions for versioned output directories are auto-detected from the
+# active environment at runtime (same parsing as `./scripts/bcfngs env check`).
+# Optional reference only:
+# index_versions:
+#   star: "2.7.11b"
+#   bwa: "0.7.19-r1273"
+#   bowtie2: "2.5.5"
 
 organisms:
   Homo_sapiens:

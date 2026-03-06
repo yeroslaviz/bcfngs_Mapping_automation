@@ -196,51 +196,29 @@ def _extract_plain_version(text: str) -> str:
     return text.strip()
 
 
-def _resolve_genomes_index_versions(ctx: RunContext, genomes_cfg_path: Path) -> tuple[dict, dict[str, str]]:
-    cfg = _load_yaml(ctx, genomes_cfg_path)
-    raw_versions = cfg.get("index_versions")
-    if not isinstance(raw_versions, dict):
-        raw_versions = {}
-
+def _detect_genomes_index_versions(ctx: RunContext) -> dict[str, str]:
+    _require_tools(ctx, ["STAR", "bwa", "bowtie2-build"])
+    star_out = _run_tool(ctx, ["STAR", "--version"], check=False, capture=True)
+    bwa_out = _run_tool(ctx, ["bwa"], check=False, capture=True)
+    bowtie2_out = _run_tool(ctx, ["bowtie2-build", "--version"], check=False, capture=True)
     versions = {
-        "star": str(raw_versions.get("star", "") or "").strip(),
-        "bwa": str(raw_versions.get("bwa", "") or "").strip(),
-        "bowtie2": str(raw_versions.get("bowtie2", "") or "").strip(),
+        "star": _extract_star_version(star_out),
+        "bwa": _extract_bwa_version(bwa_out),
+        "bowtie2": _extract_bowtie2_version(bowtie2_out),
     }
-    detected: dict[str, str] = {}
-
-    if not versions["star"]:
-        star_out = _run_tool(ctx, ["STAR", "--version"], check=False, capture=True)
-        star_ver = _extract_star_version(star_out)
-        if star_ver:
-            versions["star"] = star_ver
-            detected["star"] = star_ver
-
-    if not versions["bwa"]:
-        bwa_out = _run_tool(ctx, ["bwa"], check=False, capture=True)
-        bwa_ver = _extract_bwa_version(bwa_out)
-        if bwa_ver:
-            versions["bwa"] = bwa_ver
-            detected["bwa"] = bwa_ver
-
-    if not versions["bowtie2"]:
-        bowtie2_out = _run_tool(ctx, ["bowtie2-build", "--version"], check=False, capture=True)
-        bowtie2_ver = _extract_bowtie2_version(bowtie2_out)
-        if bowtie2_ver:
-            versions["bowtie2"] = bowtie2_ver
-            detected["bowtie2"] = bowtie2_ver
-
     missing = [tool for tool, ver in versions.items() if not ver]
     if missing:
-        missing_csv = ", ".join(missing)
         raise SystemExit(
-            "Missing genomes index_versions for "
-            f"{missing_csv}. Set configs/genomes.yaml:index_versions or ensure those tools are available "
-            "in the selected environment so versions can be auto-detected."
+            "Failed to detect genomes index versions from environment for: "
+            f"{', '.join(missing)}. Run './scripts/bcfngs env check' and ensure these tools are installed."
         )
+    return versions
 
-    cfg["index_versions"] = versions
-    return cfg, detected
+
+def _resolve_genomes_index_versions(ctx: RunContext, genomes_cfg_path: Path) -> dict:
+    cfg = _load_yaml(ctx, genomes_cfg_path)
+    cfg["index_versions"] = _detect_genomes_index_versions(ctx)
+    return cfg
 
 
 def _write_temp_config_json(data: dict) -> Path:
@@ -402,7 +380,7 @@ def cmd_genomes_plan(ctx: RunContext, args: argparse.Namespace) -> None:
     for division, rel in sorted(releases.get("ensemblgenomes", {}).items()):
         print(f"Genome build release: EnsemblGenomes {division} {rel}")
 
-    index_versions = cfg.get("index_versions", {})
+    index_versions = _detect_genomes_index_versions(ctx)
     print(
         "Tool versions: "
         f"STAR {index_versions.get('star', 'unknown')}, "
@@ -446,12 +424,9 @@ def cmd_genomes_build(ctx: RunContext, args: argparse.Namespace) -> None:
     else:
         print("Skipping genomes plan checks by default; running build directly.")
     genomes_cfg_path = REPO_ROOT / "configs" / "genomes.yaml"
-    genomes_cfg, detected_versions = _resolve_genomes_index_versions(ctx, genomes_cfg_path)
+    genomes_cfg = _resolve_genomes_index_versions(ctx, genomes_cfg_path)
     versions = genomes_cfg["index_versions"]
-    if detected_versions:
-        detected_txt = ", ".join(f"{tool}={ver}" for tool, ver in detected_versions.items())
-        print(f"Auto-detected missing index_versions from environment: {detected_txt}")
-    print("Using index versions:", json.dumps(versions, indent=2))
+    print("Using tool versions from environment:", json.dumps(versions, indent=2))
     tmp_genomes_cfg_path = _write_temp_config_json(genomes_cfg)
     smk = REPO_ROOT / "workflow" / "genomes.smk"
 
