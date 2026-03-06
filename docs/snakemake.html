@@ -79,7 +79,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-8e955b7ce0181ffea43a0319902a8cc0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-20d77dfefd6d2baddaaf03aaf73c8b0a.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -110,6 +110,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css">
 
 
+<link rel="stylesheet" href="styles.css">
 </head>
 
 <body class="nav-fixed quarto-light">
@@ -789,6 +790,123 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       a.setAttribute("aria-label", "Bluesky");
       a.innerHTML = '<i class="fa-brands fa-bluesky fa-lg" aria-hidden="true"></i>';
     });
+  })();
+</script>
+<script>
+  (function () {
+    function initTocToggle() {
+      var toc = document.getElementById("TOC");
+      if (!toc) return;
+      var title = document.getElementById("toc-title");
+      var list = null;
+      for (var i = 0; i < toc.children.length; i += 1) {
+        if (toc.children[i].tagName === "UL") {
+          list = toc.children[i];
+          break;
+        }
+      }
+      if (!title || !list || toc.querySelector(".toc-toggle-button")) return;
+
+      var button = document.createElement("button");
+      button.type = "button";
+      button.className = "toc-toggle-button";
+      button.setAttribute("aria-controls", "TOC");
+      var collapsed = false;
+      var entries = [];
+      var links = toc.querySelectorAll("a[data-scroll-target]");
+
+      for (var j = 0; j < links.length; j += 1) {
+        var link = links[j];
+        var selector = link.getAttribute("data-scroll-target");
+        if (!selector) continue;
+
+        var target = null;
+        if (selector.charAt(0) === "#") {
+          target = document.getElementById(decodeURIComponent(selector.slice(1)));
+        } else {
+          try {
+            target = document.querySelector(decodeURIComponent(selector));
+          } catch (error) {
+            target = null;
+          }
+        }
+
+        if (target) {
+          entries.push({ link: link, target: target });
+        }
+      }
+
+      function clearActiveState() {
+        var activeLinks = toc.querySelectorAll("a.nav-link.active");
+        for (var i = 0; i < activeLinks.length; i += 1) {
+          activeLinks[i].classList.remove("active");
+        }
+
+        var openItems = toc.querySelectorAll("li.toc-open");
+        for (var j = 0; j < openItems.length; j += 1) {
+          openItems[j].classList.remove("toc-open");
+        }
+      }
+
+      function markBranch(link) {
+        if (!link) return;
+        link.classList.add("active");
+
+        var item = link.parentElement;
+        while (item && item !== toc) {
+          if (item.tagName === "LI") {
+            item.classList.add("toc-open");
+          }
+          item = item.parentElement;
+        }
+      }
+
+      function updateTocFromScroll() {
+        if (!entries.length) return;
+
+        var threshold = 180;
+        var current = entries[0].link;
+
+        for (var i = 0; i < entries.length; i += 1) {
+          if (entries[i].target.getBoundingClientRect().top - threshold <= 0) {
+            current = entries[i].link;
+          } else {
+            break;
+          }
+        }
+
+        clearActiveState();
+        markBranch(current);
+      }
+
+      function setCollapsed(collapsed) {
+        toc.classList.toggle("toc-collapsed", collapsed);
+        button.setAttribute("aria-expanded", collapsed ? "false" : "true");
+        button.textContent = collapsed ? "Expand" : "Collapse";
+      }
+
+      button.addEventListener("click", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        collapsed = !collapsed;
+        setCollapsed(collapsed);
+      });
+
+      title.appendChild(button);
+      updateTocFromScroll();
+      window.addEventListener("scroll", updateTocFromScroll, { passive: true });
+      window.addEventListener("resize", updateTocFromScroll);
+      window.addEventListener("hashchange", function () {
+        window.setTimeout(updateTocFromScroll, 10);
+      });
+      setCollapsed(false);
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initTocToggle);
+    } else {
+      initTocToggle();
+    }
   })();
 </script>
 

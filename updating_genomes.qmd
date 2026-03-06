@@ -27,139 +27,129 @@ Environment setup is documented elsewhere. This page assumes `./scripts/bcfngs` 
 
 `bcfngs genomes` currently exposes three subcommands:
 
-- `check-updates`: compare the pinned Ensembl release in [`configs/genomes.yaml`](configs/genomes.yaml) with the latest Ensembl release visible on `ftp.ensembl.org`
-- `plan`: run preflight checks, `snakemake --lint`, and a dry-run
-- `build`: run `plan`, then execute the workflow for real
+- `check-updates`: compare the pinned `releases.ensembl` value in [`configs/genomes.yaml`](configs/genomes.yaml) with the latest release advertised on `ftp.ensembl.org`
+- `plan`: validate the genomes config, check remote FASTA/GTF URLs, verify write access to `genomes_root`, lint the workflow, and do a dry-run
+- `build`: execute the genomes workflow for real; by default it skips `plan`, and `--no-skip-plan` enables the preflight checks before the build
 
-Inspect the wrapper help first. Current output from the script:
-
-```bash
-./scripts/bcfngs genomes --help
-```
-
-```text
-usage: bcfngs genomes [-h] {check-updates,plan,build} ...
-
-positional arguments:
-  {check-updates,plan,build}
-
-optional arguments:
-  -h, --help            show this help message and exit
-```
-
-```bash
-./scripts/bcfngs genomes plan --help
-```
-
-```text
-usage: bcfngs genomes plan [-h]
-
-optional arguments:
-  -h, --help  show this help message and exit
-```
-
-```bash
-./scripts/bcfngs genomes build --help
-```
-
-```text
-usage: bcfngs genomes build [-h] [--cores CORES] [--organism ORGANISM]
-
-optional arguments:
-  -h, --help           show this help message and exit
-  --cores CORES
-  --organism ORGANISM  Comma-separated subset of organism keys (e.g.
-                       Homo_sapiens,Mus_musculus)
-```
-
-```bash
-./scripts/bcfngs genomes check-updates --help
-```
-
-```text
-usage: bcfngs genomes check-updates [-h]
-
-optional arguments:
-  -h, --help  show this help message and exit
-```
-
-That means:
-
-- use `--cores` to control total workflow parallelism
-- use `--organism` for a comma-separated subset of organism keys
-- use direct `snakemake` for advanced cases such as scheduler memory flags or building only one index type
+During `build`, the wrapper also auto-detects the active `STAR`, `bwa`, and `bowtie2` versions from the environment and uses those detected versions for the versioned output directories.
 
 ## Shared wrapper parameters
 
 These apply to all three genomes subcommands and are cross-referenced from the chapters below.
 
-| Parameter | Current default | Applies to | Notes |
-|---|---|---|---|
-| `--profile` | `micromamba` | `check-updates`, `plan`, `build` | `modules` prepends `module load bclconvert/4.3.13 star bowtie2 bwa`, but still runs `python` and `snakemake` through micromamba. |
-| `--env-prefix` | `./.mamba/env` | `check-updates`, `plan`, `build` | This is the current default in [`scripts/bcfngs`](scripts/bcfngs). Override it if your environment lives elsewhere. |
-| `configs/genomes.yaml` | required | `check-updates`, `plan`, `build` | Release pins, organisms, output root, thread defaults, RAM defaults, and index version strings all come from this file. |
+| Parameter | Default | Notes |
+|---|---|---|
+| `--profile` | `micromamba` | `modules` prepends `module load bclconvert/4.3.13 star bowtie2 bwa`, but still runs `python` and `snakemake` through micromamba. |
+| `--env-prefix` | `~/miniconda3/envs/update_genomes` if present, otherwise `./.mamba/env` | Shown here with `~` for brevity. The current logic in [`scripts/bcfngs`](scripts/bcfngs) prefers the cluster micromamba environment when it exists; otherwise it falls back to the repo-local environment. |
 
 ## Common config fields
 
 These are the main `configs/genomes.yaml` fields referenced by the three command chapters.
 
-| Config field | Current value | Used by | Notes |
+| Field | Value | Used | Notes |
 |---|---|---|---|
-| `genomes_root` | `/fs/pool/pool-bcfngs/genomes` | `plan`, `build` | `plan` checks write access here. `build` writes sources, indices, and symlinks here. |
-| `releases.ensembl` | `116` | `check-updates`, `plan`, `build` | Main Ensembl release pin. `check-updates` compares this to `ftp.ensembl.org`. |
-| `releases.ensemblgenomes.metazoa` | `61` | `plan`, `build` | Used for `ensemblgenomes` organisms such as `Drosophila_pseudoobscura`. |
+| `genomes_root` | `/fs/pool/pool-bcfngs/genomes` | `plan/build` | `plan` checks write access here. `build` writes sources, indices, logs, chromSize files, and symlinks here. |
+| `releases.ensembl` | `115` | `check-updates/plan/build` | Main Ensembl release pin. `check-updates` compares this to `ftp.ensembl.org`. |
+| `releases.ensemblgenomes.metazoa` | `62` | `plan/build` | Used for `ensemblgenomes` organisms such as `Drosophila_pseudoobscura`. |
 | `default_threads` | `16` | `build` | Used by `STAR` genome generation and `bowtie2-build`. |
 | `default_ram_bytes` | `168632718037` | `build` | Passed to `STAR --limitGenomeGenerateRAM`. |
-| `index_versions.star` | `"unknown"` | `build` | Controls versioned output paths such as `starIndex-<version>`. |
-| `index_versions.bwa` | `"unknown"` | `build` | Controls versioned output paths such as `bwaIndex-<version>`. |
-| `index_versions.bowtie2` | `"unknown"` | `build` | Controls versioned output paths such as `bowtie2Index-<version>`. |
-| `organisms.*` | all configured organisms | `plan`, `build` | Scientific-name keys such as `Homo_sapiens`, `Mus_musculus`, `Drosophila_melanogaster`. |
+| `bwa_index_algorithm` | `bwtsw` | `build` | Global default for `bwa index -a`. |
+| `bwa_index_mem_mb` | `16000` | `build` | Global memory resource for the `bwa_index` rule. |
+| `organisms.*` | all configured organisms | `plan/build` | Scientific-name keys such as `Homo_sapiens`, `Mus_musculus`, `Drosophila_melanogaster`. |
+| `organisms.*.fasta_kind` / `gtf_kind` | organism-specific | `plan/build` | Used to construct standard Ensembl file names when explicit URLs are not provided. |
 | `organisms.*.sa_index` | organism-specific | `build` | Passed to `STAR --genomeSAindexNbases`. |
-| `organisms.*.fasta_url` / `gtf_url` | optional explicit URLs | `plan`, `build` | Used for organisms that do not fit the generated Ensembl filename pattern. |
+| `organisms.*.bwa_index_algorithm` | optional override | `build` | Overrides the global BWA algorithm for one organism. |
+| `organisms.*.bwa_index_mem_mb` | optional override | `build` | Overrides the global BWA memory resource for one organism. |
+| `organisms.*.fasta_url` / `gtf_url` | optional explicit URLs | `plan/build` | Used for organisms that do not fit the generated Ensembl filename pattern. |
+
+## Overview of `configs/genomes.yaml`
+
+At the top level, [`configs/genomes.yaml`](configs/genomes.yaml) is split into:
+
+- `genomes_root`: output root for sources, logs, indices, and symlinks
+- `releases`: the pinned upstream releases
+- `default_threads` and `default_ram_bytes`: global defaults for the heavy index rules
+- `bwa_index_algorithm` and `bwa_index_mem_mb`: global defaults for the BWA index rule
+- `organisms`: one block per organism, keyed by scientific name
+
+Typical organism block:
+
+```yaml
+Homo_sapiens:
+  source: ensembl
+  species: homo_sapiens
+  assembly: GRCh38
+  fasta_kind: dna.primary_assembly
+  gtf_kind: gtf
+  sa_index: 14
+  bwa_index_algorithm: bwtsw
+  bwa_index_mem_mb: 64000
+```
+
+Fields under `organisms:`:
+
+- the organism key, such as `Homo_sapiens`, is the name you pass to `--organism`
+- `source` is usually `ensembl`, and can also be `ensemblgenomes`
+- `division` is required for `ensemblgenomes` sources, for example `metazoa`
+- `species` is the lowercase species path used on the FTP server
+- `assembly` is the assembly label used in the remote FASTA/GTF file names
+- `fasta_kind` and `gtf_kind` control the file naming pattern for standard Ensembl sources
+- `sa_index` is the STAR suffix-array parameter
+- `bwa_index_algorithm` optionally overrides the global BWA algorithm for that organism
+- `bwa_index_mem_mb` optionally overrides the global BWA memory resource for that organism
+- `fasta_url` and `gtf_url` can be set explicitly when the source naming does not match the default template
+
+### Adding a new genome
+
+1. Add a new organism block under `organisms:` using the scientific name as the key, for example `Arabidopsis_thaliana`.
+2. Set `source`, `species`, `assembly`, `fasta_kind`, `gtf_kind`, and `sa_index`.
+3. If the default Ensembl path logic does not work, provide explicit `fasta_url` and `gtf_url`.
+4. If BWA needs a different algorithm or memory budget for that organism, add `bwa_index_algorithm` and/or `bwa_index_mem_mb`.
+5. Run `./scripts/bcfngs genomes plan`.
+6. Build only that organism first with `./scripts/bcfngs genomes build --organism <Organism>`.
 
 ## `check-updates`
 
-### Parameters and defaults
+### CLI parameters
 
-| Item | Current default / value | Where set | Notes |
-|---|---|---|---|
-| Shared wrapper parameters | see [Shared wrapper parameters](#shared-wrapper-parameters) | CLI | `--profile` and `--env-prefix` still apply here. |
-| Command-specific flags | none | CLI | This subcommand has no extra runtime flags beyond `-h/--help`. |
-| Compared release pin | `releases.ensembl: 116` | [`configs/genomes.yaml`](configs/genomes.yaml) | This is the pinned release compared to the latest Ensembl release found on `https://ftp.ensembl.org/pub/`. |
-| Network target | `https://ftp.ensembl.org/pub/` | internal behavior | If it is unreachable, the command reports the current pin but cannot confirm the latest release. |
-| Writes to disk | none | internal behavior | Report only. No files are edited. |
-| Not checked automatically | `releases.ensemblgenomes.*`, explicit `fasta_url`, explicit `gtf_url` | config | Review these manually when working with EnsemblGenomes or custom URLs. |
+| Parameter | Default | Notes |
+|---|---|---|
+| shared wrapper parameters | see [Shared wrapper parameters](#shared-wrapper-parameters) | `--profile` and `--env-prefix` still apply here. |
+| command-specific flags | none | `check-updates` only supports `-h/--help`. |
 
-### Micromamba / conda-style environment
+### Config-file settings
 
-Use this when the wrapper should run in its default `micromamba` profile:
+| Field | Value | Notes |
+|---|---|---|
+| `releases.ensembl` | `115` | This is the pinned release compared to the latest Ensembl release found on `https://ftp.ensembl.org/pub/`. |
+| not checked automatically | n/a | `releases.ensemblgenomes.*`, explicit `fasta_url`, and explicit `gtf_url` are not audited by this command. |
+
+### Run command
+
+For this subcommand, `--profile micromamba` and `--profile modules` do the same logical work. `check-updates` uses `python` + `PyYAML` and `curl` through the wrapper environment; it does not call `STAR`, `bwa`, or `bowtie2-build`.
 
 ```bash
 ./scripts/bcfngs genomes check-updates
 ```
 
-Typical output looks like:
-
-```text
-Ensembl latest release: 117  current pinned: 116  status: UPDATE_AVAILABLE
-Suggested bump: set releases.ensembl to 117 in configs/genomes.yaml
-```
-
-### Modules profile
-
-If you want the same command to run under the `modules` profile:
+Optional equivalent command under the `modules` profile:
 
 ```bash
 module load bclconvert/4.3.13 star bowtie2 bwa
 ./scripts/bcfngs --profile modules genomes check-updates
 ```
 
-For `check-updates`, the modules profile usually does not change the result. It is only relevant if you are keeping your operational workflow consistent across all genomes commands.
+Typical output looks like:
+
+```text
+Ensembl latest release: <latest>  current pinned: 115  status: OK|UPDATE_AVAILABLE
+Suggested bump: set releases.ensembl to <latest> in configs/genomes.yaml
+```
 
 ### If an update is available
 
 1. Edit [`configs/genomes.yaml`](configs/genomes.yaml).
-2. Bump `releases.ensembl`, for example `116` to `117`.
+2. Bump `releases.ensembl`, for example `115` to `116`.
 3. Review any organism entries that use explicit `fasta_url` or `gtf_url`.
 4. Continue with [`plan`](#plan) and then [`build`](#build).
 
@@ -167,16 +157,26 @@ If you are updating an EnsemblGenomes organism such as `Drosophila_pseudoobscura
 
 ## `plan`
 
-### Parameters and defaults
+`plan` has no command-specific CLI parameters. Shared wrapper parameters are listed in [Shared wrapper parameters](#shared-wrapper-parameters).
 
-| Item | Current default / value | Where set | Notes |
-|---|---|---|---|
-| Shared wrapper parameters | see [Shared wrapper parameters](#shared-wrapper-parameters) | CLI | `--profile` and `--env-prefix` apply here. |
-| Command-specific flags | none | CLI | The wrapper exposes no extra `plan` flags. |
-| Organism scope | all configured organisms | wrapper behavior | The wrapper plans the full configured set. Use direct `snakemake` with `--config org_subset=...` if you want a subset dry-run. |
-| `genomes_root` | `/fs/pool/pool-bcfngs/genomes` | [`configs/genomes.yaml`](configs/genomes.yaml) | `plan` checks that this location is writable. |
-| Release pins and URLs | see [Common config fields](#common-config-fields) | config | `plan` resolves all FASTA/GTF URLs from the current release pins and organism blocks, then tests them with `curl -fsSI`. |
-| Underlying Snakemake steps | `snakemake --lint` then `snakemake -npr` | wrapper behavior | `plan` is both a lint pass and a dry-run. |
+### Config-file settings
+
+| Field | Value | Notes |
+|---|---|---|
+| `genomes_root` | `/fs/pool/pool-bcfngs/genomes` | `plan` checks that this location is writable. |
+| `releases.*` | `ensembl: 115`, `ensemblgenomes.metazoa: 62` | Used to construct remote URLs for all non-explicit organisms. |
+| `organisms.*` | all configured organisms | The wrapper plans the full configured set. |
+| `organisms.*.fasta_url` / `gtf_url` | optional | Explicit URLs are checked as given. |
+
+### Runtime behavior
+
+| Step | Notes |
+|---|---|
+| YAML load | `plan` first validates that [`configs/genomes.yaml`](configs/genomes.yaml) can be parsed. |
+| URL check | It resolves all FASTA/GTF URLs and tests them with `curl -fsSI`. |
+| tool version check | It detects `STAR`, `bwa`, and `bowtie2` versions from the active environment before the dry-run. |
+| workflow lint | It runs `snakemake --lint` on [`workflow/genomes.smk`](workflow/genomes.smk). |
+| dry-run | It runs a dry-run with the checked-in genomes config. |
 
 ### Local run with micromamba / conda-style environment
 
@@ -205,53 +205,108 @@ module load bclconvert/4.3.13 star bowtie2 bwa
 
 The `modules` profile still uses the micromamba environment for `python` and `snakemake`; it only changes how tool discovery happens for the aligners.
 
-### Direct Snakemake subset dry-run
-
-The wrapper does not expose a `--organism` option for `plan`. Keep the direct `snakemake` form when you need a subset dry-run:
-
-```bash
-snakemake -npr \
-  -s workflow/genomes.smk \
-  --configfile configs/genomes.yaml \
-  --config org_subset=Homo_sapiens,Mus_musculus
-```
-
-This is useful for:
-
-- testing a release bump on one organism first
-- checking a new organism block before rebuilding everything
-- isolating failures in one species without noise from the rest of the config
-
-### SLURM-oriented dry-run example
-
-For clusters where you want to inspect scheduler-facing settings before a real run, keep the direct `snakemake` example:
-
-```bash
-snakemake -npr \
-  --executor slurm \
-  --jobs 20 \
-  --default-resources mem_mb=180000 \
-  -s workflow/genomes.smk \
-  --configfile configs/genomes.yaml
-```
-
-`plan` itself does not submit jobs in dry-run mode, but this is still useful to check that your SLURM executor configuration parses correctly.
-
 ## `build`
 
-### Parameters and defaults
+### CLI parameters
 
-| Item | Current default / value | Where set | Notes |
+| Parameter | Default | Used when | Notes |
 |---|---|---|---|
-| Shared wrapper parameters | see [Shared wrapper parameters](#shared-wrapper-parameters) | CLI | `--profile` and `--env-prefix` apply here too. |
-| `--cores` | `16` | CLI | Total Snakemake core budget for `./scripts/bcfngs genomes build`. |
-| `--organism` | all configured organisms | CLI | Optional comma-separated subset such as `Homo_sapiens,Mus_musculus`. |
-| `default_threads` | `16` | [`configs/genomes.yaml`](configs/genomes.yaml) | Used by `STAR` genome generation and `bowtie2-build`. This is separate from `--cores`. |
-| `default_ram_bytes` | `168632718037` | [`configs/genomes.yaml`](configs/genomes.yaml) | Passed to `STAR --limitGenomeGenerateRAM`. |
-| `index_versions.*` | `unknown` for all three tools | [`configs/genomes.yaml`](configs/genomes.yaml) | Controls output directory names and symlink targets. |
-| `organisms.*.sa_index` | organism-specific | [`configs/genomes.yaml`](configs/genomes.yaml) | Controls STAR suffix-array sizing. |
-| Stable symlink outputs | `starIndex`, `bwaIndex`, `bowtie2Index` | workflow behavior | Updated after successful index creation. |
-| Advanced scheduler knobs | direct `snakemake` only | CLI at Snakemake level | Use these for SLURM executor settings, `mem_mb`, or `mem_mb_per_cpu`. |
+| shared wrapper parameters | see [Shared wrapper parameters](#shared-wrapper-parameters) | all builds | `--profile` and `--env-prefix` apply here too. |
+| `--executor` | `local` | all builds | Choose `local` or `slurm`. |
+| `--cores` | `16` | `--executor local` | Total Snakemake core budget for local execution. |
+| `--jobs` | `20` | `--executor slurm` | Max concurrent jobs for the SLURM executor. |
+| `--organism` | all configured organisms | all builds | Optional comma-separated subset such as `Homo_sapiens,Mus_musculus`. |
+| `--no-skip-plan` | off | all builds | `build` skips `plan` by default. Set this flag to run the preflight checks first. |
+| `--slurm-partition` | `<SLURM_PARTITION>` | `--executor slurm` | Cluster-specific partition name. |
+| `--slurm-account` | unset | `--executor slurm` | Optional SLURM account. |
+| `--slurm-qos` | unset | `--executor slurm` | Optional SLURM QoS. |
+| `--slurm-mail-user` | `<SLURM_MAIL_USER>` | `--executor slurm` | Cluster-specific mail recipient. |
+| `--slurm-mail-type` | `ALL` | `--executor slurm` | Mail type passed to SLURM. |
+| `--slurm-time` | `04:00:00` | `--executor slurm` | Walltime for submitted jobs. |
+| `--slurm-cpus-per-task` | `20` | `--executor slurm` | Applied to heavy index rules. |
+| `--slurm-mem-per-cpu` | unset | `--executor slurm` | If set, it overrides `--slurm-mem`. |
+| `--slurm-mem` | `409600` | `--executor slurm` | Total memory in MB for heavy index rules. |
+| `--slurm-exclusive` | off | `--executor slurm` | Request exclusive node allocation. |
+
+### Config-file settings
+
+| Field | Value | Notes |
+|---|---|---|
+| `genomes_root` | `/fs/pool/pool-bcfngs/genomes` | Build outputs, logs, and symlinks are written here. |
+| `releases.*` | `ensembl: 115`, `ensemblgenomes.metazoa: 62` | Used to resolve the download URLs unless explicit URLs are present. |
+| `default_threads` | `16` | Used by `STAR` genome generation and `bowtie2-build`. This is separate from `--cores`. |
+| `default_ram_bytes` | `168632718037` | Passed to `STAR --limitGenomeGenerateRAM`. |
+| `bwa_index_algorithm` | `bwtsw` | Global default for `bwa index -a`. |
+| `bwa_index_mem_mb` | `16000` | Global memory resource for `bwa_index`. |
+| `organisms.*.sa_index` | organism-specific | Controls STAR suffix-array sizing. |
+| `organisms.*.bwa_index_algorithm` | optional per-organism override | Overrides the global BWA algorithm for one organism. |
+| `organisms.*.bwa_index_mem_mb` | optional per-organism override | Overrides the global BWA memory resource for one organism. |
+| `organisms.*.fasta_url` / `gtf_url` | optional | Explicit URLs override the generated release-based URLs. |
+
+### Runtime behavior
+
+| Runtime value | Notes |
+|---|---|
+| tool versions | `build` auto-detects the active `STAR`, `bwa`, and `bowtie2` versions from the environment and injects them into a temporary config file for versioned output directories. |
+| plan step | `build` does not run `plan` unless `--no-skip-plan` is set. |
+| symlink updates | Successful builds refresh `starIndex`, `bwaIndex`, and `bowtie2Index` symlinks to point at the versioned directories. |
+
+### Current build help output
+
+```bash
+./scripts/bcfngs genomes build --help
+```
+
+```text
+usage: bcfngs genomes build [-h] [--executor {local,slurm}] [--cores CORES]
+                            [--jobs JOBS] [--slurm-partition SLURM_PARTITION]
+                            [--slurm-account SLURM_ACCOUNT]
+                            [--slurm-qos SLURM_QOS]
+                            [--slurm-mail-user SLURM_MAIL_USER]
+                            [--slurm-mail-type SLURM_MAIL_TYPE]
+                            [--slurm-time SLURM_TIME]
+                            [--slurm-cpus-per-task SLURM_CPUS_PER_TASK]
+                            [--slurm-mem-per-cpu SLURM_MEM_PER_CPU]
+                            [--slurm-mem SLURM_MEM] [--slurm-exclusive]
+                            [--organism ORGANISM] [-no-skip-plan]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --executor {local,slurm}
+                        Execution backend: local (default) or slurm.
+  --cores CORES
+  --jobs JOBS           Max concurrent jobs for --executor slurm.
+  --slurm-partition SLURM_PARTITION
+                        SLURM partition name (for --executor slurm).
+  --slurm-account SLURM_ACCOUNT
+                        SLURM account name (for --executor slurm).
+  --slurm-qos SLURM_QOS
+                        SLURM QoS name (for --executor slurm).
+  --slurm-mail-user SLURM_MAIL_USER
+                        SLURM mail user for --executor slurm.
+  --slurm-mail-type SLURM_MAIL_TYPE
+                        SLURM mail type for --executor slurm (e.g. ALL or
+                        END,FAIL).
+  --slurm-time SLURM_TIME
+                        SLURM walltime HH:MM:SS (default: 04:00:00).
+  --slurm-cpus-per-task SLURM_CPUS_PER_TASK
+                        SLURM cpus-per-task for heavy index rules (default:
+                        20).
+  --slurm-mem-per-cpu SLURM_MEM_PER_CPU
+                        SLURM mem-per-cpu in MB for --executor slurm
+                        (optional). If set, this overrides --slurm-mem.
+  --slurm-mem SLURM_MEM
+                        SLURM total memory (--mem) in MB for heavy index rules
+                        (default: 409600 ~= 400G). Ignored when --slurm-mem-
+                        per-cpu is set.
+  --slurm-exclusive     Request exclusive node allocation per submitted SLURM
+                        job.
+  --organism ORGANISM   Comma-separated subset of organism keys (e.g.
+                        Homo_sapiens,Mus_musculus)
+  -no-skip-plan, --no-skip-plan
+                        Run plan preflight checks before build (config
+                        validation, URL checks, lint, dry-run).
+```
 
 ### Local run with micromamba / conda-style environment
 
@@ -270,6 +325,12 @@ More local examples:
 ```
 
 `--cores` is the total Snakemake job budget. It is not the same thing as `default_threads`, which controls per-tool threading inside rules such as `STAR` genome generation.
+
+If you want the build to include the preflight checks:
+
+```bash
+./scripts/bcfngs genomes build --cores 20 --no-skip-plan
+```
 
 ### Local run with modules
 
@@ -298,29 +359,27 @@ Use this when:
 
 ### SLURM-oriented build example
 
-The wrapper does not expose `--executor`, `--mem`, or `--mem-per-cpu`. Keep the direct `snakemake` form for cluster-scheduled runs:
+Use the wrapper directly for cluster-scheduled builds:
 
 ```bash
-snakemake -pr \
+./scripts/bcfngs genomes build \
   --executor slurm \
   --jobs 20 \
-  --default-resources mem_mb=180000 \
-  -s workflow/genomes.smk \
-  --configfile configs/genomes.yaml
+  --slurm-partition <SLURM_PARTITION> \
+  --slurm-mem 409600
 ```
 
 If your site schedules by memory per CPU instead:
 
 ```bash
-snakemake -pr \
+./scripts/bcfngs genomes build \
   --executor slurm \
   --jobs 20 \
-  --default-resources mem_mb_per_cpu=8000 \
-  -s workflow/genomes.smk \
-  --configfile configs/genomes.yaml
+  --slurm-cpus-per-task 20 \
+  --slurm-mem-per-cpu 8000
 ```
 
-Adjust these examples to your local cluster conventions. The current `./scripts/bcfngs genomes build` command does not parse `--mem` or `--mem-per-cpu` directly.
+Add `--no-skip-plan` if you want the build to run the preflight checks first.
 
 ### Memory and threading
 
@@ -328,6 +387,10 @@ There are two different layers to tune:
 
 - `--cores`: total workflow parallelism for the outer Snakemake run
 - `default_threads`: per-rule thread count used inside `STAR` genome generation and `bowtie2-build`
+- `--slurm-cpus-per-task`: cpus-per-task for the heavy index rules in SLURM mode
+- `--slurm-mem` or `--slurm-mem-per-cpu`: scheduler memory request for the heavy index rules in SLURM mode
+- `default_ram_bytes`: STAR's internal `--limitGenomeGenerateRAM`
+- `bwa_index_mem_mb`: Snakemake memory resource attached to the `bwa_index` rule
 
 Typical patterns:
 
@@ -341,11 +404,100 @@ For a permanent STAR memory change, edit:
 default_ram_bytes: 250000000000
 ```
 
-### Build only one index type with direct Snakemake
+## Rebuild After a Genome Release Change
+
+After [`check-updates`](#check-updates) reports a newer Ensembl release:
+
+1. Edit [`configs/genomes.yaml`](configs/genomes.yaml).
+2. Bump `releases.ensembl`, for example `115` to `116`.
+3. Review any explicit `fasta_url` or `gtf_url` entries.
+4. Run `plan`.
+5. Run `build`.
+
+If you want a cautious rollout, start with one organism:
+
+```bash
+./scripts/bcfngs genomes build --cores 20 --organism Homo_sapiens
+```
+
+## Rebuild After a Tool Version Change
+
+When the genome sequence did not change but an indexer changed, the wrapper build will auto-detect the tool versions from the active environment and use them for the versioned output directories.
+
+If you are using the micromamba environment, update it first:
+
+```bash
+./scripts/bcfngs env update
+./scripts/bcfngs env check
+```
+
+For more detail, see [Environment (micromamba)](environment.html).
+
+If you are using the `modules` profile, load the newer module versions first and then rerun `plan` and `build`.
+
+If you want the checked-in config to document the tool versions explicitly for direct `snakemake` runs, add an `index_versions` block such as:
+
+```yaml
+index_versions:
+  star: "2.7.11b"
+  bwa: "0.7.19-r1273"
+  bowtie2: "2.5.5"
+```
+
+Then rerun:
+
+```bash
+./scripts/bcfngs genomes plan
+./scripts/bcfngs genomes build --cores 20
+```
+
+Successful builds update the stable symlinks automatically:
+
+- `/fs/pool/pool-bcfngs/genomes/<Organism>/starIndex`
+- `/fs/pool/pool-bcfngs/genomes/<Organism>/bwaIndex`
+- `/fs/pool/pool-bcfngs/genomes/<Organism>/bowtie2Index`
+
+These stable names point to versioned directories such as `starIndex-2.7.11b`.
+
+## Direct `snakemake` Usage
+
+Use direct `snakemake` when the wrapper does not expose the exact control you need.
+
+### `plan` dry-run
+
+The wrapper does not expose a `--organism` option for `plan`. Keep the direct `snakemake` form when you need a subset dry-run:
+
+```bash
+snakemake -npr \
+  -s workflow/genomes.smk \
+  --configfile configs/genomes.yaml \
+  --config org_subset=Homo_sapiens,Mus_musculus
+```
+
+This is useful for:
+
+- testing a release bump on one organism first
+- checking a new organism block before rebuilding everything
+- isolating failures in one species without noise from the rest of the config
+
+For clusters where you want to inspect scheduler-facing settings before a real run:
+
+```bash
+snakemake -npr \
+  --executor slurm \
+  --jobs 20 \
+  --default-resources mem_mb=180000 \
+  -s workflow/genomes.smk \
+  --configfile configs/genomes.yaml
+```
+
+`plan` itself does not submit jobs in dry-run mode, but this is still useful to check that your SLURM executor configuration parses correctly.
+
+### `build` targets
 
 The wrapper always targets the full workflow. To build only one tool, target the desired output file directly.
 
-Replace each version placeholder with the matching value from `index_versions` in [`configs/genomes.yaml`](configs/genomes.yaml).
+These direct target examples assume the workflow knows which tool versions to use for the versioned output paths. If you run [`workflow/genomes.smk`](workflow/genomes.smk) directly without the wrapper, add an `index_versions` block to [`configs/genomes.yaml`](configs/genomes.yaml) temporarily or inject equivalent values another way.
 
 Only STAR for `Homo_sapiens`:
 
@@ -375,45 +527,3 @@ snakemake -pr -j 20 \
 ```
 
 These commands still pull in prerequisite downloads, but they avoid rebuilding every index type.
-
-### Rebuild after a genome release change
-
-After [`check-updates`](#check-updates) reports a newer Ensembl release:
-
-1. Edit [`configs/genomes.yaml`](configs/genomes.yaml).
-2. Bump `releases.ensembl`, for example `116` to `117`.
-3. Review any explicit `fasta_url` or `gtf_url` entries.
-4. Run `plan`.
-5. Run `build`.
-
-If you want a cautious rollout, start with one organism:
-
-```bash
-./scripts/bcfngs genomes build --cores 20 --organism Homo_sapiens
-```
-
-### Rebuild after a tool version change
-
-When the genome sequence did not change but an indexer changed, update only the relevant version labels:
-
-```yaml
-index_versions:
-  star: "2.7.11b"
-  bwa: "0.7.18"
-  bowtie2: "2.5.5"
-```
-
-Then rerun:
-
-```bash
-./scripts/bcfngs genomes plan
-./scripts/bcfngs genomes build --cores 20
-```
-
-Successful builds update the stable symlinks automatically:
-
-- `/fs/pool/pool-bcfngs/genomes/<Organism>/starIndex`
-- `/fs/pool/pool-bcfngs/genomes/<Organism>/bwaIndex`
-- `/fs/pool/pool-bcfngs/genomes/<Organism>/bowtie2Index`
-
-These stable names point to versioned directories such as `starIndex-2.7.11b`.
