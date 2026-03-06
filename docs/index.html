@@ -98,17 +98,32 @@ ul.task-list li input[type="checkbox"] {
     <a class="nav-link active" href="./index.html" aria-current="page"> 
 <span class="menu-text">Home</span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./environment.html"> 
-<span class="menu-text">environment</span></a>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-environment" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">environment</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-environment">    
+        <li>
+    <a class="dropdown-item" href="./environment.html">
+ <span class="dropdown-text">micromamba + bcfngs</span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./snakemake.html"> 
-<span class="menu-text">snakemake</span></a>
+        <li>
+    <a class="dropdown-item" href="./conda.html">
+ <span class="dropdown-text">conda</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="./snakemake.html">
+ <span class="dropdown-text">snakemake</span></a>
+  </li>  
+    </ul>
+  </li>
   <li class="nav-item">
     <a class="nav-link" href="./updating_genomes.html"> 
 <span class="menu-text">Updating genomes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./mapping.html"> 
+<span class="menu-text">Mapping</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">

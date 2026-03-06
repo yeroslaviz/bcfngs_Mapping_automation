@@ -1,80 +1,192 @@
 [
   {
-    "objectID": "snakemake.html",
-    "href": "snakemake.html",
-    "title": "snakemake",
+    "objectID": "mapping.html",
+    "href": "mapping.html",
+    "title": "Mapping Workflow",
     "section": "",
-    "text": "This part is still work in progress.\nThis repository uses snakemake for:\nFor non-experts, prefer the single wrapper command ./scripts/bcfngs (runs checks, then snakemake)."
+    "text": "This page documents the unified mapping workflow (STAR, bwa, bowtie2) driven via ./scripts/bcfngs."
   },
   {
-    "objectID": "snakemake.html#quickstart",
-    "href": "snakemake.html#quickstart",
-    "title": "snakemake",
-    "section": "Quickstart",
-    "text": "Quickstart\n# 1) create/update env (only once, then as needed)\n./scripts/bcfngs env create\n./scripts/bcfngs env check\n\n# 2) (optional) check if a newer Ensembl release exists\n./scripts/bcfngs genomes check-updates\n\n# 3) preflight checks + snakemake lint + dry-run\n./scripts/bcfngs genomes plan\n\n# 4) build genomes + indices (real run)\n./scripts/bcfngs genomes build --cores 20"
+    "objectID": "mapping.html#overview",
+    "href": "mapping.html#overview",
+    "title": "Mapping Workflow",
+    "section": "Overview",
+    "text": "Overview\n\nOne workflow file: workflow/mapping.smk\nOne CLI entrypoint:\n\n./scripts/bcfngs mapping plan\n./scripts/bcfngs mapping run\n\nDefault mapper: star\nDefault read mode: paired-end\nDefault bigWig conversion: bamCoverage --normalizeUsing CPM --binSize 10\n\nOutput layout:\n&lt;outdir&gt;/&lt;project&gt;/&lt;organism&gt;/&lt;mapper&gt;/&lt;sample&gt;.bam\n&lt;outdir&gt;/&lt;project&gt;/&lt;organism&gt;/&lt;mapper&gt;/&lt;sample&gt;.bam.bai\n&lt;outdir&gt;/&lt;project&gt;/&lt;organism&gt;/&lt;mapper&gt;/bigwig/&lt;sample&gt;.bw\nFor STAR, the workflow also keeps:\n\n&lt;sample&gt;.counts.tab\n&lt;sample&gt;.SJ.out.tab"
   },
   {
-    "objectID": "snakemake.html#configuration-files",
-    "href": "snakemake.html#configuration-files",
-    "title": "snakemake",
-    "section": "Configuration files",
-    "text": "Configuration files\nThe workflow configuration is split into two files:\n\nGenome and indexing configuration: configs/genomes.yaml\n\nOrganism identifiers are scientific names (e.g. Homo_sapiens, Mus_musculus).\nGenome sources are pinned to a specific Ensembl release (default: 116).\nIndex output directories are versioned via index_versions.\n\nPer-project run configuration (mapping): configs/run.yaml\n\nProject ID, input path, organism, threads, etc.\n\n\n\nNotes\n\nGenome indexing uses workflow/genomes.smk (not the legacy getGenome_IndexGenome.Snakefile).\nMapping uses the STAR mapping Snakefiles and expects /fs/pool/pool-bcfngs/genomes/&lt;Organism&gt;/starIndex to exist (symlink to the versioned index)."
+    "objectID": "mapping.html#required-configuration",
+    "href": "mapping.html#required-configuration",
+    "title": "Mapping Workflow",
+    "section": "Required configuration",
+    "text": "Required configuration\nUpdate configs/run.yaml:\nproject: \"P000\"\npath: \"/fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/\"\noutdir: \"/fs/pool/pool-bcfngs/mapping\"\norganism: \"Caenorhabditis_elegans\"\nthreads: 16\nram_bytes: 168632718037\norganism must be a single organism key from configs/genomes.yaml."
   },
   {
-    "objectID": "snakemake.html#how-to-cookbook",
-    "href": "snakemake.html#how-to-cookbook",
-    "title": "snakemake",
-    "section": "How-to (cookbook)",
-    "text": "How-to (cookbook)\n\nBuild all genomes + indices\n./scripts/bcfngs genomes plan\n./scripts/bcfngs genomes build --cores 20\n\n\nBuild only a subset (faster)\n./scripts/bcfngs genomes build --cores 20 --organism Homo_sapiens,Mus_musculus\n\n\nEnsembl has a newer release (bump pinned release)\n\nCheck:\n\n./scripts/bcfngs genomes check-updates\n\nIf an update is available, edit configs/genomes.yaml and bump:\n\n\nreleases.ensembl: 116 → 117 (etc.)\n\n\nThen:\n\n./scripts/bcfngs genomes plan\n./scripts/bcfngs genomes build --cores 20\n\n\nNew STAR/bwa/bowtie2 version (rebuild indices)\n\nUpdate tools:\n\n./scripts/bcfngs env update\n./scripts/bcfngs env check\n\nUpdate configs/genomes.yaml:\n\n\nset index_versions.star, index_versions.bwa, index_versions.bowtie2 (these strings are used in output folder names)\n\n\nRebuild:\n\n./scripts/bcfngs genomes build --cores 20\n\n\nUse HPC modules for aligners (fallback)\nThis still uses the micromamba env for python/snakemake, but loads vendor tools via modules:\nmodule load bclconvert/4.3.13 star bowtie2 bwa\n./scripts/bcfngs --profile modules env check\n./scripts/bcfngs --profile modules genomes plan\n./scripts/bcfngs --profile modules genomes build --cores 20"
+    "objectID": "mapping.html#fastq-pattern-auto-detection",
+    "href": "mapping.html#fastq-pattern-auto-detection",
+    "title": "Mapping Workflow",
+    "section": "FASTQ pattern auto-detection",
+    "text": "FASTQ pattern auto-detection\nThe workflow detects input naming in this fixed order:\n\n*_R1.fastq.gz\n*_R1_001.fastq.gz\n*_L1_R1.fastq.gz\n*.conc.R1.fastq.gz\n\nIn paired-end mode, the corresponding R2 file must exist."
   },
   {
-    "objectID": "snakemake.html#genome-download-indexing",
-    "href": "snakemake.html#genome-download-indexing",
-    "title": "snakemake",
-    "section": "Genome download + indexing",
-    "text": "Genome download + indexing\nWorkflow file: workflow/genomes.smk\n\nMapping the samples with the STAR\nmapping the samples in a paired-end format\nThis script contains three (four) steps. in the first step the fastq samples are mapped to the indexed genome. Then, they are being indexed. Last, after creating a chromosome-size file, the bam files are converted into bigwig files for better visualization using the UCSC browser.\nWe have two separate scripts for single-end and paired-end runs. The PE run looks for both R1 and R2 fastq files, while the SE script will ignore all R2 samples.\nAfter the environment was created and activated, one must change to the directory of the concatenated fast files. E.g.\ncd /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/\nTo run mapping, update configs/run.yaml in the repo, then run one of these Snakefiles.\n# for single-end samples\nsnakemake -nps /path/to/repo/Star.MappingQuant.SingleEndFastq.Snakefile -j 50\n# for paired-end samples\nsnakemake -nps /path/to/repo/Star.MappingQuant.PairedEndFastq.Snakefile -j 50\n\n-n - dry-run. This parameter will only output the command, but execute them. This should be used to test the parameters, but must be removed for the analysis to be done.\n-p - Print the commands to be execute.\n-s - the name of the snakeake file to be executed.\n-j - #cores. How many cores should be used in the run."
+    "objectID": "mapping.html#basic-usage",
+    "href": "mapping.html#basic-usage",
+    "title": "Mapping Workflow",
+    "section": "Basic usage",
+    "text": "Basic usage\nDry-run first:\n./scripts/bcfngs mapping plan\nRun:\n./scripts/bcfngs mapping run\nSelect mapper(s):\n./scripts/bcfngs mapping plan --mapper star,bwa,bowtie2\n./scripts/bcfngs mapping run  --mapper bwa\nRead mode:\n./scripts/bcfngs mapping run --single-end\n./scripts/bcfngs mapping run --paired-end\nOverride config values for a single run:\n./scripts/bcfngs mapping plan \\\n  --project P152 \\\n  --organism Drosophila_melanogaster \\\n  --fastq-dir /fs/pool/pool-bcfngs/fastq_files/P152/conc.fastq \\\n  --outdir /fs/pool/pool-bcfngs/mapping\nKeep intermediary files (default is cleanup):\n./scripts/bcfngs mapping run --keep-intermediary-files\nTune bigWig options:\n./scripts/bcfngs mapping run --bw-normalization CPM --bw-bin-size 10"
   },
   {
-    "objectID": "conda.html",
-    "href": "conda.html",
-    "title": "conda",
+    "objectID": "mapping.html#slurm-execution",
+    "href": "mapping.html#slurm-execution",
+    "title": "Mapping Workflow",
+    "section": "SLURM execution",
+    "text": "SLURM execution\nRun mapping on SLURM:\n./scripts/bcfngs mapping plan --executor slurm --jobs 20\n./scripts/bcfngs mapping run  --executor slurm --jobs 20\nDefaults:\n\nPartition: p.hpcl8\nMail user: yeroslaviz@biochem.mpg.de\nMail type: ALL\nTime: 04:00:00\n\nKey SLURM overrides:\n./scripts/bcfngs mapping run \\\n  --executor slurm \\\n  --slurm-partition p.hpcl8 \\\n  --slurm-time 04:00:00 \\\n  --slurm-cpus-per-task 20 \\\n  --slurm-star-mem-mb 64000 \\\n  --slurm-aligner-mem-mb 32000\nThe wrapper sets per-rule resources so lightweight rules (indexing and bamCoverage) do not request mapper-level memory."
+  },
+  {
+    "objectID": "mapping.html#additional-examples-moved-from-snakemake.rmd",
+    "href": "mapping.html#additional-examples-moved-from-snakemake.rmd",
+    "title": "Mapping Workflow",
+    "section": "Additional Examples Moved From snakemake.Rmd",
+    "text": "Additional Examples Moved From snakemake.Rmd\nThese command blocks were moved here to keep mapping examples in one place.\n# default (paired-end, STAR)\n./scripts/bcfngs mapping plan\n./scripts/bcfngs mapping run\n\n# one mapper\n./scripts/bcfngs mapping run --mapper bwa\n\n# all mappers\n./scripts/bcfngs mapping run --mapper star,bwa,bowtie2\n./scripts/bcfngs mapping plan \\\n  --project P152 \\\n  --organism Drosophila_melanogaster \\\n  --fastq-dir /fs/pool/pool-bcfngs/fastq_files/P152/conc.fastq \\\n  --outdir /fs/pool/pool-bcfngs/mapping\n./scripts/bcfngs mapping plan --executor slurm --jobs 20\n./scripts/bcfngs mapping run  --executor slurm --jobs 20\nLegacy STAR-only direct Snakemake examples:\ncd /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/\n\n# for single-end samples\nsnakemake -nps /path/to/repo/Star.MappingQuant.SingleEndFastq.Snakefile -j 50\n# for paired-end samples\nsnakemake -nps /path/to/repo/Star.MappingQuant.PairedEndFastq.Snakefile -j 50\nFlag meanings for the legacy command style:\n\n-n: dry-run\n-p: print shell commands\n-s: snakefile path\n-j: number of cores/jobs"
+  },
+  {
+    "objectID": "environment.html",
+    "href": "environment.html",
+    "title": "Environment (micromamba)",
     "section": "",
-    "text": "The first step is to create a conda environment, containing the necessary tools for the required analysis. In this workflow, we use the snakemake package to help running the workflow, as well as some mappers. To learn more about the conda environment and its advantages, take a look at the conda web site.\nEnvironments can be created with the help of a file, e.g. environment.yaml using the following command\nconda env create --name Project0815 --file environment.yaml\nThis file would look like that:\nname: Project0815\nchannels:\n   - bioconda\n   - conda-forge\n   - r\n   - bioinfo\ndependencies:\n   - snakemake-minimal =5.2.4\n   - python =3.6\n   - star =2.7.2c\n   - samtools =1.9\n   - bowtie2 =2.3.5\n   - bwa =0.7.17\nThe first row of the file contains the name of the project, i.e. the name of the conda environment created. Next are the channels listed, from which the conda environment should look for the tools needed for the analysis.\nthe last part of the environment file is a list of the needed dependencies. Each one of them has its version attached to it. This can be very helpful, when a data set needs to be re-analyzed to check for problems or conflicts with older/newer results or for debugging purposes. In this workflow we will use the snakemake package as well as python version 3.6. we also install here the mappers star, bwa and bowtie2. WE also need the samtool package for the manipulation of the bam files (sorting, filtering, etc.).\nAfter this was done one must activate the environment using the command\nsource activate Project0815\nIf one look at the command line one can now see this\n(Project0815) USER@SERVERNAME:Project0815$ ..\nThe brackets on the left side must contains the name of the environment.\nIf, after the environment was created, new tools must be added, they can just be added to the list of tools in the environment.yaml file and than the conda environment must be updated, using the command\nconda env update -f environment.yaml \nThe conda environment should be created only once, but with each login one must activate it, so that the snakemake script can be run from the correct paths."
+    "text": "This workflow uses micromamba to create a reproducible environment with all required tools (Snakemake + aligners + utilities)."
   },
   {
-    "objectID": "conda.html#conda---how-to",
-    "href": "conda.html#conda---how-to",
-    "title": "conda",
+    "objectID": "environment.html#installing-micromamba",
+    "href": "environment.html#installing-micromamba",
+    "title": "Environment (micromamba)",
+    "section": "Installing micromamba",
+    "text": "Installing micromamba\nmicromamba can be installed from the github repository.\n\"${SHELL}\" &lt;(curl -L https://micro.mamba.pm/install.sh)"
+  },
+  {
+    "objectID": "environment.html#create-the-workflow-environment-project-local",
+    "href": "environment.html#create-the-workflow-environment-project-local",
+    "title": "Environment (micromamba)",
+    "section": "Create the workflow environment (project-local)",
+    "text": "Create the workflow environment (project-local)\nFrom the repo root:\n# micromamba create -y -p .mamba/env -f env/environment.yml # save the env under the path ./mamba/env\n\nmicromamba create -y -n update_genomes -f env/environment.yml # save the env under the default path of miniconda3\nTo run commands inside the environment without activating it:\nmicromamba run -p .mamba/env snakemake --version"
+  },
+  {
+    "objectID": "environment.html#update-the-environment",
+    "href": "environment.html#update-the-environment",
+    "title": "Environment (micromamba)",
+    "section": "Update the environment",
+    "text": "Update the environment\nIf env/environment.yml changes (new tools, version bumps):\nmicromamba update -y -p .mamba/env -f env/environment.yml"
+  },
+  {
+    "objectID": "environment.html#health-checks",
+    "href": "environment.html#health-checks",
+    "title": "Environment (micromamba)",
+    "section": "Health checks",
+    "text": "Health checks\n./scripts/bcfngs env check\nThis step goes through the needed tools for the workflow and output if the tool versions. you should see something like that:\n{\n  \"snakemake\": \"8.30.0\",\n  \"STAR\": \"2.7.11b\",\n  \"bwa\": \"\",\n  \"bowtie2\": \"/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes/bin/bowtie2-build-s version 2.5.5\",\n  \"samtools\": \"samtools 1.23\",\n  \"bamCoverage\": \"bamCoverage 3.x.x\"\n}\n\nTroubleshooting: missing bamCoverage / deeptools\nIf ./scripts/bcfngs env check reports:\nMissing tools in environment: bamCoverage\nuse this sequence:\n\nUpdate the environment from env/environment.yml:\n\n./scripts/bcfngs env update\n./scripts/bcfngs env check\n\nIf you use a non-default environment location, pass it explicitly:\n\n./scripts/bcfngs --env-prefix /path/to/your/env env update\n./scripts/bcfngs --env-prefix /path/to/your/env env check\n\nVerify deeptools is actually installed in that environment:\n\nmicromamba list -p .mamba/env | grep -i deeptools\nmicromamba run -p .mamba/env bamCoverage --version\n\nIf still missing, recreate the environment:\n\nrm -rf .mamba/env\n./scripts/bcfngs env create\n./scripts/bcfngs env check\nbamCoverage is provided by the deeptools package in env/environment.yml."
+  },
+  {
+    "objectID": "environment.html#how-to-common-scenarios",
+    "href": "environment.html#how-to-common-scenarios",
+    "title": "Environment (micromamba)",
+    "section": "How-to (common scenarios)",
+    "text": "How-to (common scenarios)\n\nI’m new / first time setup\nmicromamba create -y -p .mamba/env -f env/environment.yml\n./scripts/bcfngs env check\n\n\nRun a one-off command without activating\nmicromamba run -p .mamba/env snakemake --help\nmicromamba run -p .mamba/env STAR --version\n\n\nKeep tools up-to-date (routine)\n\nUpdate the environment:\n\nmicromamba update -y -p .mamba/env -f env/environment.yml\n./scripts/bcfngs env check\n\n(Optional) record an explicit lockfile for reproducibility:\n\nmkdir -p env/locks\nmicromamba list -p .mamba/env --explicit &gt; env/locks/explicit-YYYY-MM-DD.txt\n\n\nI want to use HPC modules for vendor tools\nYou still need the micromamba env for python + snakemake, but aligners can come from modules:\nmodule load bclconvert/4.3.13 star bowtie2 bwa\n./scripts/bcfngs --profile modules env check\n./scripts/bcfngs --profile modules genomes plan\n./scripts/bcfngs --profile modules genomes build --cores 20\n\n\nDemultiplexing with bcl-convert (modules)\nThis repo doesn’t automate demultiplexing yet, but the typical pattern is:\nmodule load bclconvert/4.3.13\nbcl-convert --help\n\n# Example placeholders (adjust to your run folder / SampleSheet):\n# bcl-convert --bcl-input-directory /path/to/runfolder \\\n#            --output-directory /path/to/output \\\n#            --sample-sheet /path/to/SampleSheet.csv"
+  },
+  {
+    "objectID": "environment.html#hpc-modules-fallback-optional",
+    "href": "environment.html#hpc-modules-fallback-optional",
+    "title": "Environment (micromamba)",
+    "section": "HPC modules fallback (optional)",
+    "text": "HPC modules fallback (optional)\nIf you prefer using HPC modules for vendor tools, you can load:\nmodule load bclconvert/4.3.13 star bowtie2 bwa\nYou can still run Snakemake/python from micromamba (recommended)."
+  },
+  {
+    "objectID": "HOWTO.html",
+    "href": "HOWTO.html",
+    "title": "HOWTO",
     "section": "",
-    "text": "The first step is to create a conda environment, containing the necessary tools for the required analysis. In this workflow, we use the snakemake package to help running the workflow, as well as some mappers. To learn more about the conda environment and its advantages, take a look at the conda web site.\nEnvironments can be created with the help of a file, e.g. environment.yaml using the following command\nconda env create --name Project0815 --file environment.yaml\nThis file would look like that:\nname: Project0815\nchannels:\n   - bioconda\n   - conda-forge\n   - r\n   - bioinfo\ndependencies:\n   - snakemake-minimal =5.2.4\n   - python =3.6\n   - star =2.7.2c\n   - samtools =1.9\n   - bowtie2 =2.3.5\n   - bwa =0.7.17\nThe first row of the file contains the name of the project, i.e. the name of the conda environment created. Next are the channels listed, from which the conda environment should look for the tools needed for the analysis.\nthe last part of the environment file is a list of the needed dependencies. Each one of them has its version attached to it. This can be very helpful, when a data set needs to be re-analyzed to check for problems or conflicts with older/newer results or for debugging purposes. In this workflow we will use the snakemake package as well as python version 3.6. we also install here the mappers star, bwa and bowtie2. WE also need the samtool package for the manipulation of the bam files (sorting, filtering, etc.).\nAfter this was done one must activate the environment using the command\nsource activate Project0815\nIf one look at the command line one can now see this\n(Project0815) USER@SERVERNAME:Project0815$ ..\nThe brackets on the left side must contains the name of the environment.\nIf, after the environment was created, new tools must be added, they can just be added to the list of tools in the environment.yaml file and than the conda environment must be updated, using the command\nconda env update -f environment.yaml \nThe conda environment should be created only once, but with each login one must activate it, so that the snakemake script can be run from the correct paths."
+    "text": "This is an internal HOW-TO for the workflow of the automation for the bcfngs core facility."
   },
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "index",
+    "objectID": "HOWTO.html#genome-indexing",
+    "href": "HOWTO.html#genome-indexing",
+    "title": "HOWTO",
+    "section": "genome indexing",
+    "text": "genome indexing\nThis steps needs to be run only once. unless new genomes are added.\nThis is all run on the hpcl5002.\n\nlog-in to the server.\nIf not done before, activate the conda environment inside a screen, so that one can log out from the server and still run the workflow in the background. More information about the is on the github web site.\nopen the config.yaml file, e.g. vi /fs/pool/pool-bcfngs/scripts/config.yaml and add the genome links from the ensembl FTP site in this format:\n\n  Dps.3.0.45:\n    fasta: \"ftp://ftp.ensemblgenomes.org/pub/metazoa/release-45/fasta/drosophila_pseudoobscura/dna/Drosophila_pseudoobscura.Dpse_3.0.dna.toplevel.fa.gz\"\n    gtf: \"ftp://ftp.ensemblgenomes.org/pub/metazoa/release-45/gtf/drosophila_pseudoobscura/Drosophila_pseudoobscura.Dpse_3.0.45.gtf.gz\"\n\nrun the command snakemake -nps ../scripts/getGenome_IndexGenome.Snakefile to check that the new genome is added to the workflow (the -n is a dry-run which just output the command without performing the tasks.)\nrun the same command without the -n - snakemake -ps ../scripts/getGenome_IndexGenome.Snakefile -j 12. This will download the fastA and gtf files from the given links and create the index files for them as well. The parameter -j sets the number pf cores used in the snakemake run. If the number of cores is smaller then the one sets for e.g. STAR, only this numner of cores will be used."
+  },
+  {
+    "objectID": "HOWTO.html#mapping",
+    "href": "HOWTO.html#mapping",
+    "title": "HOWTO",
+    "section": "Mapping",
+    "text": "Mapping\nMapping will be done with the STAR aligner for a specific genome either in a paired-end or single-end format.\n\nChanging parameters before mapping\nThe following setting must be adjusted before running the script:\n######## Project Setting\n# To create a separate project results folder for each run, change the name of the project here.\nproject: \"P152\"\n# this path would point to the raw data in fastq format. This must be changed each time for the correct data to be analyzed.\npath: \"/fs/pool/pool-bcfngs/fastq_files/P146/P152_ChIP_Asx_5_6/conc.fastq\"\n# Which organism to map the data to\norg: \"Dme.BDGP6.22\"\nThe project and the path should point to the current project which is being mapped.\nthe org must be the organism the data is mapped against. The term must be identical to the term in the list of organisms from the config files.\n\n\nrunning the star mapping step.\nfirst, change the working directory to the path of the actual project on the pool-bcfngs. e.g.\ncd /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/\nNext run the snakemake script first as a dry-run (-n) and if all seems well than run it for real.\ne.g. \n# for single-end samples\nsnakemake -nps /fs/pool/pool-bcfngs/scripts/Star.MappingQuant.SingleEndFastq.Snakefile -j 50\n# for paired-end samples\nsnakemake -ps /fs/pool/pool-bcfngs/scripts/Star.MappingQuant.PairedEndFastq.Snakefile -j 50"
+  },
+  {
+    "objectID": "updating_genomes.html",
+    "href": "updating_genomes.html",
+    "title": "Updating genomes and indices",
     "section": "",
-    "text": "The repository contains a conda-snakemake workflow for the mapping of the concatenated fastq file created at the BCF of the MPIB.\nThis README file for the sequencing center to help them run a preliminary analysis on the sequenced samples\nThe file will contains instruction on how to create a conda environment with the needed tools for the mapping and will also include snakemake for the automation of the scripts."
+    "text": "This page collects the internal procedures for:"
   },
   {
-    "objectID": "index.html#steps-to-do",
-    "href": "index.html#steps-to-do",
-    "title": "index",
-    "section": "steps to do",
-    "text": "steps to do\nPreparing the genomes for mapping\n\nDownload the genomes and the annotations from the FTP server (Ensembl genome builds are used here.)\nFor each genome, an index for the star aligner is created.\n\nThis two steps should be done only once, when the workflow was set up. It only needs to be re-run, when a new organism is being added, or when newer genome build of exiting organisms or a newer version of the STAR mapping tool are needed.\nMapping step\n\nMap the samples with the needed parameter.\nIndex the fastA file to create a chromSize file for the bigwig conversion.\nConvert the bam files to wig and then to bigwig.\n\npoints to consider: If this is only a preliminary analysis -\n\nWould it make more sense to take only 50% of the fastq file for a faster analysis / visualization\nDo they need the bam files also - deleting them would save a lot of storage space\n\nThe examples in this document are based on fictive data as well as a fictional project named Project0815. When a new project is done, this term must be changed with the proper name of the project, wherever it is mentioned."
+    "objectID": "updating_genomes.html#when-to-update-genomes-indices",
+    "href": "updating_genomes.html#when-to-update-genomes-indices",
+    "title": "Updating genomes and indices",
+    "section": "When to update genomes / indices",
+    "text": "When to update genomes / indices\nOnce every few years the genomic sequences must be updated. Also the STAR version for mapping progresses and should be updated when needed."
   },
   {
-    "objectID": "index.html#folder-structure",
-    "href": "index.html#folder-structure",
-    "title": "index",
-    "section": "folder structure",
-    "text": "folder structure\nThe workflow works from within the folder of the concatenated fastq files created after running the bcl2fastq script from the project management website (in the core facility here, this folder is called conc.fastq).\n\nA config file is saved under /fs/pool/pool-bcfngs/scripts/config.yaml, where all the mapping and genome parameters are saved.\nThe genome indexing step will run only once and creates a folder named genomes/ on the /fs/pool/pool-bcfngs/. Within this folder all the fastA and the gtf files are saved as well as a folder for each organism, containing the star-indexed files.\nThe mapping step expect to find within the working directory the files with the pattern .conc.R1.fastq.gz, as this is the current pattern given by the sequencing facility. (If, in the future, this will be changed, the search pattern must be changed as well).\n\nThere are two separate files for single-ended and paired-ended data sets. The single-ended one expects to find only .conc.R1.fastq.gz, while the paired-end data set must also contain .conc.R2.fastq.gz files."
+    "objectID": "updating_genomes.html#prerequisites-where-to-run",
+    "href": "updating_genomes.html#prerequisites-where-to-run",
+    "title": "Updating genomes and indices",
+    "section": "Prerequisites / where to run",
+    "text": "Prerequisites / where to run\nYou can use any server as long as you can run snakemake and the required tools. The recommended method is micromamba (see environment). Default environment path used on the cluster: /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes"
   },
   {
-    "objectID": "index.html#workflow",
-    "href": "index.html#workflow",
-    "title": "index",
-    "section": "Workflow",
-    "text": "Workflow\nThe workflow uses a combination of a conda environment with the snakemake tool (based on python). The advantage of conda is that it creates a container, separated from the rest of the tools installed on the system. This gives a better management and control over the tools used in the workflow, as well as less conflict potentials with other/older version of tools with non-compatible parameters. To learn more about the conda environment and its advantages, take a look at the conda web site.\nsnakemake offers a lot of advantages as well. It allows better controls over different steps of the analysis, easier automation of the workflow and reduce running time through parallelization of the steps, just to mention some of them. to learn more about snakemake take a look at the snakemake doc site.\n\nenvironment\nsnakemake\n\n\nwigToBigwig\nFirst the bam files are converted into wig files. This is done using the bam2wig.py script from the rseqc-software package.\nIn order for the automatic conversion of wig to bigwig files to work, one must have the tool wigToBigwig from the UCSC repository installed and in the path. As we are working with conda, the easiest place to put it is the the path of the environment. In this case, as we are working with miniconda the path would be under /fs/home/USERNAME/miniconda3/envs/ENVNAME/bin/. So far I have copied the file manually to the folder, but I have now added it to the environment.yaml file, which is ran during the environment creation step. This was not tested yet!.\nTO DO\nIn this case it would probably be better if the indexed genomes would already be saved on the server for various organisms, as it doesn’t make sense to download one each time. We sort of know which organisms are needed in most cases.\n\nhuman\nmouse\nzebra fish\nfruit fly\nyeast\nworm (C. elegans)\n\nas well as which mappers we need\n\nstar\nbwa\nbowtie2"
+    "objectID": "updating_genomes.html#how-to-by-scenario",
+    "href": "updating_genomes.html#how-to-by-scenario",
+    "title": "Updating genomes and indices",
+    "section": "How-to (by scenario)",
+    "text": "How-to (by scenario)\n\nFirst time setup (recommended)\n./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env create\n./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env check\n\n\nRoutine: re-run indexing (no config changes)\n./scripts/bcfngs genomes build --cores 20\n\n# optional explicit preflight (or use --no-skip-plan on build)\n./scripts/bcfngs genomes plan\n\n\nOnly rebuild one or two organisms\n./scripts/bcfngs genomes build --cores 20 --organism Homo_sapiens,Mus_musculus\n\n\nEnsembl published a new release\n\nCheck:\n\n./scripts/bcfngs genomes check-updates\n\nIf an update is available, bump releases.ensembl in configs/genomes.yaml.\nThen:\n\n./scripts/bcfngs genomes build --cores 20 --no-skip-plan\n\n\nYou updated STAR/bwa/bowtie2 (rebuild indices into new versioned folders)\n\nUpdate tools:\n\n./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env update\n./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env check\n\nUpdate index_versions in configs/genomes.yaml (these strings are used in output folder names).\nRebuild:\n\n./scripts/bcfngs genomes build --cores 20\n\n\nHPC modules fallback (aligners from modules)\nmodule load bclconvert/4.3.13 star bowtie2 bwa\n./scripts/bcfngs --profile modules env check\n./scripts/bcfngs --profile modules genomes build --cores 20 --no-skip-plan\n\n\nRecommended (micromamba)\n./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env create\n./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env check\n\n\nHPC modules fallback (optional)\nYou can use modules for vendor tools:\nmodule load bclconvert/4.3.13 star bowtie2 bwa"
+  },
+  {
+    "objectID": "updating_genomes.html#check-for-a-new-ensembl-release-report-only",
+    "href": "updating_genomes.html#check-for-a-new-ensembl-release-report-only",
+    "title": "Updating genomes and indices",
+    "section": "1) Check for a new Ensembl release (report only)",
+    "text": "1) Check for a new Ensembl release (report only)\n./scripts/bcfngs genomes check-updates"
+  },
+  {
+    "objectID": "updating_genomes.html#update-genome-sources-if-needed",
+    "href": "updating_genomes.html#update-genome-sources-if-needed",
+    "title": "Updating genomes and indices",
+    "section": "2) Update genome sources (if needed)",
+    "text": "2) Update genome sources (if needed)\nGenome sources are configured in configs/genomes.yaml. Organism identifiers use scientific names (e.g. Homo_sapiens, Mus_musculus).\nTo add or update a genome:\n\nAdd/update the organism entry under organisms:.\nFor Ensembl sources, keep releases.ensembl pinned (default: 116). Bumping the release is a controlled change.\nSet sa_index appropriately for STAR indexing."
+  },
+  {
+    "objectID": "updating_genomes.html#build-genomes-indices-safe-workflow",
+    "href": "updating_genomes.html#build-genomes-indices-safe-workflow",
+    "title": "Updating genomes and indices",
+    "section": "3) Build genomes + indices (safe workflow)",
+    "text": "3) Build genomes + indices (safe workflow)\nBuild directly (default behavior skips preflight plan checks):\n./scripts/bcfngs genomes build --cores 20\nForce preflight checks + lint + dry-run before build:\n./scripts/bcfngs genomes build --cores 20 --no-skip-plan\nRun through SLURM instead of local execution:\n./scripts/bcfngs genomes build --executor slurm --jobs 20\n\n# if SLURM executor is unavailable, refresh the environment first\n./scripts/bcfngs env update\nTo build only a subset:\n./scripts/bcfngs genomes build --cores 20 --organism Homo_sapiens,Mus_musculus"
+  },
+  {
+    "objectID": "updating_genomes.html#versioned-indices-symlinks",
+    "href": "updating_genomes.html#versioned-indices-symlinks",
+    "title": "Updating genomes and indices",
+    "section": "4) Versioned indices + symlinks",
+    "text": "4) Versioned indices + symlinks\nIndices are built into versioned directories (e.g. starIndex-&lt;version&gt;) and then symlinked so mapping can always use stable paths:\n\n/fs/pool/pool-bcfngs/genomes/&lt;Organism&gt;/starIndex\n/fs/pool/pool-bcfngs/genomes/&lt;Organism&gt;/bwaIndex\n/fs/pool/pool-bcfngs/genomes/&lt;Organism&gt;/bowtie2Index\n\nSymlinks are updated automatically by the Snakemake workflow after successful index creation."
+  },
+  {
+    "objectID": "updating_genomes.html#mapping-per-project",
+    "href": "updating_genomes.html#mapping-per-project",
+    "title": "Updating genomes and indices",
+    "section": "5) Mapping (per project)",
+    "text": "5) Mapping (per project)\nMapping is now handled by a unified workflow (workflow/mapping.smk) and wrapper commands:\n\n./scripts/bcfngs mapping plan\n./scripts/bcfngs mapping run\n\nSupported mappers are STAR, bwa, and bowtie2 (selectable by --mapper).\n\nChange parameters before mapping\nAdjust configs/run.yaml:\nproject: \"P152\"\npath: \"/fs/pool/pool-bcfngs/fastq_files/P152/conc.fastq/\"\noutdir: \"/fs/pool/pool-bcfngs/mapping\"\norganism: \"Drosophila_melanogaster\"\nthreads: 16\n\n\nRun mapping (dry-run first)\n# default mapper and mode (STAR, paired-end)\n./scripts/bcfngs mapping plan\n./scripts/bcfngs mapping run\n\n# choose mapper(s)\n./scripts/bcfngs mapping run --mapper star,bwa,bowtie2\n\n# single-end mode\n./scripts/bcfngs mapping run --single-end\nFor more usage details, see mapping.qmd."
+  },
+  {
+    "objectID": "updating_genomes.html#additional-examples-moved-from-snakemake.rmd",
+    "href": "updating_genomes.html#additional-examples-moved-from-snakemake.rmd",
+    "title": "Updating genomes and indices",
+    "section": "Additional Examples Moved From snakemake.Rmd",
+    "text": "Additional Examples Moved From snakemake.Rmd\nThese command blocks were moved here to keep topic-specific examples in one place.\n# genomes\n./scripts/bcfngs genomes plan\n./scripts/bcfngs genomes build --cores 20\n\n# optional explicit preflight (or use --no-skip-plan on build)\n./scripts/bcfngs genomes build --cores 20 --no-skip-plan\n\n# run jobs through SLURM (instead of local execution)\n./scripts/bcfngs genomes build --executor slurm --jobs 20\n\n# if SLURM executor is reported as unavailable, refresh the env first\n./scripts/bcfngs env update\n\n# override defaults for a specific cluster/queue when needed\n./scripts/bcfngs genomes build --executor slurm --jobs 20 --slurm-partition &lt;other_partition&gt;\n\n# SLURM defaults used automatically in slurm mode:\n# --partition p.hpcl8\n# --mail-user yeroslaviz@biochem.mpg.de\n# --mail-type ALL\n# --time 04:00:00 (240 min)\n# --cpus-per-task 20\n# --mem-per-cpu 20G\n\n# check if a newer Ensembl release exists\n./scripts/bcfngs genomes check-updates\n# all organisms\n./scripts/bcfngs genomes build --cores 20\n\n# subset\n./scripts/bcfngs genomes build --cores 20 --organism Homo_sapiens,Mus_musculus\nmodule load bclconvert/4.3.13 star bowtie2 bwa\n./scripts/bcfngs --profile modules env check\n./scripts/bcfngs --profile modules genomes build --cores 20 --no-skip-plan"
   },
   {
     "objectID": "branch_publish_workflow.html",
@@ -133,136 +245,80 @@
     "text": "Non-negotiable rule\n\nNever commit docs/ output to codex/hpc-test.\nNever commit code/config pipeline changes to gh-pages."
   },
   {
-    "objectID": "updating_genomes.html",
-    "href": "updating_genomes.html",
-    "title": "Updating genomes and indices",
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "index",
     "section": "",
-    "text": "This page collects the internal procedures for:"
+    "text": "The repository contains a conda-snakemake workflow for the mapping of the concatenated fastq file created at the BCF of the MPIB.\nThis README file for the sequencing center to help them run a preliminary analysis on the sequenced samples\nThe file will contains instruction on how to create a conda environment with the needed tools for the mapping and will also include snakemake for the automation of the scripts."
   },
   {
-    "objectID": "updating_genomes.html#when-to-update-genomes-indices",
-    "href": "updating_genomes.html#when-to-update-genomes-indices",
-    "title": "Updating genomes and indices",
-    "section": "When to update genomes / indices",
-    "text": "When to update genomes / indices\nOnce every few years the genomic sequences must be updated. Also the STAR version for mapping progresses and should be updated when needed."
+    "objectID": "index.html#steps-to-do",
+    "href": "index.html#steps-to-do",
+    "title": "index",
+    "section": "steps to do",
+    "text": "steps to do\nPreparing the genomes for mapping\n\nDownload the genomes and the annotations from the FTP server (Ensembl genome builds are used here.)\nFor each genome, an index for the star aligner is created.\n\nThis two steps should be done only once, when the workflow was set up. It only needs to be re-run, when a new organism is being added, or when newer genome build of exiting organisms or a newer version of the STAR mapping tool are needed.\nMapping step\n\nMap the samples with the needed parameter.\nIndex the fastA file to create a chromSize file for the bigwig conversion.\nConvert the bam files to wig and then to bigwig.\n\npoints to consider: If this is only a preliminary analysis -\n\nWould it make more sense to take only 50% of the fastq file for a faster analysis / visualization\nDo they need the bam files also - deleting them would save a lot of storage space\n\nThe examples in this document are based on fictive data as well as a fictional project named Project0815. When a new project is done, this term must be changed with the proper name of the project, wherever it is mentioned."
   },
   {
-    "objectID": "updating_genomes.html#prerequisites-where-to-run",
-    "href": "updating_genomes.html#prerequisites-where-to-run",
-    "title": "Updating genomes and indices",
-    "section": "Prerequisites / where to run",
-    "text": "Prerequisites / where to run\nYou can use any server as long as you can run snakemake and the required tools. The recommended method is micromamba (see environment)."
+    "objectID": "index.html#folder-structure",
+    "href": "index.html#folder-structure",
+    "title": "index",
+    "section": "folder structure",
+    "text": "folder structure\nThe workflow works from within the folder of the concatenated fastq files created after running the bcl2fastq script from the project management website (in the core facility here, this folder is called conc.fastq).\n\nA config file is saved under /fs/pool/pool-bcfngs/scripts/config.yaml, where all the mapping and genome parameters are saved.\nThe genome indexing step will run only once and creates a folder named genomes/ on the /fs/pool/pool-bcfngs/. Within this folder all the fastA and the gtf files are saved as well as a folder for each organism, containing the star-indexed files.\nThe mapping step expect to find within the working directory the files with the pattern .conc.R1.fastq.gz, as this is the current pattern given by the sequencing facility. (If, in the future, this will be changed, the search pattern must be changed as well).\n\nThere are two separate files for single-ended and paired-ended data sets. The single-ended one expects to find only .conc.R1.fastq.gz, while the paired-end data set must also contain .conc.R2.fastq.gz files."
   },
   {
-    "objectID": "updating_genomes.html#how-to-by-scenario",
-    "href": "updating_genomes.html#how-to-by-scenario",
-    "title": "Updating genomes and indices",
-    "section": "How-to (by scenario)",
-    "text": "How-to (by scenario)\n\nFirst time setup (recommended)\n./scripts/bcfngs env create\n./scripts/bcfngs env check\n\n\nRoutine: re-run indexing (no config changes)\n./scripts/bcfngs genomes plan\n./scripts/bcfngs genomes build --cores 20\n\n\nOnly rebuild one or two organisms\n./scripts/bcfngs genomes build --cores 20 --organism Homo_sapiens,Mus_musculus\n\n\nEnsembl published a new release\n\nCheck:\n\n./scripts/bcfngs genomes check-updates\n\nIf an update is available, bump releases.ensembl in configs/genomes.yaml.\nThen:\n\n./scripts/bcfngs genomes plan\n./scripts/bcfngs genomes build --cores 20\n\n\nYou updated STAR/bwa/bowtie2 (rebuild indices into new versioned folders)\n\nUpdate tools:\n\n./scripts/bcfngs env update\n./scripts/bcfngs env check\n\nUpdate index_versions in configs/genomes.yaml (these strings are used in output folder names).\nRebuild:\n\n./scripts/bcfngs genomes build --cores 20\n\n\nHPC modules fallback (aligners from modules)\nmodule load bclconvert/4.3.13 star bowtie2 bwa\n./scripts/bcfngs --profile modules env check\n./scripts/bcfngs --profile modules genomes plan\n./scripts/bcfngs --profile modules genomes build --cores 20\n\n\nRecommended (micromamba)\n./scripts/bcfngs env create\n./scripts/bcfngs env check\n\n\nHPC modules fallback (optional)\nYou can use modules for vendor tools:\nmodule load bclconvert/4.3.13 star bowtie2 bwa"
+    "objectID": "index.html#workflow",
+    "href": "index.html#workflow",
+    "title": "index",
+    "section": "Workflow",
+    "text": "Workflow\nThe workflow uses a combination of a conda environment with the snakemake tool (based on python). The advantage of conda is that it creates a container, separated from the rest of the tools installed on the system. This gives a better management and control over the tools used in the workflow, as well as less conflict potentials with other/older version of tools with non-compatible parameters. To learn more about the conda environment and its advantages, take a look at the conda web site.\nsnakemake offers a lot of advantages as well. It allows better controls over different steps of the analysis, easier automation of the workflow and reduce running time through parallelization of the steps, just to mention some of them. to learn more about snakemake take a look at the snakemake doc site.\n\nenvironment\nsnakemake\n\n\nwigToBigwig\nFirst the bam files are converted into wig files. This is done using the bam2wig.py script from the rseqc-software package.\nIn order for the automatic conversion of wig to bigwig files to work, one must have the tool wigToBigwig from the UCSC repository installed and in the path. As we are working with conda, the easiest place to put it is the the path of the environment. In this case, as we are working with miniconda the path would be under /fs/home/USERNAME/miniconda3/envs/ENVNAME/bin/. So far I have copied the file manually to the folder, but I have now added it to the environment.yaml file, which is ran during the environment creation step. This was not tested yet!.\nTO DO\nIn this case it would probably be better if the indexed genomes would already be saved on the server for various organisms, as it doesn’t make sense to download one each time. We sort of know which organisms are needed in most cases.\n\nhuman\nmouse\nzebra fish\nfruit fly\nyeast\nworm (C. elegans)\n\nas well as which mappers we need\n\nstar\nbwa\nbowtie2"
   },
   {
-    "objectID": "updating_genomes.html#check-for-a-new-ensembl-release-report-only",
-    "href": "updating_genomes.html#check-for-a-new-ensembl-release-report-only",
-    "title": "Updating genomes and indices",
-    "section": "1) Check for a new Ensembl release (report only)",
-    "text": "1) Check for a new Ensembl release (report only)\n./scripts/bcfngs genomes check-updates"
-  },
-  {
-    "objectID": "updating_genomes.html#update-genome-sources-if-needed",
-    "href": "updating_genomes.html#update-genome-sources-if-needed",
-    "title": "Updating genomes and indices",
-    "section": "2) Update genome sources (if needed)",
-    "text": "2) Update genome sources (if needed)\nGenome sources are configured in configs/genomes.yaml. Organism identifiers use scientific names (e.g. Homo_sapiens, Mus_musculus).\nTo add or update a genome:\n\nAdd/update the organism entry under organisms:.\nFor Ensembl sources, keep releases.ensembl pinned (default: 116). Bumping the release is a controlled change.\nSet sa_index appropriately for STAR indexing."
-  },
-  {
-    "objectID": "updating_genomes.html#build-genomes-indices-safe-workflow",
-    "href": "updating_genomes.html#build-genomes-indices-safe-workflow",
-    "title": "Updating genomes and indices",
-    "section": "3) Build genomes + indices (safe workflow)",
-    "text": "3) Build genomes + indices (safe workflow)\nPreflight checks + snakemake lint + dry-run:\n./scripts/bcfngs genomes plan\nReal build (example with 20 cores):\n./scripts/bcfngs genomes build --cores 20\nTo build only a subset:\n./scripts/bcfngs genomes build --cores 20 --organism Homo_sapiens,Mus_musculus"
-  },
-  {
-    "objectID": "updating_genomes.html#versioned-indices-symlinks",
-    "href": "updating_genomes.html#versioned-indices-symlinks",
-    "title": "Updating genomes and indices",
-    "section": "4) Versioned indices + symlinks",
-    "text": "4) Versioned indices + symlinks\nIndices are built into versioned directories (e.g. starIndex-&lt;version&gt;) and then symlinked so mapping can always use stable paths:\n\n/fs/pool/pool-bcfngs/genomes/&lt;Organism&gt;/starIndex\n/fs/pool/pool-bcfngs/genomes/&lt;Organism&gt;/bwaIndex\n/fs/pool/pool-bcfngs/genomes/&lt;Organism&gt;/bowtie2Index\n\nSymlinks are updated automatically by the Snakemake workflow after successful index creation."
-  },
-  {
-    "objectID": "updating_genomes.html#mapping-per-project",
-    "href": "updating_genomes.html#mapping-per-project",
-    "title": "Updating genomes and indices",
-    "section": "5) Mapping (per project)",
-    "text": "5) Mapping (per project)\nMapping is done with STAR for a specific genome in either paired-end or single-end mode.\n\nChange parameters before mapping\nAdjust the project settings in configs/run.yaml before running:\nproject: \"P152\"\npath: \"/fs/pool/pool-bcfngs/fastq_files/P146/P152_ChIP_Asx_5_6/conc.fastq\"\norganism: \"Drosophila_melanogaster\"\n\n\nRun mapping (dry-run first)\nChange into the project folder containing the concatenated FASTQ files:\ncd /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/\nDry-run then execute:\n# single-end\nsnakemake -nps /path/to/repo/Star.MappingQuant.SingleEndFastq.Snakefile -j 50\n\n# paired-end\nsnakemake -nps /path/to/repo/Star.MappingQuant.PairedEndFastq.Snakefile -j 50\nRemove -n to run for real."
-  },
-  {
-    "objectID": "HOWTO.html",
-    "href": "HOWTO.html",
-    "title": "HOWTO",
+    "objectID": "conda.html",
+    "href": "conda.html",
+    "title": "conda",
     "section": "",
-    "text": "This is an internal HOW-TO for the workflow of the automation for the bcfngs core facility."
+    "text": "The first step is to create a conda environment, containing the necessary tools for the required analysis. In this workflow, we use the snakemake package to help running the workflow, as well as some mappers. To learn more about the conda environment and its advantages, take a look at the conda web site.\nEnvironments can be created with the help of a file, e.g. environment.yaml using the following command\nconda env create --name Project0815 --file environment.yaml\nThis file would look like that:\nname: Project0815\nchannels:\n   - bioconda\n   - conda-forge\n   - r\n   - bioinfo\ndependencies:\n   - snakemake-minimal =5.2.4\n   - python =3.6\n   - star =2.7.2c\n   - samtools =1.9\n   - bowtie2 =2.3.5\n   - bwa =0.7.17\nThe first row of the file contains the name of the project, i.e. the name of the conda environment created. Next are the channels listed, from which the conda environment should look for the tools needed for the analysis.\nthe last part of the environment file is a list of the needed dependencies. Each one of them has its version attached to it. This can be very helpful, when a data set needs to be re-analyzed to check for problems or conflicts with older/newer results or for debugging purposes. In this workflow we will use the snakemake package as well as python version 3.6. we also install here the mappers star, bwa and bowtie2. WE also need the samtool package for the manipulation of the bam files (sorting, filtering, etc.).\nAfter this was done one must activate the environment using the command\nsource activate Project0815\nIf one look at the command line one can now see this\n(Project0815) USER@SERVERNAME:Project0815$ ..\nThe brackets on the left side must contains the name of the environment.\nIf, after the environment was created, new tools must be added, they can just be added to the list of tools in the environment.yaml file and than the conda environment must be updated, using the command\nconda env update -f environment.yaml \nThe conda environment should be created only once, but with each login one must activate it, so that the snakemake script can be run from the correct paths."
   },
   {
-    "objectID": "HOWTO.html#genome-indexing",
-    "href": "HOWTO.html#genome-indexing",
-    "title": "HOWTO",
-    "section": "genome indexing",
-    "text": "genome indexing\nThis steps needs to be run only once. unless new genomes are added.\nThis is all run on the hpcl5002.\n\nlog-in to the server.\nIf not done before, activate the conda environment inside a screen, so that one can log out from the server and still run the workflow in the background. More information about the is on the github web site.\nopen the config.yaml file, e.g. vi /fs/pool/pool-bcfngs/scripts/config.yaml and add the genome links from the ensembl FTP site in this format:\n\n  Dps.3.0.45:\n    fasta: \"ftp://ftp.ensemblgenomes.org/pub/metazoa/release-45/fasta/drosophila_pseudoobscura/dna/Drosophila_pseudoobscura.Dpse_3.0.dna.toplevel.fa.gz\"\n    gtf: \"ftp://ftp.ensemblgenomes.org/pub/metazoa/release-45/gtf/drosophila_pseudoobscura/Drosophila_pseudoobscura.Dpse_3.0.45.gtf.gz\"\n\nrun the command snakemake -nps ../scripts/getGenome_IndexGenome.Snakefile to check that the new genome is added to the workflow (the -n is a dry-run which just output the command without performing the tasks.)\nrun the same command without the -n - snakemake -ps ../scripts/getGenome_IndexGenome.Snakefile -j 12. This will download the fastA and gtf files from the given links and create the index files for them as well. The parameter -j sets the number pf cores used in the snakemake run. If the number of cores is smaller then the one sets for e.g. STAR, only this numner of cores will be used."
-  },
-  {
-    "objectID": "HOWTO.html#mapping",
-    "href": "HOWTO.html#mapping",
-    "title": "HOWTO",
-    "section": "Mapping",
-    "text": "Mapping\nMapping will be done with the STAR aligner for a specific genome either in a paired-end or single-end format.\n\nChanging parameters before mapping\nThe following setting must be adjusted before running the script:\n######## Project Setting\n# To create a separate project results folder for each run, change the name of the project here.\nproject: \"P152\"\n# this path would point to the raw data in fastq format. This must be changed each time for the correct data to be analyzed.\npath: \"/fs/pool/pool-bcfngs/fastq_files/P146/P152_ChIP_Asx_5_6/conc.fastq\"\n# Which organism to map the data to\norg: \"Dme.BDGP6.22\"\nThe project and the path should point to the current project which is being mapped.\nthe org must be the organism the data is mapped against. The term must be identical to the term in the list of organisms from the config files.\n\n\nrunning the star mapping step.\nfirst, change the working directory to the path of the actual project on the pool-bcfngs. e.g.\ncd /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/\nNext run the snakemake script first as a dry-run (-n) and if all seems well than run it for real.\ne.g. \n# for single-end samples\nsnakemake -nps /fs/pool/pool-bcfngs/scripts/Star.MappingQuant.SingleEndFastq.Snakefile -j 50\n# for paired-end samples\nsnakemake -ps /fs/pool/pool-bcfngs/scripts/Star.MappingQuant.PairedEndFastq.Snakefile -j 50"
-  },
-  {
-    "objectID": "environment.html",
-    "href": "environment.html",
-    "title": "Environment (micromamba)",
+    "objectID": "conda.html#conda---how-to",
+    "href": "conda.html#conda---how-to",
+    "title": "conda",
     "section": "",
-    "text": "This workflow uses micromamba to create a reproducible environment with all required tools (Snakemake + aligners + utilities)."
+    "text": "The first step is to create a conda environment, containing the necessary tools for the required analysis. In this workflow, we use the snakemake package to help running the workflow, as well as some mappers. To learn more about the conda environment and its advantages, take a look at the conda web site.\nEnvironments can be created with the help of a file, e.g. environment.yaml using the following command\nconda env create --name Project0815 --file environment.yaml\nThis file would look like that:\nname: Project0815\nchannels:\n   - bioconda\n   - conda-forge\n   - r\n   - bioinfo\ndependencies:\n   - snakemake-minimal =5.2.4\n   - python =3.6\n   - star =2.7.2c\n   - samtools =1.9\n   - bowtie2 =2.3.5\n   - bwa =0.7.17\nThe first row of the file contains the name of the project, i.e. the name of the conda environment created. Next are the channels listed, from which the conda environment should look for the tools needed for the analysis.\nthe last part of the environment file is a list of the needed dependencies. Each one of them has its version attached to it. This can be very helpful, when a data set needs to be re-analyzed to check for problems or conflicts with older/newer results or for debugging purposes. In this workflow we will use the snakemake package as well as python version 3.6. we also install here the mappers star, bwa and bowtie2. WE also need the samtool package for the manipulation of the bam files (sorting, filtering, etc.).\nAfter this was done one must activate the environment using the command\nsource activate Project0815\nIf one look at the command line one can now see this\n(Project0815) USER@SERVERNAME:Project0815$ ..\nThe brackets on the left side must contains the name of the environment.\nIf, after the environment was created, new tools must be added, they can just be added to the list of tools in the environment.yaml file and than the conda environment must be updated, using the command\nconda env update -f environment.yaml \nThe conda environment should be created only once, but with each login one must activate it, so that the snakemake script can be run from the correct paths."
   },
   {
-    "objectID": "environment.html#installing-micromamba",
-    "href": "environment.html#installing-micromamba",
-    "title": "Environment (micromamba)",
-    "section": "Installing micromamba",
-    "text": "Installing micromamba\nmicromamba can be installed from the github repository.\n\"${SHELL}\" &lt;(curl -L https://micro.mamba.pm/install.sh)"
+    "objectID": "snakemake.html",
+    "href": "snakemake.html",
+    "title": "snakemake",
+    "section": "",
+    "text": "This part is still work in progress.\nThis repository uses snakemake for:\nFor non-experts, prefer the single wrapper command ./scripts/bcfngs (runs checks, then snakemake)."
   },
   {
-    "objectID": "environment.html#create-the-workflow-environment-project-local",
-    "href": "environment.html#create-the-workflow-environment-project-local",
-    "title": "Environment (micromamba)",
-    "section": "Create the workflow environment (project-local)",
-    "text": "Create the workflow environment (project-local)\nFrom the repo root:\n# micromamba create -y -p .mamba/env -f env/environment.yml # save the env under the path ./mamba/env\n\nmicromamba create -y -n update_genomes -f env/environment.yml # save the env under the default path of miniconda3\nTo run commands inside the environment without activating it:\nmicromamba run -p .mamba/env snakemake --version"
+    "objectID": "snakemake.html#quickstart",
+    "href": "snakemake.html#quickstart",
+    "title": "snakemake",
+    "section": "Quickstart",
+    "text": "Quickstart\n# 1) create/update env (only once, then as needed)\n./scripts/bcfngs env create\n./scripts/bcfngs env check\n\n# 2) (optional) check if a newer Ensembl release exists\n./scripts/bcfngs genomes check-updates\n\n# 3) preflight checks + snakemake lint + dry-run\n./scripts/bcfngs genomes plan\n\n# 4) build genomes + indices (real run)\n./scripts/bcfngs genomes build --cores 20"
   },
   {
-    "objectID": "environment.html#update-the-environment",
-    "href": "environment.html#update-the-environment",
-    "title": "Environment (micromamba)",
-    "section": "Update the environment",
-    "text": "Update the environment\nIf env/environment.yml changes (new tools, version bumps):\nmicromamba update -y -p .mamba/env -f env/environment.yml"
+    "objectID": "snakemake.html#configuration-files",
+    "href": "snakemake.html#configuration-files",
+    "title": "snakemake",
+    "section": "Configuration files",
+    "text": "Configuration files\nThe workflow configuration is split into two files:\n\nGenome and indexing configuration: configs/genomes.yaml\n\nOrganism identifiers are scientific names (e.g. Homo_sapiens, Mus_musculus).\nGenome sources are pinned to a specific Ensembl release (default: 116).\nIndex output directories are versioned via index_versions.\n\nPer-project run configuration (mapping): configs/run.yaml\n\nProject ID, input path, organism, threads, etc.\n\n\n\nNotes\n\nGenome indexing uses workflow/genomes.smk (not the legacy getGenome_IndexGenome.Snakefile).\nMapping uses the STAR mapping Snakefiles and expects /fs/pool/pool-bcfngs/genomes/&lt;Organism&gt;/starIndex to exist (symlink to the versioned index)."
   },
   {
-    "objectID": "environment.html#health-checks",
-    "href": "environment.html#health-checks",
-    "title": "Environment (micromamba)",
-    "section": "Health checks",
-    "text": "Health checks\n./scripts/bcfngs env check\nThis step goes through the needed tools for the workflow and output if the tool versions. you should see something like that:\n{\n  \"snakemake\": \"8.30.0\",\n  \"STAR\": \"2.7.11b\",\n  \"bwa\": \"\",\n  \"bowtie2\": \"/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes/bin/bowtie2-build-s version 2.5.5\",\n  \"samtools\": \"samtools 1.23\",\n  \"bamCoverage\": \"bamCoverage 3.x.x\"\n}\n\nTroubleshooting: missing bamCoverage / deeptools\nIf ./scripts/bcfngs env check reports:\nMissing tools in environment: bamCoverage\nuse this sequence:\n\nUpdate the environment from env/environment.yml:\n\n./scripts/bcfngs env update\n./scripts/bcfngs env check\n\nIf you use a non-default environment location, pass it explicitly:\n\n./scripts/bcfngs --env-prefix /path/to/your/env env update\n./scripts/bcfngs --env-prefix /path/to/your/env env check\n\nVerify deeptools is actually installed in that environment:\n\nmicromamba list -p .mamba/env | grep -i deeptools\nmicromamba run -p .mamba/env bamCoverage --version\n\nIf still missing, recreate the environment:\n\nrm -rf .mamba/env\n./scripts/bcfngs env create\n./scripts/bcfngs env check\nbamCoverage is provided by the deeptools package in env/environment.yml."
+    "objectID": "snakemake.html#how-to-cookbook",
+    "href": "snakemake.html#how-to-cookbook",
+    "title": "snakemake",
+    "section": "How-to (cookbook)",
+    "text": "How-to (cookbook)\n\nBuild all genomes + indices\n./scripts/bcfngs genomes plan\n./scripts/bcfngs genomes build --cores 20\n\n\nBuild only a subset (faster)\n./scripts/bcfngs genomes build --cores 20 --organism Homo_sapiens,Mus_musculus\n\n\nEnsembl has a newer release (bump pinned release)\n\nCheck:\n\n./scripts/bcfngs genomes check-updates\n\nIf an update is available, edit configs/genomes.yaml and bump:\n\n\nreleases.ensembl: 116 → 117 (etc.)\n\n\nThen:\n\n./scripts/bcfngs genomes plan\n./scripts/bcfngs genomes build --cores 20\n\n\nNew STAR/bwa/bowtie2 version (rebuild indices)\n\nUpdate tools:\n\n./scripts/bcfngs env update\n./scripts/bcfngs env check\n\nUpdate configs/genomes.yaml:\n\n\nset index_versions.star, index_versions.bwa, index_versions.bowtie2 (these strings are used in output folder names)\n\n\nRebuild:\n\n./scripts/bcfngs genomes build --cores 20\n\n\nUse HPC modules for aligners (fallback)\nThis still uses the micromamba env for python/snakemake, but loads vendor tools via modules:\nmodule load bclconvert/4.3.13 star bowtie2 bwa\n./scripts/bcfngs --profile modules env check\n./scripts/bcfngs --profile modules genomes plan\n./scripts/bcfngs --profile modules genomes build --cores 20"
   },
   {
-    "objectID": "environment.html#how-to-common-scenarios",
-    "href": "environment.html#how-to-common-scenarios",
-    "title": "Environment (micromamba)",
-    "section": "How-to (common scenarios)",
-    "text": "How-to (common scenarios)\n\nI’m new / first time setup\nmicromamba create -y -p .mamba/env -f env/environment.yml\n./scripts/bcfngs env check\n\n\nRun a one-off command without activating\nmicromamba run -p .mamba/env snakemake --help\nmicromamba run -p .mamba/env STAR --version\n\n\nKeep tools up-to-date (routine)\n\nUpdate the environment:\n\nmicromamba update -y -p .mamba/env -f env/environment.yml\n./scripts/bcfngs env check\n\n(Optional) record an explicit lockfile for reproducibility:\n\nmkdir -p env/locks\nmicromamba list -p .mamba/env --explicit &gt; env/locks/explicit-YYYY-MM-DD.txt\n\n\nI want to use HPC modules for vendor tools\nYou still need the micromamba env for python + snakemake, but aligners can come from modules:\nmodule load bclconvert/4.3.13 star bowtie2 bwa\n./scripts/bcfngs --profile modules env check\n./scripts/bcfngs --profile modules genomes plan\n./scripts/bcfngs --profile modules genomes build --cores 20\n\n\nDemultiplexing with bcl-convert (modules)\nThis repo doesn’t automate demultiplexing yet, but the typical pattern is:\nmodule load bclconvert/4.3.13\nbcl-convert --help\n\n# Example placeholders (adjust to your run folder / SampleSheet):\n# bcl-convert --bcl-input-directory /path/to/runfolder \\\n#            --output-directory /path/to/output \\\n#            --sample-sheet /path/to/SampleSheet.csv"
-  },
-  {
-    "objectID": "environment.html#hpc-modules-fallback-optional",
-    "href": "environment.html#hpc-modules-fallback-optional",
-    "title": "Environment (micromamba)",
-    "section": "HPC modules fallback (optional)",
-    "text": "HPC modules fallback (optional)\nIf you prefer using HPC modules for vendor tools, you can load:\nmodule load bclconvert/4.3.13 star bowtie2 bwa\nYou can still run Snakemake/python from micromamba (recommended)."
+    "objectID": "snakemake.html#genome-download-indexing",
+    "href": "snakemake.html#genome-download-indexing",
+    "title": "snakemake",
+    "section": "Genome download + indexing",
+    "text": "Genome download + indexing\nWorkflow file: workflow/genomes.smk\n\nMapping the samples with the STAR\nmapping the samples in a paired-end format\nThis script contains three (four) steps. in the first step the fastq samples are mapped to the indexed genome. Then, they are being indexed. Last, after creating a chromosome-size file, the bam files are converted into bigwig files for better visualization using the UCSC browser.\nWe have two separate scripts for single-end and paired-end runs. The PE run looks for both R1 and R2 fastq files, while the SE script will ignore all R2 samples.\nAfter the environment was created and activated, one must change to the directory of the concatenated fast files. E.g.\ncd /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/\nTo run mapping, update configs/run.yaml in the repo, then run one of these Snakefiles.\n# for single-end samples\nsnakemake -nps /path/to/repo/Star.MappingQuant.SingleEndFastq.Snakefile -j 50\n# for paired-end samples\nsnakemake -nps /path/to/repo/Star.MappingQuant.PairedEndFastq.Snakefile -j 50\n\n-n - dry-run. This parameter will only output the command, but execute them. This should be used to test the parameters, but must be removed for the analysis to be done.\n-p - Print the commands to be execute.\n-s - the name of the snakeake file to be executed.\n-j - #cores. How many cores should be used in the run."
   }
 ]

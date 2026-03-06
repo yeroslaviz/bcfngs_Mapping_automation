@@ -132,17 +132,32 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="nav-link" href="./index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./environment.html"> 
-<span class="menu-text">environment</span></a>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-environment" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">environment</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-environment">    
+        <li>
+    <a class="dropdown-item" href="./environment.html">
+ <span class="dropdown-text">micromamba + bcfngs</span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./snakemake.html"> 
-<span class="menu-text">snakemake</span></a>
+        <li>
+    <a class="dropdown-item" href="./conda.html">
+ <span class="dropdown-text">conda</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="./snakemake.html">
+ <span class="dropdown-text">snakemake</span></a>
+  </li>  
+    </ul>
+  </li>
   <li class="nav-item">
     <a class="nav-link active" href="./updating_genomes.html" aria-current="page"> 
 <span class="menu-text">Updating genomes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./mapping.html"> 
+<span class="menu-text">Mapping</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
@@ -203,6 +218,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#change-parameters-before-mapping" id="toc-change-parameters-before-mapping" class="nav-link" data-scroll-target="#change-parameters-before-mapping">Change parameters before mapping</a></li>
   <li><a href="#run-mapping-dry-run-first" id="toc-run-mapping-dry-run-first" class="nav-link" data-scroll-target="#run-mapping-dry-run-first">Run mapping (dry-run first)</a></li>
   </ul></li>
+  <li><a href="#additional-examples-moved-from-snakemake.rmd" id="toc-additional-examples-moved-from-snakemake.rmd" class="nav-link" data-scroll-target="#additional-examples-moved-from-snakemake.rmd">Additional Examples Moved From <code>snakemake.Rmd</code></a></li>
   </ul>
 </nav>
     </div>
@@ -247,19 +263,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="prerequisites-where-to-run" class="level2">
 <h2 class="anchored" data-anchor-id="prerequisites-where-to-run">Prerequisites / where to run</h2>
-<p>You can use any server as long as you can run <code>snakemake</code> and the required tools. The recommended method is <strong>micromamba</strong> (see <a href="environment.html">environment</a>).</p>
+<p>You can use any server as long as you can run <code>snakemake</code> and the required tools. The recommended method is <strong>micromamba</strong> (see <a href="environment.html">environment</a>). Default environment path used on the cluster: <code>/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes</code></p>
 </section>
 <section id="how-to-by-scenario" class="level2">
 <h2 class="anchored" data-anchor-id="how-to-by-scenario">How-to (by scenario)</h2>
 <section id="first-time-setup-recommended" class="level3">
 <h3 class="anchored" data-anchor-id="first-time-setup-recommended">First time setup (recommended)</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env create</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env check</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--env-prefix</span> /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env create</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--env-prefix</span> /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env check</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="routine-re-run-indexing-no-config-changes" class="level3">
 <h3 class="anchored" data-anchor-id="routine-re-run-indexing-no-config-changes">Routine: re-run indexing (no config changes)</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes plan</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># optional explicit preflight (or use --no-skip-plan on build)</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes plan</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="only-rebuild-one-or-two-organisms" class="level3">
 <h3 class="anchored" data-anchor-id="only-rebuild-one-or-two-organisms">Only rebuild one or two organisms</h3>
@@ -275,16 +293,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>If an update is available, bump <code>releases.ensembl</code> in <code>configs/genomes.yaml</code>.</li>
 <li>Then:</li>
 </ol>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes plan</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20 <span class="at">--no-skip-plan</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="you-updated-starbwabowtie2-rebuild-indices-into-new-versioned-folders" class="level3">
 <h3 class="anchored" data-anchor-id="you-updated-starbwabowtie2-rebuild-indices-into-new-versioned-folders">You updated STAR/bwa/bowtie2 (rebuild indices into new versioned folders)</h3>
 <ol type="1">
 <li>Update tools:</li>
 </ol>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env update</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env check</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--env-prefix</span> /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env update</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--env-prefix</span> /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env check</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ol start="2" type="1">
 <li>Update <code>index_versions</code> in <code>configs/genomes.yaml</code> (these strings are used in output folder names).</li>
 <li>Rebuild:</li>
@@ -295,13 +312,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="hpc-modules-fallback-aligners-from-modules">HPC modules fallback (aligners from modules)</h3>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load bclconvert/4.3.13 star bowtie2 bwa</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--profile</span> modules env check</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--profile</span> modules genomes plan</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--profile</span> modules genomes build <span class="at">--cores</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--profile</span> modules genomes build <span class="at">--cores</span> 20 <span class="at">--no-skip-plan</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="recommended-micromamba" class="level3">
 <h3 class="anchored" data-anchor-id="recommended-micromamba">Recommended (micromamba)</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env create</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env check</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--env-prefix</span> /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env create</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--env-prefix</span> /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env check</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="hpc-modules-fallback-optional" class="level3">
 <h3 class="anchored" data-anchor-id="hpc-modules-fallback-optional">HPC modules fallback (optional)</h3>
@@ -325,12 +341,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="build-genomes-indices-safe-workflow" class="level2">
 <h2 class="anchored" data-anchor-id="build-genomes-indices-safe-workflow">3) Build genomes + indices (safe workflow)</h2>
-<p>Preflight checks + snakemake lint + dry-run:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes plan</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Real build (example with 20 cores):</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Build directly (default behavior skips preflight plan checks):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Force preflight checks + lint + dry-run before build:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20 <span class="at">--no-skip-plan</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Run through SLURM instead of local execution:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--executor</span> slurm <span class="at">--jobs</span> 20</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co"># if SLURM executor is unavailable, refresh the environment first</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env update</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>To build only a subset:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20 <span class="at">--organism</span> Homo_sapiens,Mus_musculus</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20 <span class="at">--organism</span> Homo_sapiens,Mus_musculus</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="versioned-indices-symlinks" class="level2">
 <h2 class="anchored" data-anchor-id="versioned-indices-symlinks">4) Versioned indices + symlinks</h2>
@@ -344,28 +365,74 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="mapping-per-project" class="level2">
 <h2 class="anchored" data-anchor-id="mapping-per-project">5) Mapping (per project)</h2>
-<p>Mapping is done with <code>STAR</code> for a specific genome in either paired-end or single-end mode.</p>
+<p>Mapping is now handled by a unified workflow (<code>workflow/mapping.smk</code>) and wrapper commands:</p>
+<ul>
+<li><code>./scripts/bcfngs mapping plan</code></li>
+<li><code>./scripts/bcfngs mapping run</code></li>
+</ul>
+<p>Supported mappers are <code>STAR</code>, <code>bwa</code>, and <code>bowtie2</code> (selectable by <code>--mapper</code>).</p>
 <section id="change-parameters-before-mapping" class="level3">
 <h3 class="anchored" data-anchor-id="change-parameters-before-mapping">Change parameters before mapping</h3>
-<p>Adjust the project settings in <a href="configs/run.yaml"><code>configs/run.yaml</code></a> before running:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">project</span><span class="kw">:</span><span class="at"> </span><span class="st">"P152"</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">path</span><span class="kw">:</span><span class="at"> </span><span class="st">"/fs/pool/pool-bcfngs/fastq_files/P146/P152_ChIP_Asx_5_6/conc.fastq"</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="fu">organism</span><span class="kw">:</span><span class="at"> </span><span class="st">"Drosophila_melanogaster"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Adjust <a href="configs/run.yaml"><code>configs/run.yaml</code></a>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">project</span><span class="kw">:</span><span class="at"> </span><span class="st">"P152"</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">path</span><span class="kw">:</span><span class="at"> </span><span class="st">"/fs/pool/pool-bcfngs/fastq_files/P152/conc.fastq/"</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="fu">outdir</span><span class="kw">:</span><span class="at"> </span><span class="st">"/fs/pool/pool-bcfngs/mapping"</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="fu">organism</span><span class="kw">:</span><span class="at"> </span><span class="st">"Drosophila_melanogaster"</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="fu">threads</span><span class="kw">:</span><span class="at"> </span><span class="dv">16</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="run-mapping-dry-run-first" class="level3">
 <h3 class="anchored" data-anchor-id="run-mapping-dry-run-first">Run mapping (dry-run first)</h3>
-<p>Change into the project folder containing the concatenated FASTQ files:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Dry-run then execute:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># single-end</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-nps</span> /path/to/repo/Star.MappingQuant.SingleEndFastq.Snakefile <span class="at">-j</span> 50</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co"># paired-end</span></span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-nps</span> /path/to/repo/Star.MappingQuant.PairedEndFastq.Snakefile <span class="at">-j</span> 50</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Remove <code>-n</code> to run for real.</p>
-
-
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># default mapper and mode (STAR, paired-end)</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping plan</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="co"># choose mapper(s)</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run <span class="at">--mapper</span> star,bwa,bowtie2</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="co"># single-end mode</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run <span class="at">--single-end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>For more usage details, see <a href="./mapping.html"><code>mapping.qmd</code></a>.</p>
 </section>
+</section>
+<section id="additional-examples-moved-from-snakemake.rmd" class="level2">
+<h2 class="anchored" data-anchor-id="additional-examples-moved-from-snakemake.rmd">Additional Examples Moved From <code>snakemake.Rmd</code></h2>
+<p>These command blocks were moved here to keep topic-specific examples in one place.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># genomes</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes plan</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="co"># optional explicit preflight (or use --no-skip-plan on build)</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20 <span class="at">--no-skip-plan</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="co"># run jobs through SLURM (instead of local execution)</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--executor</span> slurm <span class="at">--jobs</span> 20</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a><span class="co"># if SLURM executor is reported as unavailable, refresh the env first</span></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env update</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a><span class="co"># override defaults for a specific cluster/queue when needed</span></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--executor</span> slurm <span class="at">--jobs</span> 20 <span class="at">--slurm-partition</span> <span class="op">&lt;</span>other_partition<span class="op">&gt;</span></span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a><span class="co"># SLURM defaults used automatically in slurm mode:</span></span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a><span class="co"># --partition p.hpcl8</span></span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a><span class="co"># --mail-user yeroslaviz@biochem.mpg.de</span></span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a><span class="co"># --mail-type ALL</span></span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a><span class="co"># --time 04:00:00 (240 min)</span></span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a><span class="co"># --cpus-per-task 20</span></span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a><span class="co"># --mem-per-cpu 20G</span></span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a><span class="co"># check if a newer Ensembl release exists</span></span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes check-updates</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># all organisms</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="co"># subset</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20 <span class="at">--organism</span> Homo_sapiens,Mus_musculus</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load bclconvert/4.3.13 star bowtie2 bwa</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--profile</span> modules env check</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--profile</span> modules genomes build <span class="at">--cores</span> 20 <span class="at">--no-skip-plan</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+
+
 </section>
 
 </main> <!-- /main -->
