@@ -137,63 +137,49 @@
     "href": "updating_genomes.html",
     "title": "Updating genomes and indices",
     "section": "",
-    "text": "This page collects the internal procedures for:"
+    "text": "This page is the operator guide for ./scripts/bcfngs genomes. It covers:\nEnvironment setup is documented elsewhere. This page assumes ./scripts/bcfngs already runs on your machine or cluster."
   },
   {
-    "objectID": "updating_genomes.html#when-to-update-genomes-indices",
-    "href": "updating_genomes.html#when-to-update-genomes-indices",
+    "objectID": "updating_genomes.html#command-overview",
+    "href": "updating_genomes.html#command-overview",
     "title": "Updating genomes and indices",
-    "section": "When to update genomes / indices",
-    "text": "When to update genomes / indices\nOnce every few years the genomic sequences must be updated. Also the STAR version for mapping progresses and should be updated when needed."
+    "section": "Command overview",
+    "text": "Command overview\nbcfngs genomes currently exposes three subcommands:\n\ncheck-updates: compare the pinned Ensembl release in configs/genomes.yaml with the latest Ensembl release visible on ftp.ensembl.org\nplan: run preflight checks, snakemake --lint, and a dry-run\nbuild: run plan, then execute the workflow for real\n\nInspect the wrapper help first:\n./scripts/bcfngs genomes --help\n./scripts/bcfngs genomes plan --help\n./scripts/bcfngs genomes build --help\n./scripts/bcfngs genomes check-updates --help\nAt the wrapper level, only build has extra arguments:\n./scripts/bcfngs genomes build --help\nusage: bcfngs genomes build [-h] [--cores CORES] [--organism ORGANISM]\nThat means:\n\nuse --cores to control total workflow parallelism\nuse --organism for a comma-separated subset of organism keys\nuse direct snakemake for advanced cases such as scheduler memory flags or building only one index type"
   },
   {
-    "objectID": "updating_genomes.html#prerequisites-where-to-run",
-    "href": "updating_genomes.html#prerequisites-where-to-run",
+    "objectID": "updating_genomes.html#common-bcfngs-genomes-workflows",
+    "href": "updating_genomes.html#common-bcfngs-genomes-workflows",
     "title": "Updating genomes and indices",
-    "section": "Prerequisites / where to run",
-    "text": "Prerequisites / where to run\nYou can use any server as long as you can run snakemake and the required tools. The recommended method is micromamba (see environment). Default environment path: ~/miniconda3/envs/update_genomes\nOn the HPC cluster this expands to: /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes"
+    "section": "Common bcfngs genomes workflows",
+    "text": "Common bcfngs genomes workflows\n\n1) Preflight only\nUse this before every real run. It checks that the YAML parses, target URLs are reachable, the output root is writable, and the Snakemake graph is valid.\n./scripts/bcfngs genomes plan\n\n\n2) Build all configured genomes locally\n./scripts/bcfngs genomes build --cores 20\nMore local examples:\n./scripts/bcfngs genomes build --cores 8\n./scripts/bcfngs genomes build --cores 20\n./scripts/bcfngs genomes build --cores 32\n--cores is the total job budget for the Snakemake run. It is not the same thing as the per-tool thread count used inside STAR or bowtie2-build.\n\n\n3) Build only selected organisms\nOrganism names must match the keys in configs/genomes.yaml exactly.\n./scripts/bcfngs genomes build --cores 20 --organism Homo_sapiens\n./scripts/bcfngs genomes build --cores 20 --organism Homo_sapiens,Mus_musculus\n./scripts/bcfngs genomes build --cores 12 --organism Drosophila_melanogaster,Drosophila_pseudoobscura\nUse this when:\n\nyou added or changed only one organism\nyou want to test a release bump on a smaller subset first\nyou do not want to rebuild every organism after a config edit\n\n\n\n4) Run with the modules profile\nIf your cluster provides aligners via modules, use the modules profile:\nmodule load bclconvert/4.3.13 star bowtie2 bwa\n./scripts/bcfngs --profile modules genomes plan\n./scripts/bcfngs --profile modules genomes build --cores 20\n./scripts/bcfngs --profile modules genomes build --cores 20 --organism Homo_sapiens\nImportant: in the current implementation, --profile modules loads STAR, bwa, and bowtie2 from modules, but python and snakemake still come from the micromamba environment selected by ./scripts/bcfngs."
   },
   {
-    "objectID": "updating_genomes.html#how-to-by-scenario",
-    "href": "updating_genomes.html#how-to-by-scenario",
+    "objectID": "updating_genomes.html#parameters-you-can-tune-in-configsgenomes.yaml",
+    "href": "updating_genomes.html#parameters-you-can-tune-in-configsgenomes.yaml",
     "title": "Updating genomes and indices",
-    "section": "How-to (by scenario)",
-    "text": "How-to (by scenario)\n\nFirst time setup (recommended)\n./scripts/bcfngs env create\n./scripts/bcfngs env check\n\n\nRoutine: re-run indexing (no config changes)\n./scripts/bcfngs genomes plan\n./scripts/bcfngs genomes build --cores 20\n\n\nOnly rebuild one or two organisms\n./scripts/bcfngs genomes build --cores 20 --organism Homo_sapiens,Mus_musculus\n\n\nEnsembl published a new release\n\nCheck:\n\n./scripts/bcfngs genomes check-updates\n\nIf an update is available, bump releases.ensembl in configs/genomes.yaml.\nThen:\n\n./scripts/bcfngs genomes plan\n./scripts/bcfngs genomes build --cores 20\n\n\nYou updated STAR/bwa/bowtie2 (rebuild indices into new versioned folders)\n\nUpdate tools:\n\n./scripts/bcfngs env update\n./scripts/bcfngs env check\n\nUpdate index_versions in configs/genomes.yaml (these strings are used in output folder names).\nRebuild:\n\n./scripts/bcfngs genomes build --cores 20\n\n\nHPC modules fallback (aligners from modules)\nmodule load bclconvert/4.3.13 star bowtie2 bwa\n./scripts/bcfngs --profile modules env check\n./scripts/bcfngs --profile modules genomes plan\n./scripts/bcfngs --profile modules genomes build --cores 20\n\n\nRecommended (micromamba)\n./scripts/bcfngs env create\n./scripts/bcfngs env check\n\n\nHPC modules fallback (optional)\nYou can use modules for vendor tools:\nmodule load bclconvert/4.3.13 star bowtie2 bwa"
+    "section": "Parameters you can tune in configs/genomes.yaml",
+    "text": "Parameters you can tune in configs/genomes.yaml\nThe wrapper only exposes --cores and --organism, but the workflow behavior is also controlled by configs/genomes.yaml.\n\nGlobal settings\ngenomes_root: /fs/pool/pool-bcfngs/genomes\ndefault_threads: 16\ndefault_ram_bytes: 168632718037\n\ngenomes_root: where sources, indices, and stable symlinks are written\ndefault_threads: thread count used by STAR genome generation and bowtie2-build\ndefault_ram_bytes: passed to STAR --limitGenomeGenerateRAM\n\nExamples:\n\n20-core workstation, one large STAR job at a time: set default_threads: 20 and run ./scripts/bcfngs genomes build --cores 20\n20-core workstation, allow two medium indexing jobs in parallel: set default_threads: 10 and run ./scripts/bcfngs genomes build --cores 20\nlarger-memory node for STAR genome generation: increase default_ram_bytes\n\n\n\nRelease pins and index directory versions\nreleases:\n  ensembl: 116\n  ensemblgenomes:\n    metazoa: 61\n\nindex_versions:\n  star: \"unknown\"\n  bwa: \"unknown\"\n  bowtie2: \"unknown\"\n\nreleases.ensembl: the pinned Ensembl release used for standard Ensembl organisms\nreleases.ensemblgenomes.*: release pins for EnsemblGenomes divisions such as metazoa\nindex_versions.*: strings used in output folder names such as starIndex-&lt;version&gt;\n\nIf you upgrade only one tool, bump only that tool’s version string. Example: if only STAR changed, update index_versions.star and leave bwa plus bowtie2 alone.\n\n\nPer-organism settings\nExample:\nHomo_sapiens:\n  source: ensembl\n  species: homo_sapiens\n  assembly: GRCh38\n  fasta_kind: dna.primary_assembly\n  sa_index: 14\nCommon fields:\n\nsource: usually ensembl, sometimes ensemblgenomes\nspecies: lowercase species path used on the FTP server\nassembly: assembly label used in the remote filenames\nfasta_kind: usually dna.primary_assembly or dna.toplevel\nsa_index: passed to STAR --genomeSAindexNbases\nfasta_url and gtf_url: explicit URLs for organisms whose source naming does not fit the default template\n\nIf you add a new organism, use its scientific name as the key, for example Arabidopsis_thaliana or Danio_rerio."
   },
   {
-    "objectID": "updating_genomes.html#check-for-a-new-ensembl-release-report-only",
-    "href": "updating_genomes.html#check-for-a-new-ensembl-release-report-only",
+    "objectID": "updating_genomes.html#check-for-updates-and-bump-the-genome-release",
+    "href": "updating_genomes.html#check-for-updates-and-bump-the-genome-release",
     "title": "Updating genomes and indices",
-    "section": "1) Check for a new Ensembl release (report only)",
-    "text": "1) Check for a new Ensembl release (report only)\n./scripts/bcfngs genomes check-updates"
+    "section": "Check for updates and bump the genome release",
+    "text": "Check for updates and bump the genome release\n\nStandard Ensembl release bump\nFirst check the currently pinned release against upstream:\n./scripts/bcfngs genomes check-updates\nTypical output looks like:\nEnsembl latest release: 117  current pinned: 116  status: UPDATE_AVAILABLE\nSuggested bump: set releases.ensembl to 117 in configs/genomes.yaml\nThen:\n\nEdit configs/genomes.yaml.\nBump releases.ensembl, for example 116 to 117.\nReview organism entries if any explicit fasta_url or gtf_url values need to change.\nRun a dry-run first:\n\n./scripts/bcfngs genomes plan\n\nRebuild:\n\n./scripts/bcfngs genomes build --cores 20\nIf you want a cautious rollout, rebuild only one organism first:\n./scripts/bcfngs genomes build --cores 20 --organism Homo_sapiens\n\n\nEnsemblGenomes or explicit URL updates\n./scripts/bcfngs genomes check-updates checks releases.ensembl. It does not audit every explicit fasta_url or gtf_url entry for you.\nFor organisms defined with:\n\nsource: ensemblgenomes\nexplicit fasta_url\nexplicit gtf_url\n\nreview those URLs manually, update the release pin under releases.ensemblgenomes, and then run plan plus build again."
   },
   {
-    "objectID": "updating_genomes.html#update-genome-sources-if-needed",
-    "href": "updating_genomes.html#update-genome-sources-if-needed",
+    "objectID": "updating_genomes.html#rebuild-indices-after-a-tool-upgrade",
+    "href": "updating_genomes.html#rebuild-indices-after-a-tool-upgrade",
     "title": "Updating genomes and indices",
-    "section": "2) Update genome sources (if needed)",
-    "text": "2) Update genome sources (if needed)\nGenome sources are configured in configs/genomes.yaml. Organism identifiers use scientific names (e.g. Homo_sapiens, Mus_musculus).\nTo add or update a genome:\n\nAdd/update the organism entry under organisms:.\nFor Ensembl sources, keep releases.ensembl pinned (default: 116). Bumping the release is a controlled change.\nSet sa_index appropriately for STAR indexing."
+    "section": "Rebuild indices after a tool upgrade",
+    "text": "Rebuild indices after a tool upgrade\nWhen the genome sequence did not change but an indexer changed, update only the version labels for the affected tools:\nindex_versions:\n  star: \"2.7.11b\"\n  bwa: \"0.7.18\"\n  bowtie2: \"2.5.5\"\nThen rebuild:\n./scripts/bcfngs genomes plan\n./scripts/bcfngs genomes build --cores 20\nSuccessful builds update the stable symlinks automatically:\n\n/fs/pool/pool-bcfngs/genomes/&lt;Organism&gt;/starIndex\n/fs/pool/pool-bcfngs/genomes/&lt;Organism&gt;/bwaIndex\n/fs/pool/pool-bcfngs/genomes/&lt;Organism&gt;/bowtie2Index\n\nThese symlinks point to versioned directories such as starIndex-2.7.11b."
   },
   {
-    "objectID": "updating_genomes.html#build-genomes-indices-safe-workflow",
-    "href": "updating_genomes.html#build-genomes-indices-safe-workflow",
+    "objectID": "updating_genomes.html#advanced-direct-snakemake-usage",
+    "href": "updating_genomes.html#advanced-direct-snakemake-usage",
     "title": "Updating genomes and indices",
-    "section": "3) Build genomes + indices (safe workflow)",
-    "text": "3) Build genomes + indices (safe workflow)\nRun preflight checks first:\n./scripts/bcfngs genomes plan\nThen build:\n./scripts/bcfngs genomes build --cores 20\nTo build only a subset:\n./scripts/bcfngs genomes build --cores 20 --organism Homo_sapiens,Mus_musculus"
-  },
-  {
-    "objectID": "updating_genomes.html#versioned-indices-symlinks",
-    "href": "updating_genomes.html#versioned-indices-symlinks",
-    "title": "Updating genomes and indices",
-    "section": "4) Versioned indices + symlinks",
-    "text": "4) Versioned indices + symlinks\nIndices are built into versioned directories (e.g. starIndex-&lt;version&gt;) and then symlinked so mapping can always use stable paths:\n\n/fs/pool/pool-bcfngs/genomes/&lt;Organism&gt;/starIndex\n/fs/pool/pool-bcfngs/genomes/&lt;Organism&gt;/bwaIndex\n/fs/pool/pool-bcfngs/genomes/&lt;Organism&gt;/bowtie2Index\n\nSymlinks are updated automatically by the Snakemake workflow after successful index creation."
-  },
-  {
-    "objectID": "updating_genomes.html#mapping-per-project",
-    "href": "updating_genomes.html#mapping-per-project",
-    "title": "Updating genomes and indices",
-    "section": "5) Mapping (per project)",
-    "text": "5) Mapping (per project)\nGenome download and indexing are handled by ./scripts/bcfngs. Mapping is still run through the STAR Snakefiles already in the repository.\n\nChange parameters before mapping\nAdjust configs/run.yaml:\nproject: \"P152\"\npath: \"/fs/pool/pool-bcfngs/fastq_files/P152/conc.fastq/\"\noutdir: \"/fs/pool/pool-bcfngs/mapping\"\norganism: \"Drosophila_melanogaster\"\nthreads: 16\n\n\nRun mapping (dry-run first)\ncd /fs/pool/pool-bcfngs/fastq_files/P152/conc.fastq/\n\n# paired-end\nsnakemake -nps /path/to/repo/Star.MappingQuant.PairedEndFastq.Snakefile -j 20\n\n# single-end\nsnakemake -nps /path/to/repo/Star.MappingQuant.SingleEndFastq.Snakefile -j 20\nRemove -n to run the mapping for real after the dry-run looks correct."
+    "section": "Advanced: direct snakemake usage",
+    "text": "Advanced: direct snakemake usage\nUse direct snakemake when you need options that ./scripts/bcfngs genomes does not currently expose.\n\nBuild only one index type\nThe wrapper always targets the full workflow. To build only one tool, target the desired output file directly.\nReplace the version placeholder with the matching value from index_versions in configs/genomes.yaml.\nOnly STAR for Homo_sapiens:\nsnakemake -pr -j 20 \\\n  -s workflow/genomes.smk \\\n  --configfile configs/genomes.yaml \\\n  /fs/pool/pool-bcfngs/genomes/Homo_sapiens/starIndex-&lt;STAR_VERSION&gt;/SA\nOnly bwa for Homo_sapiens:\nsnakemake -pr -j 20 \\\n  -s workflow/genomes.smk \\\n  --configfile configs/genomes.yaml \\\n  /fs/pool/pool-bcfngs/genomes/Homo_sapiens/bwaIndex-&lt;BWA_VERSION&gt;/Homo_sapiens.bwt\nOnly bowtie2 for Homo_sapiens:\nsnakemake -pr -j 20 \\\n  -s workflow/genomes.smk \\\n  --configfile configs/genomes.yaml \\\n  /fs/pool/pool-bcfngs/genomes/Homo_sapiens/bowtie2Index-&lt;BOWTIE2_VERSION&gt;/Homo_sapiens.1.bt2\nThese commands still pull in prerequisites such as source downloads, but they avoid rebuilding every index type.\n\n\nChange memory-related behavior\nThere are two different layers here:\n\ndefault_ram_bytes in configs/genomes.yaml controls STAR --limitGenomeGenerateRAM\nscheduler submission flags such as SLURM --mem or --mem-per-cpu are outside the bcfngs genomes wrapper\n\nFor a permanent STAR memory change, edit:\ndefault_ram_bytes: 250000000000\nIf you need scheduler-specific memory requests, run snakemake directly using your site profile or executor settings. For example, on SLURM-oriented setups this is often expressed via default resources rather than via the bcfngs wrapper:\nsnakemake -pr \\\n  --executor slurm \\\n  --jobs 20 \\\n  --default-resources mem_mb=180000 \\\n  -s workflow/genomes.smk \\\n  --configfile configs/genomes.yaml\nOr, if your cluster policy is based on memory per CPU:\nsnakemake -pr \\\n  --executor slurm \\\n  --jobs 20 \\\n  --default-resources mem_mb_per_cpu=8000 \\\n  -s workflow/genomes.smk \\\n  --configfile configs/genomes.yaml\nAdjust these examples to your local cluster conventions. The current ./scripts/bcfngs genomes command does not parse --mem or --mem-per-cpu directly."
   },
   {
     "objectID": "branch_publish_workflow.html",
