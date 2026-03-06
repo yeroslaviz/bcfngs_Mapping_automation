@@ -1,7 +1,15 @@
 ---
 title: "index"
 author: "Assa Yeroslaviz"
+editor: source
 date: last-modified
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    toc-expand: false
+    number-sections: true
+    number-depth: 4
 ---
 
 The repository contains a conda-snakemake workflow for the mapping of the concatenated fastq file created at the BCF of the MPIB.

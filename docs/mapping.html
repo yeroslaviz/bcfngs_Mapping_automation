@@ -7,6 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="AY">
+<meta name="dcterms.date" content="2026-03-06">
 
 <title>Mapping Workflow – Bioinformatics Core Facility MPI Biochemistry</title>
 <style>
@@ -192,16 +193,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
-  <li><a href="#required-configuration" id="toc-required-configuration" class="nav-link" data-scroll-target="#required-configuration">Required configuration</a></li>
-  <li><a href="#fastq-pattern-auto-detection" id="toc-fastq-pattern-auto-detection" class="nav-link" data-scroll-target="#fastq-pattern-auto-detection">FASTQ pattern auto-detection</a></li>
-  <li><a href="#basic-usage" id="toc-basic-usage" class="nav-link" data-scroll-target="#basic-usage">Basic usage</a></li>
-  <li><a href="#notes" id="toc-notes" class="nav-link" data-scroll-target="#notes">Notes</a></li>
-  <li><a href="#flag-meanings" id="toc-flag-meanings" class="nav-link" data-scroll-target="#flag-meanings">Flag meanings</a></li>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview"><span class="header-section-number">1</span> Overview</a></li>
+  <li><a href="#required-configuration" id="toc-required-configuration" class="nav-link" data-scroll-target="#required-configuration"><span class="header-section-number">2</span> Required configuration</a></li>
+  <li><a href="#fastq-pattern-auto-detection" id="toc-fastq-pattern-auto-detection" class="nav-link" data-scroll-target="#fastq-pattern-auto-detection"><span class="header-section-number">3</span> FASTQ pattern auto-detection</a></li>
+  <li><a href="#basic-usage" id="toc-basic-usage" class="nav-link" data-scroll-target="#basic-usage"><span class="header-section-number">4</span> Basic usage</a></li>
+  <li><a href="#notes" id="toc-notes" class="nav-link" data-scroll-target="#notes"><span class="header-section-number">5</span> Notes</a></li>
+  <li><a href="#flag-meanings" id="toc-flag-meanings" class="nav-link" data-scroll-target="#flag-meanings"><span class="header-section-number">6</span> Flag meanings</a></li>
   </ul>
 </nav>
     </div>
@@ -224,6 +225,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           </div>
   </div>
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 6, 2026</p>
+    </div>
+  </div>
   
     
   </div>
@@ -234,8 +241,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <p>This page documents the current mapping workflow in this repository.</p>
-<section id="overview" class="level2">
-<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<section id="overview" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="overview"><span class="header-section-number">1</span> Overview</h2>
 <ul>
 <li>Genome download and indexing are handled by <code>./scripts/bcfngs</code>.</li>
 <li>Mapping is still run directly through the STAR Snakefiles already present in the repository:
@@ -255,8 +262,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><code>&lt;sample&gt;.SJ.out.tab</code></li>
 </ul>
 </section>
-<section id="required-configuration" class="level2">
-<h2 class="anchored" data-anchor-id="required-configuration">Required configuration</h2>
+<section id="required-configuration" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="required-configuration"><span class="header-section-number">2</span> Required configuration</h2>
 <p>Update <code>configs/run.yaml</code>:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">project</span><span class="kw">:</span><span class="at"> </span><span class="st">"P000"</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">path</span><span class="kw">:</span><span class="at"> </span><span class="st">"/fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/"</span></span>
@@ -266,8 +273,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ram_bytes</span><span class="kw">:</span><span class="at"> </span><span class="dv">168632718037</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><code>organism</code> must be one organism key from <code>configs/genomes.yaml</code>, using the scientific-name format such as <code>Homo_sapiens</code> or <code>Mus_musculus</code>.</p>
 </section>
-<section id="fastq-pattern-auto-detection" class="level2">
-<h2 class="anchored" data-anchor-id="fastq-pattern-auto-detection">FASTQ pattern auto-detection</h2>
+<section id="fastq-pattern-auto-detection" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="fastq-pattern-auto-detection"><span class="header-section-number">3</span> FASTQ pattern auto-detection</h2>
 <p>The legacy STAR Snakefiles expect concatenated FASTQ files in the working directory. The important patterns are:</p>
 <ol type="1">
 <li><code>*.conc.R1.fastq.gz</code></li>
@@ -275,8 +282,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ol>
 <p>The single-end Snakefile ignores <code>R2</code>, while the paired-end Snakefile requires both mates.</p>
 </section>
-<section id="basic-usage" class="level2">
-<h2 class="anchored" data-anchor-id="basic-usage">Basic usage</h2>
+<section id="basic-usage" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="basic-usage"><span class="header-section-number">4</span> Basic usage</h2>
 <p>Dry-run first:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -287,16 +294,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-nps</span> /path/to/repo/Star.MappingQuant.SingleEndFastq.Snakefile <span class="at">-j</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Remove <code>-n</code> after the dry-run looks correct.</p>
 </section>
-<section id="notes" class="level2">
-<h2 class="anchored" data-anchor-id="notes">Notes</h2>
+<section id="notes" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="notes"><span class="header-section-number">5</span> Notes</h2>
 <ul>
 <li>Run <code>./scripts/bcfngs env check</code> first to confirm the required tools are available in <code>~/miniconda3/envs/update_genomes</code>.</li>
 <li>The mapping Snakefiles use the stable STAR index symlink under <code>/fs/pool/pool-bcfngs/genomes/&lt;Organism&gt;/starIndex</code>.</li>
 <li><code>wigToBigwig</code> and <code>bam2wig.py</code> must be available in the same environment.</li>
 </ul>
 </section>
-<section id="flag-meanings" class="level2">
-<h2 class="anchored" data-anchor-id="flag-meanings">Flag meanings</h2>
+<section id="flag-meanings" class="level2" data-number="6">
+<h2 data-number="6" class="anchored" data-anchor-id="flag-meanings"><span class="header-section-number">6</span> Flag meanings</h2>
 <ul>
 <li><code>-n</code>: dry-run</li>
 <li><code>-p</code>: print shell commands</li>

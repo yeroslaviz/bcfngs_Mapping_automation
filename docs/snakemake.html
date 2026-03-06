@@ -193,26 +193,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#quickstart" id="toc-quickstart" class="nav-link active" data-scroll-target="#quickstart">Quickstart</a></li>
-  <li><a href="#configuration-files" id="toc-configuration-files" class="nav-link" data-scroll-target="#configuration-files">Configuration files</a>
-  <ul class="collapse">
-  <li><a href="#notes" id="toc-notes" class="nav-link" data-scroll-target="#notes">Notes</a></li>
+  <li><a href="#quickstart" id="toc-quickstart" class="nav-link active" data-scroll-target="#quickstart"><span class="header-section-number">1</span> Quickstart</a></li>
+  <li><a href="#configuration-files" id="toc-configuration-files" class="nav-link" data-scroll-target="#configuration-files"><span class="header-section-number">2</span> Configuration files</a>
+  <ul>
+  <li><a href="#notes" id="toc-notes" class="nav-link" data-scroll-target="#notes"><span class="header-section-number">2.1</span> Notes</a></li>
   </ul></li>
-  <li><a href="#how-to-cookbook" id="toc-how-to-cookbook" class="nav-link" data-scroll-target="#how-to-cookbook">How-to (cookbook)</a>
-  <ul class="collapse">
-  <li><a href="#build-all-genomes-indices" id="toc-build-all-genomes-indices" class="nav-link" data-scroll-target="#build-all-genomes-indices">Build all genomes + indices</a></li>
-  <li><a href="#build-only-a-subset-faster" id="toc-build-only-a-subset-faster" class="nav-link" data-scroll-target="#build-only-a-subset-faster">Build only a subset (faster)</a></li>
-  <li><a href="#ensembl-has-a-newer-release-bump-pinned-release" id="toc-ensembl-has-a-newer-release-bump-pinned-release" class="nav-link" data-scroll-target="#ensembl-has-a-newer-release-bump-pinned-release">Ensembl has a newer release (bump pinned release)</a></li>
-  <li><a href="#new-starbwabowtie2-version-rebuild-indices" id="toc-new-starbwabowtie2-version-rebuild-indices" class="nav-link" data-scroll-target="#new-starbwabowtie2-version-rebuild-indices">New STAR/bwa/bowtie2 version (rebuild indices)</a></li>
-  <li><a href="#use-hpc-modules-for-aligners-fallback" id="toc-use-hpc-modules-for-aligners-fallback" class="nav-link" data-scroll-target="#use-hpc-modules-for-aligners-fallback">Use HPC modules for aligners (fallback)</a></li>
+  <li><a href="#how-to-cookbook" id="toc-how-to-cookbook" class="nav-link" data-scroll-target="#how-to-cookbook"><span class="header-section-number">3</span> How-to (cookbook)</a>
+  <ul>
+  <li><a href="#build-all-genomes-indices" id="toc-build-all-genomes-indices" class="nav-link" data-scroll-target="#build-all-genomes-indices"><span class="header-section-number">3.1</span> Build all genomes + indices</a></li>
+  <li><a href="#build-only-a-subset-faster" id="toc-build-only-a-subset-faster" class="nav-link" data-scroll-target="#build-only-a-subset-faster"><span class="header-section-number">3.2</span> Build only a subset (faster)</a></li>
+  <li><a href="#ensembl-has-a-newer-release-bump-pinned-release" id="toc-ensembl-has-a-newer-release-bump-pinned-release" class="nav-link" data-scroll-target="#ensembl-has-a-newer-release-bump-pinned-release"><span class="header-section-number">3.3</span> Ensembl has a newer release (bump pinned release)</a></li>
+  <li><a href="#new-starbwabowtie2-version-rebuild-indices" id="toc-new-starbwabowtie2-version-rebuild-indices" class="nav-link" data-scroll-target="#new-starbwabowtie2-version-rebuild-indices"><span class="header-section-number">3.4</span> New STAR/bwa/bowtie2 version (rebuild indices)</a></li>
+  <li><a href="#use-hpc-modules-for-aligners-fallback" id="toc-use-hpc-modules-for-aligners-fallback" class="nav-link" data-scroll-target="#use-hpc-modules-for-aligners-fallback"><span class="header-section-number">3.5</span> Use HPC modules for aligners (fallback)</a></li>
   </ul></li>
-  <li><a href="#genome-download-indexing" id="toc-genome-download-indexing" class="nav-link" data-scroll-target="#genome-download-indexing">Genome download + indexing</a>
-  <ul class="collapse">
-  <li><a href="#mapping-the-samples-with-the-star" id="toc-mapping-the-samples-with-the-star" class="nav-link" data-scroll-target="#mapping-the-samples-with-the-star">Mapping the samples with the <code>STAR</code></a></li>
+  <li><a href="#genome-download-indexing" id="toc-genome-download-indexing" class="nav-link" data-scroll-target="#genome-download-indexing"><span class="header-section-number">4</span> Genome download + indexing</a>
+  <ul>
+  <li><a href="#mapping-the-samples-with-the-star" id="toc-mapping-the-samples-with-the-star" class="nav-link" data-scroll-target="#mapping-the-samples-with-the-star"><span class="header-section-number">4.1</span> Mapping the samples with the <code>STAR</code></a></li>
   </ul></li>
   </ul>
 </nav>
@@ -259,8 +259,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ol>
 <p>For non-experts, prefer the single wrapper command <code>./scripts/bcfngs</code> (runs checks, then snakemake).</p>
 <p>By default, <code>./scripts/bcfngs</code> uses the micromamba environment at <code>~/miniconda3/envs/update_genomes</code>. If your environment is elsewhere, add <code>--env-prefix /path/to/env</code>.</p>
-<section id="quickstart" class="level2">
-<h2 class="anchored" data-anchor-id="quickstart">Quickstart</h2>
+<section id="quickstart" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="quickstart"><span class="header-section-number">1</span> Quickstart</h2>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1) create/update env (only once, then as needed)</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env create</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env check</span>
@@ -274,8 +274,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 4) build genomes + indices (real run)</span></span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="configuration-files" class="level2">
-<h2 class="anchored" data-anchor-id="configuration-files">Configuration files</h2>
+<section id="configuration-files" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="configuration-files"><span class="header-section-number">2</span> Configuration files</h2>
 <p>The workflow configuration is split into two files:</p>
 <ol type="1">
 <li>Genome and indexing configuration: <a href="configs/genomes.yaml" target="_blank"><code>configs/genomes.yaml</code></a>
@@ -289,27 +289,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Project ID, input <code>path</code>, organism, threads, etc.</li>
 </ul></li>
 </ol>
-<section id="notes" class="level3">
-<h3 class="anchored" data-anchor-id="notes">Notes</h3>
+<section id="notes" class="level3" data-number="2.1">
+<h3 data-number="2.1" class="anchored" data-anchor-id="notes"><span class="header-section-number">2.1</span> Notes</h3>
 <ul>
 <li>Genome indexing uses <code>workflow/genomes.smk</code> (not the legacy <code>getGenome_IndexGenome.Snakefile</code>).</li>
 <li>Mapping uses the STAR mapping Snakefiles and expects <code>/fs/pool/pool-bcfngs/genomes/&lt;Organism&gt;/starIndex</code> to exist (symlink to the versioned index).</li>
 </ul>
 </section>
 </section>
-<section id="how-to-cookbook" class="level2">
-<h2 class="anchored" data-anchor-id="how-to-cookbook">How-to (cookbook)</h2>
-<section id="build-all-genomes-indices" class="level3">
-<h3 class="anchored" data-anchor-id="build-all-genomes-indices">Build all genomes + indices</h3>
+<section id="how-to-cookbook" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="how-to-cookbook"><span class="header-section-number">3</span> How-to (cookbook)</h2>
+<section id="build-all-genomes-indices" class="level3" data-number="3.1">
+<h3 data-number="3.1" class="anchored" data-anchor-id="build-all-genomes-indices"><span class="header-section-number">3.1</span> Build all genomes + indices</h3>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes plan</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="build-only-a-subset-faster" class="level3">
-<h3 class="anchored" data-anchor-id="build-only-a-subset-faster">Build only a subset (faster)</h3>
+<section id="build-only-a-subset-faster" class="level3" data-number="3.2">
+<h3 data-number="3.2" class="anchored" data-anchor-id="build-only-a-subset-faster"><span class="header-section-number">3.2</span> Build only a subset (faster)</h3>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20 <span class="at">--organism</span> Homo_sapiens,Mus_musculus</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="ensembl-has-a-newer-release-bump-pinned-release" class="level3">
-<h3 class="anchored" data-anchor-id="ensembl-has-a-newer-release-bump-pinned-release">Ensembl has a newer release (bump pinned release)</h3>
+<section id="ensembl-has-a-newer-release-bump-pinned-release" class="level3" data-number="3.3">
+<h3 data-number="3.3" class="anchored" data-anchor-id="ensembl-has-a-newer-release-bump-pinned-release"><span class="header-section-number">3.3</span> Ensembl has a newer release (bump pinned release)</h3>
 <ol type="1">
 <li>Check:</li>
 </ol>
@@ -326,8 +326,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes plan</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="new-starbwabowtie2-version-rebuild-indices" class="level3">
-<h3 class="anchored" data-anchor-id="new-starbwabowtie2-version-rebuild-indices">New STAR/bwa/bowtie2 version (rebuild indices)</h3>
+<section id="new-starbwabowtie2-version-rebuild-indices" class="level3" data-number="3.4">
+<h3 data-number="3.4" class="anchored" data-anchor-id="new-starbwabowtie2-version-rebuild-indices"><span class="header-section-number">3.4</span> New STAR/bwa/bowtie2 version (rebuild indices)</h3>
 <ol type="1">
 <li>Update tools:</li>
 </ol>
@@ -344,8 +344,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ol>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="use-hpc-modules-for-aligners-fallback" class="level3">
-<h3 class="anchored" data-anchor-id="use-hpc-modules-for-aligners-fallback">Use HPC modules for aligners (fallback)</h3>
+<section id="use-hpc-modules-for-aligners-fallback" class="level3" data-number="3.5">
+<h3 data-number="3.5" class="anchored" data-anchor-id="use-hpc-modules-for-aligners-fallback"><span class="header-section-number">3.5</span> Use HPC modules for aligners (fallback)</h3>
 <p>This still uses the micromamba env for python/snakemake, but loads vendor tools via modules:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load bclconvert/4.3.13 star bowtie2 bwa</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--profile</span> modules env check</span>
@@ -353,11 +353,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--profile</span> modules genomes build <span class="at">--cores</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 </section>
-<section id="genome-download-indexing" class="level2">
-<h2 class="anchored" data-anchor-id="genome-download-indexing">Genome download + indexing</h2>
+<section id="genome-download-indexing" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="genome-download-indexing"><span class="header-section-number">4</span> Genome download + indexing</h2>
 <p>Workflow file: <a href="workflow/genomes.smk" target="_blank">workflow/genomes.smk</a></p>
-<section id="mapping-the-samples-with-the-star" class="level3">
-<h3 class="anchored" data-anchor-id="mapping-the-samples-with-the-star">Mapping the samples with the <code>STAR</code></h3>
+<section id="mapping-the-samples-with-the-star" class="level3" data-number="4.1">
+<h3 data-number="4.1" class="anchored" data-anchor-id="mapping-the-samples-with-the-star"><span class="header-section-number">4.1</span> Mapping the samples with the <code>STAR</code></h3>
 <p><a href="Star.MappingQuant.PairedEndFastq.Snakefile" target="_blank">mapping the samples in a paired-end format</a></p>
 <p>This script contains three (four) steps. in the first step the <code>fastq</code> samples are mapped to the indexed genome. Then, they are being indexed. Last, after creating a chromosome-size file, the <code>bam</code> files are converted into <code>bigwig</code> files for better visualization using the <a href="http://genome.ucsc.edu/cgi-bin/hgTracks">UCSC browser</a>.</p>
 <p>We have two separate scripts for single-end and paired-end runs. The PE run looks for both R1 and R2 fastq files, while the SE script will ignore all R2 samples.</p>

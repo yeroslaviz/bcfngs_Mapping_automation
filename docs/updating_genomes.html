@@ -193,34 +193,39 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#command-overview" id="toc-command-overview" class="nav-link active" data-scroll-target="#command-overview">Command overview</a></li>
-  <li><a href="#common-bcfngs-genomes-workflows" id="toc-common-bcfngs-genomes-workflows" class="nav-link" data-scroll-target="#common-bcfngs-genomes-workflows">Common <code>bcfngs genomes</code> workflows</a>
-  <ul class="collapse">
-  <li><a href="#preflight-only" id="toc-preflight-only" class="nav-link" data-scroll-target="#preflight-only">1) Preflight only</a></li>
-  <li><a href="#build-all-configured-genomes-locally" id="toc-build-all-configured-genomes-locally" class="nav-link" data-scroll-target="#build-all-configured-genomes-locally">2) Build all configured genomes locally</a></li>
-  <li><a href="#build-only-selected-organisms" id="toc-build-only-selected-organisms" class="nav-link" data-scroll-target="#build-only-selected-organisms">3) Build only selected organisms</a></li>
-  <li><a href="#run-with-the-modules-profile" id="toc-run-with-the-modules-profile" class="nav-link" data-scroll-target="#run-with-the-modules-profile">4) Run with the modules profile</a></li>
+  <li><a href="#command-overview" id="toc-command-overview" class="nav-link active" data-scroll-target="#command-overview"><span class="header-section-number">1</span> Command overview</a></li>
+  <li><a href="#shared-wrapper-parameters" id="toc-shared-wrapper-parameters" class="nav-link" data-scroll-target="#shared-wrapper-parameters"><span class="header-section-number">2</span> Shared wrapper parameters</a></li>
+  <li><a href="#common-config-fields" id="toc-common-config-fields" class="nav-link" data-scroll-target="#common-config-fields"><span class="header-section-number">3</span> Common config fields</a></li>
+  <li><a href="#check-updates" id="toc-check-updates" class="nav-link" data-scroll-target="#check-updates"><span class="header-section-number">4</span> <code>check-updates</code></a>
+  <ul>
+  <li><a href="#parameters-and-defaults" id="toc-parameters-and-defaults" class="nav-link" data-scroll-target="#parameters-and-defaults"><span class="header-section-number">4.1</span> Parameters and defaults</a></li>
+  <li><a href="#micromamba-conda-style-environment" id="toc-micromamba-conda-style-environment" class="nav-link" data-scroll-target="#micromamba-conda-style-environment"><span class="header-section-number">4.2</span> Micromamba / conda-style environment</a></li>
+  <li><a href="#modules-profile" id="toc-modules-profile" class="nav-link" data-scroll-target="#modules-profile"><span class="header-section-number">4.3</span> Modules profile</a></li>
+  <li><a href="#if-an-update-is-available" id="toc-if-an-update-is-available" class="nav-link" data-scroll-target="#if-an-update-is-available"><span class="header-section-number">4.4</span> If an update is available</a></li>
   </ul></li>
-  <li><a href="#parameters-you-can-tune-in-configsgenomes.yaml" id="toc-parameters-you-can-tune-in-configsgenomes.yaml" class="nav-link" data-scroll-target="#parameters-you-can-tune-in-configsgenomes.yaml">Parameters you can tune in <code>configs/genomes.yaml</code></a>
-  <ul class="collapse">
-  <li><a href="#global-settings" id="toc-global-settings" class="nav-link" data-scroll-target="#global-settings">Global settings</a></li>
-  <li><a href="#release-pins-and-index-directory-versions" id="toc-release-pins-and-index-directory-versions" class="nav-link" data-scroll-target="#release-pins-and-index-directory-versions">Release pins and index directory versions</a></li>
-  <li><a href="#per-organism-settings" id="toc-per-organism-settings" class="nav-link" data-scroll-target="#per-organism-settings">Per-organism settings</a></li>
+  <li><a href="#plan" id="toc-plan" class="nav-link" data-scroll-target="#plan"><span class="header-section-number">5</span> <code>plan</code></a>
+  <ul>
+  <li><a href="#parameters-and-defaults-1" id="toc-parameters-and-defaults-1" class="nav-link" data-scroll-target="#parameters-and-defaults-1"><span class="header-section-number">5.1</span> Parameters and defaults</a></li>
+  <li><a href="#local-run-with-micromamba-conda-style-environment" id="toc-local-run-with-micromamba-conda-style-environment" class="nav-link" data-scroll-target="#local-run-with-micromamba-conda-style-environment"><span class="header-section-number">5.2</span> Local run with micromamba / conda-style environment</a></li>
+  <li><a href="#local-run-with-modules" id="toc-local-run-with-modules" class="nav-link" data-scroll-target="#local-run-with-modules"><span class="header-section-number">5.3</span> Local run with modules</a></li>
+  <li><a href="#direct-snakemake-subset-dry-run" id="toc-direct-snakemake-subset-dry-run" class="nav-link" data-scroll-target="#direct-snakemake-subset-dry-run"><span class="header-section-number">5.4</span> Direct Snakemake subset dry-run</a></li>
+  <li><a href="#slurm-oriented-dry-run-example" id="toc-slurm-oriented-dry-run-example" class="nav-link" data-scroll-target="#slurm-oriented-dry-run-example"><span class="header-section-number">5.5</span> SLURM-oriented dry-run example</a></li>
   </ul></li>
-  <li><a href="#check-for-updates-and-bump-the-genome-release" id="toc-check-for-updates-and-bump-the-genome-release" class="nav-link" data-scroll-target="#check-for-updates-and-bump-the-genome-release">Check for updates and bump the genome release</a>
-  <ul class="collapse">
-  <li><a href="#standard-ensembl-release-bump" id="toc-standard-ensembl-release-bump" class="nav-link" data-scroll-target="#standard-ensembl-release-bump">Standard Ensembl release bump</a></li>
-  <li><a href="#ensemblgenomes-or-explicit-url-updates" id="toc-ensemblgenomes-or-explicit-url-updates" class="nav-link" data-scroll-target="#ensemblgenomes-or-explicit-url-updates">EnsemblGenomes or explicit URL updates</a></li>
-  </ul></li>
-  <li><a href="#rebuild-indices-after-a-tool-upgrade" id="toc-rebuild-indices-after-a-tool-upgrade" class="nav-link" data-scroll-target="#rebuild-indices-after-a-tool-upgrade">Rebuild indices after a tool upgrade</a></li>
-  <li><a href="#advanced-direct-snakemake-usage" id="toc-advanced-direct-snakemake-usage" class="nav-link" data-scroll-target="#advanced-direct-snakemake-usage">Advanced: direct <code>snakemake</code> usage</a>
-  <ul class="collapse">
-  <li><a href="#build-only-one-index-type" id="toc-build-only-one-index-type" class="nav-link" data-scroll-target="#build-only-one-index-type">Build only one index type</a></li>
-  <li><a href="#change-memory-related-behavior" id="toc-change-memory-related-behavior" class="nav-link" data-scroll-target="#change-memory-related-behavior">Change memory-related behavior</a></li>
+  <li><a href="#build" id="toc-build" class="nav-link" data-scroll-target="#build"><span class="header-section-number">6</span> <code>build</code></a>
+  <ul>
+  <li><a href="#parameters-and-defaults-2" id="toc-parameters-and-defaults-2" class="nav-link" data-scroll-target="#parameters-and-defaults-2"><span class="header-section-number">6.1</span> Parameters and defaults</a></li>
+  <li><a href="#local-run-with-micromamba-conda-style-environment-1" id="toc-local-run-with-micromamba-conda-style-environment-1" class="nav-link" data-scroll-target="#local-run-with-micromamba-conda-style-environment-1"><span class="header-section-number">6.2</span> Local run with micromamba / conda-style environment</a></li>
+  <li><a href="#local-run-with-modules-1" id="toc-local-run-with-modules-1" class="nav-link" data-scroll-target="#local-run-with-modules-1"><span class="header-section-number">6.3</span> Local run with modules</a></li>
+  <li><a href="#build-only-selected-organisms" id="toc-build-only-selected-organisms" class="nav-link" data-scroll-target="#build-only-selected-organisms"><span class="header-section-number">6.4</span> Build only selected organisms</a></li>
+  <li><a href="#slurm-oriented-build-example" id="toc-slurm-oriented-build-example" class="nav-link" data-scroll-target="#slurm-oriented-build-example"><span class="header-section-number">6.5</span> SLURM-oriented build example</a></li>
+  <li><a href="#memory-and-threading" id="toc-memory-and-threading" class="nav-link" data-scroll-target="#memory-and-threading"><span class="header-section-number">6.6</span> Memory and threading</a></li>
+  <li><a href="#build-only-one-index-type-with-direct-snakemake" id="toc-build-only-one-index-type-with-direct-snakemake" class="nav-link" data-scroll-target="#build-only-one-index-type-with-direct-snakemake"><span class="header-section-number">6.7</span> Build only one index type with direct Snakemake</a></li>
+  <li><a href="#rebuild-after-a-genome-release-change" id="toc-rebuild-after-a-genome-release-change" class="nav-link" data-scroll-target="#rebuild-after-a-genome-release-change"><span class="header-section-number">6.8</span> Rebuild after a genome release change</a></li>
+  <li><a href="#rebuild-after-a-tool-version-change" id="toc-rebuild-after-a-tool-version-change" class="nav-link" data-scroll-target="#rebuild-after-a-tool-version-change"><span class="header-section-number">6.9</span> Rebuild after a tool version change</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -268,22 +273,41 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>advanced direct <code>snakemake</code> usage when the wrapper does not expose a knob</li>
 </ul>
 <p>Environment setup is documented elsewhere. This page assumes <code>./scripts/bcfngs</code> already runs on your machine or cluster.</p>
-<section id="command-overview" class="level2">
-<h2 class="anchored" data-anchor-id="command-overview">Command overview</h2>
+<section id="command-overview" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="command-overview"><span class="header-section-number">1</span> Command overview</h2>
 <p><code>bcfngs genomes</code> currently exposes three subcommands:</p>
 <ul>
 <li><code>check-updates</code>: compare the pinned Ensembl release in <a href="configs/genomes.yaml"><code>configs/genomes.yaml</code></a> with the latest Ensembl release visible on <code>ftp.ensembl.org</code></li>
 <li><code>plan</code>: run preflight checks, <code>snakemake --lint</code>, and a dry-run</li>
 <li><code>build</code>: run <code>plan</code>, then execute the workflow for real</li>
 </ul>
-<p>Inspect the wrapper help first:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes <span class="at">--help</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes plan <span class="at">--help</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--help</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes check-updates <span class="at">--help</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>At the wrapper level, only <code>build</code> has extra arguments:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--help</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<pre class="text"><code>usage: bcfngs genomes build [-h] [--cores CORES] [--organism ORGANISM]</code></pre>
+<p>Inspect the wrapper help first. Current output from the script:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes <span class="at">--help</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>usage: bcfngs genomes [-h] {check-updates,plan,build} ...
+
+positional arguments:
+  {check-updates,plan,build}
+
+optional arguments:
+  -h, --help            show this help message and exit</code></pre>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes plan <span class="at">--help</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>usage: bcfngs genomes plan [-h]
+
+optional arguments:
+  -h, --help  show this help message and exit</code></pre>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--help</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>usage: bcfngs genomes build [-h] [--cores CORES] [--organism ORGANISM]
+
+optional arguments:
+  -h, --help           show this help message and exit
+  --cores CORES
+  --organism ORGANISM  Comma-separated subset of organism keys (e.g.
+                       Homo_sapiens,Mus_musculus)</code></pre>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes check-updates <span class="at">--help</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre class="text"><code>usage: bcfngs genomes check-updates [-h]
+
+optional arguments:
+  -h, --help  show this help message and exit</code></pre>
 <p>That means:</p>
 <ul>
 <li>use <code>--cores</code> to control total workflow parallelism</li>
@@ -291,28 +315,399 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>use direct <code>snakemake</code> for advanced cases such as scheduler memory flags or building only one index type</li>
 </ul>
 </section>
-<section id="common-bcfngs-genomes-workflows" class="level2">
-<h2 class="anchored" data-anchor-id="common-bcfngs-genomes-workflows">Common <code>bcfngs genomes</code> workflows</h2>
-<section id="preflight-only" class="level3">
-<h3 class="anchored" data-anchor-id="preflight-only">1) Preflight only</h3>
-<p>Use this before every real run. It checks that the YAML parses, target URLs are reachable, the output root is writable, and the Snakemake graph is valid.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes plan</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="shared-wrapper-parameters" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="shared-wrapper-parameters"><span class="header-section-number">2</span> Shared wrapper parameters</h2>
+<p>These apply to all three genomes subcommands and are cross-referenced from the chapters below.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Current default</th>
+<th>Applies to</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>--profile</code></td>
+<td><code>micromamba</code></td>
+<td><code>check-updates</code>, <code>plan</code>, <code>build</code></td>
+<td><code>modules</code> prepends <code>module load bclconvert/4.3.13 star bowtie2 bwa</code>, but still runs <code>python</code> and <code>snakemake</code> through micromamba.</td>
+</tr>
+<tr class="even">
+<td><code>--env-prefix</code></td>
+<td><code>./.mamba/env</code></td>
+<td><code>check-updates</code>, <code>plan</code>, <code>build</code></td>
+<td>This is the current default in <a href="scripts/bcfngs"><code>scripts/bcfngs</code></a>. Override it if your environment lives elsewhere.</td>
+</tr>
+<tr class="odd">
+<td><code>configs/genomes.yaml</code></td>
+<td>required</td>
+<td><code>check-updates</code>, <code>plan</code>, <code>build</code></td>
+<td>Release pins, organisms, output root, thread defaults, RAM defaults, and index version strings all come from this file.</td>
+</tr>
+</tbody>
+</table>
 </section>
-<section id="build-all-configured-genomes-locally" class="level3">
-<h3 class="anchored" data-anchor-id="build-all-configured-genomes-locally">2) Build all configured genomes locally</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="common-config-fields" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="common-config-fields"><span class="header-section-number">3</span> Common config fields</h2>
+<p>These are the main <code>configs/genomes.yaml</code> fields referenced by the three command chapters.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Config field</th>
+<th>Current value</th>
+<th>Used by</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>genomes_root</code></td>
+<td><code>/fs/pool/pool-bcfngs/genomes</code></td>
+<td><code>plan</code>, <code>build</code></td>
+<td><code>plan</code> checks write access here. <code>build</code> writes sources, indices, and symlinks here.</td>
+</tr>
+<tr class="even">
+<td><code>releases.ensembl</code></td>
+<td><code>116</code></td>
+<td><code>check-updates</code>, <code>plan</code>, <code>build</code></td>
+<td>Main Ensembl release pin. <code>check-updates</code> compares this to <code>ftp.ensembl.org</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>releases.ensemblgenomes.metazoa</code></td>
+<td><code>61</code></td>
+<td><code>plan</code>, <code>build</code></td>
+<td>Used for <code>ensemblgenomes</code> organisms such as <code>Drosophila_pseudoobscura</code>.</td>
+</tr>
+<tr class="even">
+<td><code>default_threads</code></td>
+<td><code>16</code></td>
+<td><code>build</code></td>
+<td>Used by <code>STAR</code> genome generation and <code>bowtie2-build</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>default_ram_bytes</code></td>
+<td><code>168632718037</code></td>
+<td><code>build</code></td>
+<td>Passed to <code>STAR --limitGenomeGenerateRAM</code>.</td>
+</tr>
+<tr class="even">
+<td><code>index_versions.star</code></td>
+<td><code>"unknown"</code></td>
+<td><code>build</code></td>
+<td>Controls versioned output paths such as <code>starIndex-&lt;version&gt;</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>index_versions.bwa</code></td>
+<td><code>"unknown"</code></td>
+<td><code>build</code></td>
+<td>Controls versioned output paths such as <code>bwaIndex-&lt;version&gt;</code>.</td>
+</tr>
+<tr class="even">
+<td><code>index_versions.bowtie2</code></td>
+<td><code>"unknown"</code></td>
+<td><code>build</code></td>
+<td>Controls versioned output paths such as <code>bowtie2Index-&lt;version&gt;</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>organisms.*</code></td>
+<td>all configured organisms</td>
+<td><code>plan</code>, <code>build</code></td>
+<td>Scientific-name keys such as <code>Homo_sapiens</code>, <code>Mus_musculus</code>, <code>Drosophila_melanogaster</code>.</td>
+</tr>
+<tr class="even">
+<td><code>organisms.*.sa_index</code></td>
+<td>organism-specific</td>
+<td><code>build</code></td>
+<td>Passed to <code>STAR --genomeSAindexNbases</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>organisms.*.fasta_url</code> / <code>gtf_url</code></td>
+<td>optional explicit URLs</td>
+<td><code>plan</code>, <code>build</code></td>
+<td>Used for organisms that do not fit the generated Ensembl filename pattern.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="check-updates" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="check-updates"><span class="header-section-number">4</span> <code>check-updates</code></h2>
+<section id="parameters-and-defaults" class="level3" data-number="4.1">
+<h3 data-number="4.1" class="anchored" data-anchor-id="parameters-and-defaults"><span class="header-section-number">4.1</span> Parameters and defaults</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Item</th>
+<th>Current default / value</th>
+<th>Where set</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Shared wrapper parameters</td>
+<td>see <a href="#shared-wrapper-parameters">Shared wrapper parameters</a></td>
+<td>CLI</td>
+<td><code>--profile</code> and <code>--env-prefix</code> still apply here.</td>
+</tr>
+<tr class="even">
+<td>Command-specific flags</td>
+<td>none</td>
+<td>CLI</td>
+<td>This subcommand has no extra runtime flags beyond <code>-h/--help</code>.</td>
+</tr>
+<tr class="odd">
+<td>Compared release pin</td>
+<td><code>releases.ensembl: 116</code></td>
+<td><a href="configs/genomes.yaml"><code>configs/genomes.yaml</code></a></td>
+<td>This is the pinned release compared to the latest Ensembl release found on <code>https://ftp.ensembl.org/pub/</code>.</td>
+</tr>
+<tr class="even">
+<td>Network target</td>
+<td><code>https://ftp.ensembl.org/pub/</code></td>
+<td>internal behavior</td>
+<td>If it is unreachable, the command reports the current pin but cannot confirm the latest release.</td>
+</tr>
+<tr class="odd">
+<td>Writes to disk</td>
+<td>none</td>
+<td>internal behavior</td>
+<td>Report only. No files are edited.</td>
+</tr>
+<tr class="even">
+<td>Not checked automatically</td>
+<td><code>releases.ensemblgenomes.*</code>, explicit <code>fasta_url</code>, explicit <code>gtf_url</code></td>
+<td>config</td>
+<td>Review these manually when working with EnsemblGenomes or custom URLs.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="micromamba-conda-style-environment" class="level3" data-number="4.2">
+<h3 data-number="4.2" class="anchored" data-anchor-id="micromamba-conda-style-environment"><span class="header-section-number">4.2</span> Micromamba / conda-style environment</h3>
+<p>Use this when the wrapper should run in its default <code>micromamba</code> profile:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes check-updates</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Typical output looks like:</p>
+<pre class="text"><code>Ensembl latest release: 117  current pinned: 116  status: UPDATE_AVAILABLE
+Suggested bump: set releases.ensembl to 117 in configs/genomes.yaml</code></pre>
+</section>
+<section id="modules-profile" class="level3" data-number="4.3">
+<h3 data-number="4.3" class="anchored" data-anchor-id="modules-profile"><span class="header-section-number">4.3</span> Modules profile</h3>
+<p>If you want the same command to run under the <code>modules</code> profile:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load bclconvert/4.3.13 star bowtie2 bwa</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--profile</span> modules genomes check-updates</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>For <code>check-updates</code>, the modules profile usually does not change the result. It is only relevant if you are keeping your operational workflow consistent across all genomes commands.</p>
+</section>
+<section id="if-an-update-is-available" class="level3" data-number="4.4">
+<h3 data-number="4.4" class="anchored" data-anchor-id="if-an-update-is-available"><span class="header-section-number">4.4</span> If an update is available</h3>
+<ol type="1">
+<li>Edit <a href="configs/genomes.yaml"><code>configs/genomes.yaml</code></a>.</li>
+<li>Bump <code>releases.ensembl</code>, for example <code>116</code> to <code>117</code>.</li>
+<li>Review any organism entries that use explicit <code>fasta_url</code> or <code>gtf_url</code>.</li>
+<li>Continue with <a href="#plan"><code>plan</code></a> and then <a href="#build"><code>build</code></a>.</li>
+</ol>
+<p>If you are updating an EnsemblGenomes organism such as <code>Drosophila_pseudoobscura</code>, also review <code>releases.ensemblgenomes</code> plus the explicit URLs in its organism block.</p>
+</section>
+</section>
+<section id="plan" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="plan"><span class="header-section-number">5</span> <code>plan</code></h2>
+<section id="parameters-and-defaults-1" class="level3" data-number="5.1">
+<h3 data-number="5.1" class="anchored" data-anchor-id="parameters-and-defaults-1"><span class="header-section-number">5.1</span> Parameters and defaults</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Item</th>
+<th>Current default / value</th>
+<th>Where set</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Shared wrapper parameters</td>
+<td>see <a href="#shared-wrapper-parameters">Shared wrapper parameters</a></td>
+<td>CLI</td>
+<td><code>--profile</code> and <code>--env-prefix</code> apply here.</td>
+</tr>
+<tr class="even">
+<td>Command-specific flags</td>
+<td>none</td>
+<td>CLI</td>
+<td>The wrapper exposes no extra <code>plan</code> flags.</td>
+</tr>
+<tr class="odd">
+<td>Organism scope</td>
+<td>all configured organisms</td>
+<td>wrapper behavior</td>
+<td>The wrapper plans the full configured set. Use direct <code>snakemake</code> with <code>--config org_subset=...</code> if you want a subset dry-run.</td>
+</tr>
+<tr class="even">
+<td><code>genomes_root</code></td>
+<td><code>/fs/pool/pool-bcfngs/genomes</code></td>
+<td><a href="configs/genomes.yaml"><code>configs/genomes.yaml</code></a></td>
+<td><code>plan</code> checks that this location is writable.</td>
+</tr>
+<tr class="odd">
+<td>Release pins and URLs</td>
+<td>see <a href="#common-config-fields">Common config fields</a></td>
+<td>config</td>
+<td><code>plan</code> resolves all FASTA/GTF URLs from the current release pins and organism blocks, then tests them with <code>curl -fsSI</code>.</td>
+</tr>
+<tr class="even">
+<td>Underlying Snakemake steps</td>
+<td><code>snakemake --lint</code> then <code>snakemake -npr</code></td>
+<td>wrapper behavior</td>
+<td><code>plan</code> is both a lint pass and a dry-run.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="local-run-with-micromamba-conda-style-environment" class="level3" data-number="5.2">
+<h3 data-number="5.2" class="anchored" data-anchor-id="local-run-with-micromamba-conda-style-environment"><span class="header-section-number">5.2</span> Local run with micromamba / conda-style environment</h3>
+<p>Use this before every real build:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes plan</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This checks that:</p>
+<ul>
+<li><a href="configs/genomes.yaml"><code>configs/genomes.yaml</code></a> parses</li>
+<li><code>genomes_root</code> is writable</li>
+<li>each configured FASTA/GTF URL responds</li>
+<li><a href="workflow/genomes.smk"><code>workflow/genomes.smk</code></a> passes <code>snakemake --lint</code></li>
+<li>the workflow dry-run resolves successfully</li>
+</ul>
+</section>
+<section id="local-run-with-modules" class="level3" data-number="5.3">
+<h3 data-number="5.3" class="anchored" data-anchor-id="local-run-with-modules"><span class="header-section-number">5.3</span> Local run with modules</h3>
+<p>If your cluster provides aligners via modules:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load bclconvert/4.3.13 star bowtie2 bwa</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--profile</span> modules genomes plan</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The <code>modules</code> profile still uses the micromamba environment for <code>python</code> and <code>snakemake</code>; it only changes how tool discovery happens for the aligners.</p>
+</section>
+<section id="direct-snakemake-subset-dry-run" class="level3" data-number="5.4">
+<h3 data-number="5.4" class="anchored" data-anchor-id="direct-snakemake-subset-dry-run"><span class="header-section-number">5.4</span> Direct Snakemake subset dry-run</h3>
+<p>The wrapper does not expose a <code>--organism</code> option for <code>plan</code>. Keep the direct <code>snakemake</code> form when you need a subset dry-run:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-npr</span> <span class="dt">\</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-s</span> workflow/genomes.smk <span class="dt">\</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--configfile</span> configs/genomes.yaml <span class="dt">\</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--config</span> org_subset=Homo_sapiens,Mus_musculus</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This is useful for:</p>
+<ul>
+<li>testing a release bump on one organism first</li>
+<li>checking a new organism block before rebuilding everything</li>
+<li>isolating failures in one species without noise from the rest of the config</li>
+</ul>
+</section>
+<section id="slurm-oriented-dry-run-example" class="level3" data-number="5.5">
+<h3 data-number="5.5" class="anchored" data-anchor-id="slurm-oriented-dry-run-example"><span class="header-section-number">5.5</span> SLURM-oriented dry-run example</h3>
+<p>For clusters where you want to inspect scheduler-facing settings before a real run, keep the direct <code>snakemake</code> example:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-npr</span> <span class="dt">\</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--executor</span> slurm <span class="dt">\</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--jobs</span> 20 <span class="dt">\</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--default-resources</span> mem_mb=180000 <span class="dt">\</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">-s</span> workflow/genomes.smk <span class="dt">\</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--configfile</span> configs/genomes.yaml</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>plan</code> itself does not submit jobs in dry-run mode, but this is still useful to check that your SLURM executor configuration parses correctly.</p>
+</section>
+</section>
+<section id="build" class="level2" data-number="6">
+<h2 data-number="6" class="anchored" data-anchor-id="build"><span class="header-section-number">6</span> <code>build</code></h2>
+<section id="parameters-and-defaults-2" class="level3" data-number="6.1">
+<h3 data-number="6.1" class="anchored" data-anchor-id="parameters-and-defaults-2"><span class="header-section-number">6.1</span> Parameters and defaults</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Item</th>
+<th>Current default / value</th>
+<th>Where set</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Shared wrapper parameters</td>
+<td>see <a href="#shared-wrapper-parameters">Shared wrapper parameters</a></td>
+<td>CLI</td>
+<td><code>--profile</code> and <code>--env-prefix</code> apply here too.</td>
+</tr>
+<tr class="even">
+<td><code>--cores</code></td>
+<td><code>16</code></td>
+<td>CLI</td>
+<td>Total Snakemake core budget for <code>./scripts/bcfngs genomes build</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>--organism</code></td>
+<td>all configured organisms</td>
+<td>CLI</td>
+<td>Optional comma-separated subset such as <code>Homo_sapiens,Mus_musculus</code>.</td>
+</tr>
+<tr class="even">
+<td><code>default_threads</code></td>
+<td><code>16</code></td>
+<td><a href="configs/genomes.yaml"><code>configs/genomes.yaml</code></a></td>
+<td>Used by <code>STAR</code> genome generation and <code>bowtie2-build</code>. This is separate from <code>--cores</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>default_ram_bytes</code></td>
+<td><code>168632718037</code></td>
+<td><a href="configs/genomes.yaml"><code>configs/genomes.yaml</code></a></td>
+<td>Passed to <code>STAR --limitGenomeGenerateRAM</code>.</td>
+</tr>
+<tr class="even">
+<td><code>index_versions.*</code></td>
+<td><code>unknown</code> for all three tools</td>
+<td><a href="configs/genomes.yaml"><code>configs/genomes.yaml</code></a></td>
+<td>Controls output directory names and symlink targets.</td>
+</tr>
+<tr class="odd">
+<td><code>organisms.*.sa_index</code></td>
+<td>organism-specific</td>
+<td><a href="configs/genomes.yaml"><code>configs/genomes.yaml</code></a></td>
+<td>Controls STAR suffix-array sizing.</td>
+</tr>
+<tr class="even">
+<td>Stable symlink outputs</td>
+<td><code>starIndex</code>, <code>bwaIndex</code>, <code>bowtie2Index</code></td>
+<td>workflow behavior</td>
+<td>Updated after successful index creation.</td>
+</tr>
+<tr class="odd">
+<td>Advanced scheduler knobs</td>
+<td>direct <code>snakemake</code> only</td>
+<td>CLI at Snakemake level</td>
+<td>Use these for SLURM executor settings, <code>mem_mb</code>, or <code>mem_mb_per_cpu</code>.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="local-run-with-micromamba-conda-style-environment-1" class="level3" data-number="6.2">
+<h3 data-number="6.2" class="anchored" data-anchor-id="local-run-with-micromamba-conda-style-environment-1"><span class="header-section-number">6.2</span> Local run with micromamba / conda-style environment</h3>
+<p>Build all configured genomes:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>More local examples:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 8</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 32</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><code>--cores</code> is the total job budget for the Snakemake run. It is not the same thing as the per-tool thread count used inside <code>STAR</code> or <code>bowtie2-build</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 8</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 32</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>--cores</code> is the total Snakemake job budget. It is not the same thing as <code>default_threads</code>, which controls per-tool threading inside rules such as <code>STAR</code> genome generation.</p>
 </section>
-<section id="build-only-selected-organisms" class="level3">
-<h3 class="anchored" data-anchor-id="build-only-selected-organisms">3) Build only selected organisms</h3>
+<section id="local-run-with-modules-1" class="level3" data-number="6.3">
+<h3 data-number="6.3" class="anchored" data-anchor-id="local-run-with-modules-1"><span class="header-section-number">6.3</span> Local run with modules</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load bclconvert/4.3.13 star bowtie2 bwa</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--profile</span> modules genomes build <span class="at">--cores</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This is the best fit when the aligners should come from modules but <code>python</code> and <code>snakemake</code> should still come from the micromamba environment.</p>
+</section>
+<section id="build-only-selected-organisms" class="level3" data-number="6.4">
+<h3 data-number="6.4" class="anchored" data-anchor-id="build-only-selected-organisms"><span class="header-section-number">6.4</span> Build only selected organisms</h3>
 <p>Organism names must match the keys in <a href="configs/genomes.yaml"><code>configs/genomes.yaml</code></a> exactly.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20 <span class="at">--organism</span> Homo_sapiens</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20 <span class="at">--organism</span> Homo_sapiens,Mus_musculus</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 12 <span class="at">--organism</span> Drosophila_melanogaster,Drosophila_pseudoobscura</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20 <span class="at">--organism</span> Homo_sapiens</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20 <span class="at">--organism</span> Homo_sapiens,Mus_musculus</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 12 <span class="at">--organism</span> Drosophila_melanogaster,Drosophila_pseudoobscura</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Use this when:</p>
 <ul>
 <li>you added or changed only one organism</li>
@@ -320,177 +715,91 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>you do not want to rebuild every organism after a config edit</li>
 </ul>
 </section>
-<section id="run-with-the-modules-profile" class="level3">
-<h3 class="anchored" data-anchor-id="run-with-the-modules-profile">4) Run with the modules profile</h3>
-<p>If your cluster provides aligners via modules, use the <code>modules</code> profile:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load bclconvert/4.3.13 star bowtie2 bwa</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--profile</span> modules genomes plan</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--profile</span> modules genomes build <span class="at">--cores</span> 20</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--profile</span> modules genomes build <span class="at">--cores</span> 20 <span class="at">--organism</span> Homo_sapiens</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Important: in the current implementation, <code>--profile modules</code> loads <code>STAR</code>, <code>bwa</code>, and <code>bowtie2</code> from modules, but <code>python</code> and <code>snakemake</code> still come from the micromamba environment selected by <code>./scripts/bcfngs</code>.</p>
+<section id="slurm-oriented-build-example" class="level3" data-number="6.5">
+<h3 data-number="6.5" class="anchored" data-anchor-id="slurm-oriented-build-example"><span class="header-section-number">6.5</span> SLURM-oriented build example</h3>
+<p>The wrapper does not expose <code>--executor</code>, <code>--mem</code>, or <code>--mem-per-cpu</code>. Keep the direct <code>snakemake</code> form for cluster-scheduled runs:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-pr</span> <span class="dt">\</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--executor</span> slurm <span class="dt">\</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--jobs</span> 20 <span class="dt">\</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--default-resources</span> mem_mb=180000 <span class="dt">\</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">-s</span> workflow/genomes.smk <span class="dt">\</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--configfile</span> configs/genomes.yaml</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>If your site schedules by memory per CPU instead:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-pr</span> <span class="dt">\</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--executor</span> slurm <span class="dt">\</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--jobs</span> 20 <span class="dt">\</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--default-resources</span> mem_mb_per_cpu=8000 <span class="dt">\</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">-s</span> workflow/genomes.smk <span class="dt">\</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--configfile</span> configs/genomes.yaml</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Adjust these examples to your local cluster conventions. The current <code>./scripts/bcfngs genomes build</code> command does not parse <code>--mem</code> or <code>--mem-per-cpu</code> directly.</p>
 </section>
-</section>
-<section id="parameters-you-can-tune-in-configsgenomes.yaml" class="level2">
-<h2 class="anchored" data-anchor-id="parameters-you-can-tune-in-configsgenomes.yaml">Parameters you can tune in <code>configs/genomes.yaml</code></h2>
-<p>The wrapper only exposes <code>--cores</code> and <code>--organism</code>, but the workflow behavior is also controlled by <a href="configs/genomes.yaml"><code>configs/genomes.yaml</code></a>.</p>
-<section id="global-settings" class="level3">
-<h3 class="anchored" data-anchor-id="global-settings">Global settings</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">genomes_root</span><span class="kw">:</span><span class="at"> /fs/pool/pool-bcfngs/genomes</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">default_threads</span><span class="kw">:</span><span class="at"> </span><span class="dv">16</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">default_ram_bytes</span><span class="kw">:</span><span class="at"> </span><span class="dv">168632718037</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="memory-and-threading" class="level3" data-number="6.6">
+<h3 data-number="6.6" class="anchored" data-anchor-id="memory-and-threading"><span class="header-section-number">6.6</span> Memory and threading</h3>
+<p>There are two different layers to tune:</p>
 <ul>
-<li><code>genomes_root</code>: where sources, indices, and stable symlinks are written</li>
-<li><code>default_threads</code>: thread count used by <code>STAR</code> genome generation and <code>bowtie2-build</code></li>
-<li><code>default_ram_bytes</code>: passed to <code>STAR --limitGenomeGenerateRAM</code></li>
+<li><code>--cores</code>: total workflow parallelism for the outer Snakemake run</li>
+<li><code>default_threads</code>: per-rule thread count used inside <code>STAR</code> genome generation and <code>bowtie2-build</code></li>
 </ul>
-<p>Examples:</p>
+<p>Typical patterns:</p>
 <ul>
 <li>20-core workstation, one large STAR job at a time: set <code>default_threads: 20</code> and run <code>./scripts/bcfngs genomes build --cores 20</code></li>
-<li>20-core workstation, allow two medium indexing jobs in parallel: set <code>default_threads: 10</code> and run <code>./scripts/bcfngs genomes build --cores 20</code></li>
+<li>20-core workstation, allow two medium jobs in parallel: set <code>default_threads: 10</code> and run <code>./scripts/bcfngs genomes build --cores 20</code></li>
 <li>larger-memory node for STAR genome generation: increase <code>default_ram_bytes</code></li>
 </ul>
+<p>For a permanent STAR memory change, edit:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">default_ram_bytes</span><span class="kw">:</span><span class="at"> </span><span class="dv">250000000000</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="release-pins-and-index-directory-versions" class="level3">
-<h3 class="anchored" data-anchor-id="release-pins-and-index-directory-versions">Release pins and index directory versions</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">releases</span><span class="kw">:</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">ensembl</span><span class="kw">:</span><span class="at"> </span><span class="dv">116</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">ensemblgenomes</span><span class="kw">:</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">metazoa</span><span class="kw">:</span><span class="at"> </span><span class="dv">61</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="fu">index_versions</span><span class="kw">:</span></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">star</span><span class="kw">:</span><span class="at"> </span><span class="st">"unknown"</span></span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">bwa</span><span class="kw">:</span><span class="at"> </span><span class="st">"unknown"</span></span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">bowtie2</span><span class="kw">:</span><span class="at"> </span><span class="st">"unknown"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<ul>
-<li><code>releases.ensembl</code>: the pinned Ensembl release used for standard Ensembl organisms</li>
-<li><code>releases.ensemblgenomes.*</code>: release pins for EnsemblGenomes divisions such as <code>metazoa</code></li>
-<li><code>index_versions.*</code>: strings used in output folder names such as <code>starIndex-&lt;version&gt;</code></li>
-</ul>
-<p>If you upgrade only one tool, bump only that tool’s version string. Example: if only <code>STAR</code> changed, update <code>index_versions.star</code> and leave <code>bwa</code> plus <code>bowtie2</code> alone.</p>
+<section id="build-only-one-index-type-with-direct-snakemake" class="level3" data-number="6.7">
+<h3 data-number="6.7" class="anchored" data-anchor-id="build-only-one-index-type-with-direct-snakemake"><span class="header-section-number">6.7</span> Build only one index type with direct Snakemake</h3>
+<p>The wrapper always targets the full workflow. To build only one tool, target the desired output file directly.</p>
+<p>Replace each version placeholder with the matching value from <code>index_versions</code> in <a href="configs/genomes.yaml"><code>configs/genomes.yaml</code></a>.</p>
+<p>Only STAR for <code>Homo_sapiens</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-pr</span> <span class="at">-j</span> 20 <span class="dt">\</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-s</span> workflow/genomes.smk <span class="dt">\</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--configfile</span> configs/genomes.yaml <span class="dt">\</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  /fs/pool/pool-bcfngs/genomes/Homo_sapiens/starIndex-<span class="op">&lt;</span>STAR_VERSION<span class="op">&gt;</span>/SA</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Only bwa for <code>Homo_sapiens</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-pr</span> <span class="at">-j</span> 20 <span class="dt">\</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-s</span> workflow/genomes.smk <span class="dt">\</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--configfile</span> configs/genomes.yaml <span class="dt">\</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  /fs/pool/pool-bcfngs/genomes/Homo_sapiens/bwaIndex-<span class="op">&lt;</span>BWA_VERSION<span class="op">&gt;</span>/Homo_sapiens.bwt</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Only bowtie2 for <code>Homo_sapiens</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-pr</span> <span class="at">-j</span> 20 <span class="dt">\</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-s</span> workflow/genomes.smk <span class="dt">\</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--configfile</span> configs/genomes.yaml <span class="dt">\</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  /fs/pool/pool-bcfngs/genomes/Homo_sapiens/bowtie2Index-<span class="op">&lt;</span>BOWTIE2_VERSION<span class="op">&gt;</span>/Homo_sapiens.1.bt2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>These commands still pull in prerequisite downloads, but they avoid rebuilding every index type.</p>
 </section>
-<section id="per-organism-settings" class="level3">
-<h3 class="anchored" data-anchor-id="per-organism-settings">Per-organism settings</h3>
-<p>Example:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Homo_sapiens</span><span class="kw">:</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">source</span><span class="kw">:</span><span class="at"> ensembl</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">species</span><span class="kw">:</span><span class="at"> homo_sapiens</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">assembly</span><span class="kw">:</span><span class="at"> GRCh38</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">fasta_kind</span><span class="kw">:</span><span class="at"> dna.primary_assembly</span></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">sa_index</span><span class="kw">:</span><span class="at"> </span><span class="dv">14</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Common fields:</p>
-<ul>
-<li><code>source</code>: usually <code>ensembl</code>, sometimes <code>ensemblgenomes</code></li>
-<li><code>species</code>: lowercase species path used on the FTP server</li>
-<li><code>assembly</code>: assembly label used in the remote filenames</li>
-<li><code>fasta_kind</code>: usually <code>dna.primary_assembly</code> or <code>dna.toplevel</code></li>
-<li><code>sa_index</code>: passed to <code>STAR --genomeSAindexNbases</code></li>
-<li><code>fasta_url</code> and <code>gtf_url</code>: explicit URLs for organisms whose source naming does not fit the default template</li>
-</ul>
-<p>If you add a new organism, use its scientific name as the key, for example <code>Arabidopsis_thaliana</code> or <code>Danio_rerio</code>.</p>
-</section>
-</section>
-<section id="check-for-updates-and-bump-the-genome-release" class="level2">
-<h2 class="anchored" data-anchor-id="check-for-updates-and-bump-the-genome-release">Check for updates and bump the genome release</h2>
-<section id="standard-ensembl-release-bump" class="level3">
-<h3 class="anchored" data-anchor-id="standard-ensembl-release-bump">Standard Ensembl release bump</h3>
-<p>First check the currently pinned release against upstream:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes check-updates</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Typical output looks like:</p>
-<pre class="text"><code>Ensembl latest release: 117  current pinned: 116  status: UPDATE_AVAILABLE
-Suggested bump: set releases.ensembl to 117 in configs/genomes.yaml</code></pre>
-<p>Then:</p>
+<section id="rebuild-after-a-genome-release-change" class="level3" data-number="6.8">
+<h3 data-number="6.8" class="anchored" data-anchor-id="rebuild-after-a-genome-release-change"><span class="header-section-number">6.8</span> Rebuild after a genome release change</h3>
+<p>After <a href="#check-updates"><code>check-updates</code></a> reports a newer Ensembl release:</p>
 <ol type="1">
 <li>Edit <a href="configs/genomes.yaml"><code>configs/genomes.yaml</code></a>.</li>
 <li>Bump <code>releases.ensembl</code>, for example <code>116</code> to <code>117</code>.</li>
-<li>Review organism entries if any explicit <code>fasta_url</code> or <code>gtf_url</code> values need to change.</li>
-<li>Run a dry-run first:</li>
+<li>Review any explicit <code>fasta_url</code> or <code>gtf_url</code> entries.</li>
+<li>Run <code>plan</code>.</li>
+<li>Run <code>build</code>.</li>
 </ol>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes plan</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<ol start="5" type="1">
-<li>Rebuild:</li>
-</ol>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>If you want a cautious rollout, rebuild only one organism first:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20 <span class="at">--organism</span> Homo_sapiens</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>If you want a cautious rollout, start with one organism:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20 <span class="at">--organism</span> Homo_sapiens</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="ensemblgenomes-or-explicit-url-updates" class="level3">
-<h3 class="anchored" data-anchor-id="ensemblgenomes-or-explicit-url-updates">EnsemblGenomes or explicit URL updates</h3>
-<p><code>./scripts/bcfngs genomes check-updates</code> checks <code>releases.ensembl</code>. It does not audit every explicit <code>fasta_url</code> or <code>gtf_url</code> entry for you.</p>
-<p>For organisms defined with:</p>
-<ul>
-<li><code>source: ensemblgenomes</code></li>
-<li>explicit <code>fasta_url</code></li>
-<li>explicit <code>gtf_url</code></li>
-</ul>
-<p>review those URLs manually, update the release pin under <code>releases.ensemblgenomes</code>, and then run <code>plan</code> plus <code>build</code> again.</p>
-</section>
-</section>
-<section id="rebuild-indices-after-a-tool-upgrade" class="level2">
-<h2 class="anchored" data-anchor-id="rebuild-indices-after-a-tool-upgrade">Rebuild indices after a tool upgrade</h2>
-<p>When the genome sequence did not change but an indexer changed, update only the version labels for the affected tools:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">index_versions</span><span class="kw">:</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">star</span><span class="kw">:</span><span class="at"> </span><span class="st">"2.7.11b"</span></span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">bwa</span><span class="kw">:</span><span class="at"> </span><span class="st">"0.7.18"</span></span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">bowtie2</span><span class="kw">:</span><span class="at"> </span><span class="st">"2.5.5"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Then rebuild:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes plan</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="rebuild-after-a-tool-version-change" class="level3" data-number="6.9">
+<h3 data-number="6.9" class="anchored" data-anchor-id="rebuild-after-a-tool-version-change"><span class="header-section-number">6.9</span> Rebuild after a tool version change</h3>
+<p>When the genome sequence did not change but an indexer changed, update only the relevant version labels:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">index_versions</span><span class="kw">:</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">star</span><span class="kw">:</span><span class="at"> </span><span class="st">"2.7.11b"</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">bwa</span><span class="kw">:</span><span class="at"> </span><span class="st">"0.7.18"</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">bowtie2</span><span class="kw">:</span><span class="at"> </span><span class="st">"2.5.5"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Then rerun:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes plan</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Successful builds update the stable symlinks automatically:</p>
 <ul>
 <li><code>/fs/pool/pool-bcfngs/genomes/&lt;Organism&gt;/starIndex</code></li>
 <li><code>/fs/pool/pool-bcfngs/genomes/&lt;Organism&gt;/bwaIndex</code></li>
 <li><code>/fs/pool/pool-bcfngs/genomes/&lt;Organism&gt;/bowtie2Index</code></li>
 </ul>
-<p>These symlinks point to versioned directories such as <code>starIndex-2.7.11b</code>.</p>
-</section>
-<section id="advanced-direct-snakemake-usage" class="level2">
-<h2 class="anchored" data-anchor-id="advanced-direct-snakemake-usage">Advanced: direct <code>snakemake</code> usage</h2>
-<p>Use direct <code>snakemake</code> when you need options that <code>./scripts/bcfngs genomes</code> does not currently expose.</p>
-<section id="build-only-one-index-type" class="level3">
-<h3 class="anchored" data-anchor-id="build-only-one-index-type">Build only one index type</h3>
-<p>The wrapper always targets the full workflow. To build only one tool, target the desired output file directly.</p>
-<p>Replace the version placeholder with the matching value from <code>index_versions</code> in <a href="configs/genomes.yaml"><code>configs/genomes.yaml</code></a>.</p>
-<p>Only STAR for <code>Homo_sapiens</code>:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-pr</span> <span class="at">-j</span> 20 <span class="dt">\</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-s</span> workflow/genomes.smk <span class="dt">\</span></span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--configfile</span> configs/genomes.yaml <span class="dt">\</span></span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  /fs/pool/pool-bcfngs/genomes/Homo_sapiens/starIndex-<span class="op">&lt;</span>STAR_VERSION<span class="op">&gt;</span>/SA</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Only bwa for <code>Homo_sapiens</code>:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-pr</span> <span class="at">-j</span> 20 <span class="dt">\</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-s</span> workflow/genomes.smk <span class="dt">\</span></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--configfile</span> configs/genomes.yaml <span class="dt">\</span></span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  /fs/pool/pool-bcfngs/genomes/Homo_sapiens/bwaIndex-<span class="op">&lt;</span>BWA_VERSION<span class="op">&gt;</span>/Homo_sapiens.bwt</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Only bowtie2 for <code>Homo_sapiens</code>:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-pr</span> <span class="at">-j</span> 20 <span class="dt">\</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-s</span> workflow/genomes.smk <span class="dt">\</span></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--configfile</span> configs/genomes.yaml <span class="dt">\</span></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  /fs/pool/pool-bcfngs/genomes/Homo_sapiens/bowtie2Index-<span class="op">&lt;</span>BOWTIE2_VERSION<span class="op">&gt;</span>/Homo_sapiens.1.bt2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>These commands still pull in prerequisites such as source downloads, but they avoid rebuilding every index type.</p>
-</section>
-<section id="change-memory-related-behavior" class="level3">
-<h3 class="anchored" data-anchor-id="change-memory-related-behavior">Change memory-related behavior</h3>
-<p>There are two different layers here:</p>
-<ul>
-<li><code>default_ram_bytes</code> in <a href="configs/genomes.yaml"><code>configs/genomes.yaml</code></a> controls <code>STAR --limitGenomeGenerateRAM</code></li>
-<li>scheduler submission flags such as SLURM <code>--mem</code> or <code>--mem-per-cpu</code> are outside the <code>bcfngs genomes</code> wrapper</li>
-</ul>
-<p>For a permanent STAR memory change, edit:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">default_ram_bytes</span><span class="kw">:</span><span class="at"> </span><span class="dv">250000000000</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>If you need scheduler-specific memory requests, run <code>snakemake</code> directly using your site profile or executor settings. For example, on SLURM-oriented setups this is often expressed via default resources rather than via the <code>bcfngs</code> wrapper:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-pr</span> <span class="dt">\</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--executor</span> slurm <span class="dt">\</span></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--jobs</span> 20 <span class="dt">\</span></span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--default-resources</span> mem_mb=180000 <span class="dt">\</span></span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">-s</span> workflow/genomes.smk <span class="dt">\</span></span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--configfile</span> configs/genomes.yaml</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Or, if your cluster policy is based on memory per CPU:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-pr</span> <span class="dt">\</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--executor</span> slurm <span class="dt">\</span></span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--jobs</span> 20 <span class="dt">\</span></span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--default-resources</span> mem_mb_per_cpu=8000 <span class="dt">\</span></span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">-s</span> workflow/genomes.smk <span class="dt">\</span></span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--configfile</span> configs/genomes.yaml</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Adjust these examples to your local cluster conventions. The current <code>./scripts/bcfngs genomes</code> command does not parse <code>--mem</code> or <code>--mem-per-cpu</code> directly.</p>
+<p>These stable names point to versioned directories such as <code>starIndex-2.7.11b</code>.</p>
 
 
 </section>

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="AY">
-<meta name="dcterms.date" content="2020-01-13">
+<meta name="dcterms.date" content="2026-03-06">
 
 <title>HOWTO – Bioinformatics Core Facility MPI Biochemistry</title>
 <style>
@@ -158,15 +158,15 @@ ul.task-list li input[type="checkbox"] {
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#genome-indexing" id="toc-genome-indexing" class="nav-link active" data-scroll-target="#genome-indexing">genome indexing</a></li>
-  <li><a href="#mapping" id="toc-mapping" class="nav-link" data-scroll-target="#mapping">Mapping</a>
-  <ul class="collapse">
-  <li><a href="#changing-parameters-before-mapping" id="toc-changing-parameters-before-mapping" class="nav-link" data-scroll-target="#changing-parameters-before-mapping">Changing parameters before mapping</a></li>
-  <li><a href="#running-the-star-mapping-step." id="toc-running-the-star-mapping-step." class="nav-link" data-scroll-target="#running-the-star-mapping-step.">running the <code>star</code> mapping step.</a></li>
+  <li><a href="#genome-indexing" id="toc-genome-indexing" class="nav-link active" data-scroll-target="#genome-indexing"><span class="header-section-number">1</span> genome indexing</a></li>
+  <li><a href="#mapping" id="toc-mapping" class="nav-link" data-scroll-target="#mapping"><span class="header-section-number">2</span> Mapping</a>
+  <ul>
+  <li><a href="#changing-parameters-before-mapping" id="toc-changing-parameters-before-mapping" class="nav-link" data-scroll-target="#changing-parameters-before-mapping"><span class="header-section-number">2.1</span> Changing parameters before mapping</a></li>
+  <li><a href="#running-the-star-mapping-step." id="toc-running-the-star-mapping-step." class="nav-link" data-scroll-target="#running-the-star-mapping-step."><span class="header-section-number">2.2</span> running the <code>star</code> mapping step.</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -193,7 +193,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">January 13, 2020</p>
+      <p class="date">March 6, 2026</p>
     </div>
   </div>
   
@@ -206,8 +206,8 @@ ul.task-list li input[type="checkbox"] {
 
 
 <p>This is an internal HOW-TO for the workflow of the automation for the bcfngs core facility.</p>
-<section id="genome-indexing" class="level2">
-<h2 class="anchored" data-anchor-id="genome-indexing">genome indexing</h2>
+<section id="genome-indexing" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="genome-indexing"><span class="header-section-number">1</span> genome indexing</h2>
 <p>This steps needs to be run only once. <strong>unless</strong> new genomes are added.</p>
 <p>This is all run on the <code>hpcl5002</code>.</p>
 <ol type="1">
@@ -223,11 +223,11 @@ ul.task-list li input[type="checkbox"] {
 <li>run the same command without the <code>-n</code> - <code>snakemake -ps ../scripts/getGenome_IndexGenome.Snakefile -j 12</code>. This will download the fastA and gtf files from the given links and create the index files for them as well. The parameter <code>-j</code> sets the number pf cores used in the snakemake run. If the number of cores is smaller then the one sets for e.g.&nbsp;STAR, only this numner of cores will be used.</li>
 </ol>
 </section>
-<section id="mapping" class="level2">
-<h2 class="anchored" data-anchor-id="mapping">Mapping</h2>
+<section id="mapping" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="mapping"><span class="header-section-number">2</span> Mapping</h2>
 <p>Mapping will be done with the <code>STAR</code> aligner for a specific genome either in a paired-end or single-end format.</p>
-<section id="changing-parameters-before-mapping" class="level3">
-<h3 class="anchored" data-anchor-id="changing-parameters-before-mapping">Changing parameters before mapping</h3>
+<section id="changing-parameters-before-mapping" class="level3" data-number="2.1">
+<h3 data-number="2.1" class="anchored" data-anchor-id="changing-parameters-before-mapping"><span class="header-section-number">2.1</span> Changing parameters before mapping</h3>
 <p>The following setting must be adjusted before running the script:</p>
 <pre><code>######## Project Setting
 # To create a separate project results folder for each run, change the name of the project here.
@@ -239,8 +239,8 @@ org: "Dme.BDGP6.22"</code></pre>
 <p>The <code>project</code> and the <code>path</code> should point to the current project which is being mapped.</p>
 <p>the <code>org</code> must be the organism the data is mapped against. The term must be identical to the term in the list of organisms from the config files.</p>
 </section>
-<section id="running-the-star-mapping-step." class="level3">
-<h3 class="anchored" data-anchor-id="running-the-star-mapping-step.">running the <code>star</code> mapping step.</h3>
+<section id="running-the-star-mapping-step." class="level3" data-number="2.2">
+<h3 data-number="2.2" class="anchored" data-anchor-id="running-the-star-mapping-step."><span class="header-section-number">2.2</span> running the <code>star</code> mapping step.</h3>
 <p>first, change the working directory to the path of the actual project on the pool-bcfngs. e.g.</p>
 <pre><code>cd /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/</code></pre>
 <p>Next run the snakemake script first as a dry-run (<code>-n</code>) and if all seems well than run it for real.</p>

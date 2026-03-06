@@ -1,7 +1,15 @@
 ---
 title: "snakemake"
 author: "AY"
+editor: source
 date: last-modified
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    toc-expand: false
+    number-sections: true
+    number-depth: 4
 ---
 
 This part is still work in progress.

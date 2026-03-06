@@ -193,11 +193,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#conda---how-to" id="toc-conda---how-to" class="nav-link active" data-scroll-target="#conda---how-to">conda - how to</a></li>
+  <li><a href="#conda---how-to" id="toc-conda---how-to" class="nav-link active" data-scroll-target="#conda---how-to"><span class="header-section-number">1</span> conda - how to</a></li>
   </ul>
 </nav>
     </div>
@@ -235,8 +235,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="conda---how-to" class="level2">
-<h2 class="anchored" data-anchor-id="conda---how-to">conda - how to</h2>
+<section id="conda---how-to" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="conda---how-to"><span class="header-section-number">1</span> conda - how to</h2>
 <p>The first step is to create a conda environment, containing the necessary tools for the required analysis. In this workflow, we use the <code>snakemake</code> package to help running the workflow, as well as some mappers. To learn more about the conda environment and its advantages, take a look at the <a href="https://conda.io/en/latest/">conda web site</a>.</p>
 <p>Environments can be created with the help of a file, e.g.&nbsp;<code>environment.yaml</code> using the following command</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> env create <span class="at">--name</span> Project0815 <span class="at">--file</span> environment.yaml</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>

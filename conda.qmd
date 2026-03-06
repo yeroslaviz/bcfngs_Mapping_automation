@@ -1,7 +1,15 @@
 ---
 title: "conda"
 author: "AY"
+editor: source
 date: last-modified
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    toc-expand: false
+    number-sections: true
+    number-depth: 4
 ---
 
 
@@ -59,7 +67,6 @@ conda env update -f environment.yaml
 ```
 
 The conda environment should be created only once, but with each login one must activate it, so that the snakemake script can be run from the correct paths.
-
 
 
 
