@@ -405,7 +405,18 @@ def cmd_genomes_plan(ctx: RunContext, args: argparse.Namespace) -> None:
             print(lint_out)
         if lint_err:
             print(lint_err)
-    _run_tool(ctx, ["snakemake", "-npr", "-s", str(smk), "--configfile", str(genomes_cfg_path)])
+    _run_tool(
+        ctx,
+        [
+            "snakemake",
+            "--dry-run",
+            "--printshellcmds",
+            "-s",
+            str(smk),
+            "--configfile",
+            str(genomes_cfg_path),
+        ],
+    )
 
 
 def cmd_genomes_build(ctx: RunContext, args: argparse.Namespace) -> None:
