@@ -3,6 +3,10 @@ from pathlib import Path
 
 configfile: "configs/genomes.yaml"
 
+# Keep external downloads on the submit/login node. On some clusters
+# compute nodes do not allow outbound internet access.
+localrules: download_sources
+
 GENOMES_ROOT = config["genomes_root"]
 DEFAULT_THREADS = int(config.get("default_threads", 16))
 DEFAULT_RAM = int(config.get("default_ram_bytes", 0))
@@ -136,8 +140,10 @@ rule download_sources:
         mkdir -p "{params.dir}" "$(dirname "{log}")"
         : > "{log}"
         {{
-          curl -fsSL "{params.fasta_url}" | gunzip -c > "{output.fasta}"
-          curl -fsSL "{params.gtf_url}"   | gunzip -c > "{output.gtf}"
+          echo "Downloading FASTA: {params.fasta_url}"
+          curl --retry 3 --retry-delay 5 --retry-connrefused -fsSL "{params.fasta_url}" | gunzip -c > "{output.fasta}"
+          echo "Downloading GTF: {params.gtf_url}"
+          curl --retry 3 --retry-delay 5 --retry-connrefused -fsSL "{params.gtf_url}"   | gunzip -c > "{output.gtf}"
         }} >> "{log}" 2>&1
         """
 
