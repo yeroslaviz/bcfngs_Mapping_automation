@@ -2,15 +2,18 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.27">
+<meta name="generator" content="quarto-1.9.23">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="AY">
-<meta name="dcterms.date" content="2026-03-05">
+<meta name="dcterms.date" content="2026-03-06">
 
 <title>snakemake – Bioinformatics Core Facility MPI Biochemistry</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -76,7 +79,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-9cc46d4bd74022fbb745545fb6c4cdfc.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-8e955b7ce0181ffea43a0319902a8cc0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -130,32 +133,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="nav-link" href="./index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
-  <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-environment" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">environment</span>
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-environment">    
-        <li>
-    <a class="dropdown-item" href="./environment.html">
- <span class="dropdown-text">micromamba + bcfngs</span></a>
+  <li class="nav-item">
+    <a class="nav-link" href="./environment.html"> 
+<span class="menu-text">environment</span></a>
   </li>  
-        <li>
-    <a class="dropdown-item" href="./conda.html">
- <span class="dropdown-text">conda</span></a>
+  <li class="nav-item">
+    <a class="nav-link active" href="./snakemake.html" aria-current="page"> 
+<span class="menu-text">snakemake</span></a>
   </li>  
-        <li>
-    <a class="dropdown-item" href="./snakemake.html">
- <span class="dropdown-text">snakemake</span></a>
-  </li>  
-    </ul>
-  </li>
   <li class="nav-item">
     <a class="nav-link" href="./updating_genomes.html"> 
 <span class="menu-text">Updating genomes</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./mapping.html"> 
-<span class="menu-text">Mapping</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
@@ -194,11 +182,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#what-is-snakemake" id="toc-what-is-snakemake" class="nav-link active" data-scroll-target="#what-is-snakemake">What is Snakemake?</a></li>
-  <li><a href="#how-this-project-uses-snakemake" id="toc-how-this-project-uses-snakemake" class="nav-link" data-scroll-target="#how-this-project-uses-snakemake">How this project uses Snakemake</a></li>
-  <li><a href="#core-snakemake-commands-general-examples" id="toc-core-snakemake-commands-general-examples" class="nav-link" data-scroll-target="#core-snakemake-commands-general-examples">Core Snakemake commands (general examples)</a></li>
-  <li><a href="#typical-ways-to-use-it-in-this-project" id="toc-typical-ways-to-use-it-in-this-project" class="nav-link" data-scroll-target="#typical-ways-to-use-it-in-this-project">Typical ways to use it in this project</a></li>
-  <li><a href="#where-to-find-task-specific-instructions" id="toc-where-to-find-task-specific-instructions" class="nav-link" data-scroll-target="#where-to-find-task-specific-instructions">Where to find task-specific instructions</a></li>
+  <li><a href="#quickstart" id="toc-quickstart" class="nav-link active" data-scroll-target="#quickstart">Quickstart</a></li>
+  <li><a href="#configuration-files" id="toc-configuration-files" class="nav-link" data-scroll-target="#configuration-files">Configuration files</a>
+  <ul class="collapse">
+  <li><a href="#notes" id="toc-notes" class="nav-link" data-scroll-target="#notes">Notes</a></li>
+  </ul></li>
+  <li><a href="#how-to-cookbook" id="toc-how-to-cookbook" class="nav-link" data-scroll-target="#how-to-cookbook">How-to (cookbook)</a>
+  <ul class="collapse">
+  <li><a href="#build-all-genomes-indices" id="toc-build-all-genomes-indices" class="nav-link" data-scroll-target="#build-all-genomes-indices">Build all genomes + indices</a></li>
+  <li><a href="#build-only-a-subset-faster" id="toc-build-only-a-subset-faster" class="nav-link" data-scroll-target="#build-only-a-subset-faster">Build only a subset (faster)</a></li>
+  <li><a href="#ensembl-has-a-newer-release-bump-pinned-release" id="toc-ensembl-has-a-newer-release-bump-pinned-release" class="nav-link" data-scroll-target="#ensembl-has-a-newer-release-bump-pinned-release">Ensembl has a newer release (bump pinned release)</a></li>
+  <li><a href="#new-starbwabowtie2-version-rebuild-indices" id="toc-new-starbwabowtie2-version-rebuild-indices" class="nav-link" data-scroll-target="#new-starbwabowtie2-version-rebuild-indices">New STAR/bwa/bowtie2 version (rebuild indices)</a></li>
+  <li><a href="#use-hpc-modules-for-aligners-fallback" id="toc-use-hpc-modules-for-aligners-fallback" class="nav-link" data-scroll-target="#use-hpc-modules-for-aligners-fallback">Use HPC modules for aligners (fallback)</a></li>
+  </ul></li>
+  <li><a href="#genome-download-indexing" id="toc-genome-download-indexing" class="nav-link" data-scroll-target="#genome-download-indexing">Genome download + indexing</a>
+  <ul class="collapse">
+  <li><a href="#mapping-the-samples-with-the-star" id="toc-mapping-the-samples-with-the-star" class="nav-link" data-scroll-target="#mapping-the-samples-with-the-star">Mapping the samples with the <code>STAR</code></a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -224,7 +224,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 5, 2026</p>
+      <p class="date">March 6, 2026</p>
     </div>
   </div>
   
@@ -236,74 +236,131 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="what-is-snakemake" class="level2">
-<h2 class="anchored" data-anchor-id="what-is-snakemake">What is Snakemake?</h2>
-<p><code>snakemake</code> is a workflow engine for reproducible data analysis pipelines.</p>
-<p>At a high level, you define analysis steps as rules with inputs/outputs, and Snakemake:</p>
-<ul>
-<li>resolves dependencies automatically,</li>
-<li>runs only what is missing or outdated,</li>
-<li>supports dry-runs and lint checks,</li>
-<li>scales from local execution to cluster schedulers.</li>
-</ul>
-<p>This makes it useful for routine, repeatable analyses where the same logic is applied to many projects.</p>
-</section>
-<section id="how-this-project-uses-snakemake" class="level2">
-<h2 class="anchored" data-anchor-id="how-this-project-uses-snakemake">How this project uses Snakemake</h2>
-<p>This repository has two main Snakemake workflows:</p>
+<p>This part is still work in progress.</p>
+<p>This repository uses <code>snakemake</code> for:</p>
 <ol type="1">
-<li>Genome source download + index building:
+<li><strong>Genome download + indexing</strong> (STAR, bwa, bowtie2) using <em>versioned</em> index directories and stable symlinks.</li>
+<li><strong>Mapping</strong> (currently STAR) using per-project run settings.</li>
+</ol>
+<p>For non-experts, prefer the single wrapper command <code>./scripts/bcfngs</code> (runs checks, then snakemake).</p>
+<section id="quickstart" class="level2">
+<h2 class="anchored" data-anchor-id="quickstart">Quickstart</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1) create/update env (only once, then as needed)</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env create</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env check</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 2) (optional) check if a newer Ensembl release exists</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes check-updates</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 3) preflight checks + snakemake lint + dry-run</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes plan</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 4) build genomes + indices (real run)</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="configuration-files" class="level2">
+<h2 class="anchored" data-anchor-id="configuration-files">Configuration files</h2>
+<p>The workflow configuration is split into two files:</p>
+<ol type="1">
+<li>Genome and indexing configuration: <a href="configs/genomes.yaml" target="_blank"><code>configs/genomes.yaml</code></a>
 <ul>
-<li><code>workflow/genomes.smk</code></li>
-<li>config: <code>configs/genomes.yaml</code></li>
+<li>Organism identifiers are <strong>scientific names</strong> (e.g.&nbsp;<code>Homo_sapiens</code>, <code>Mus_musculus</code>).</li>
+<li>Genome sources are pinned to a specific Ensembl release (default: 116).</li>
+<li>Index output directories are versioned via <code>index_versions</code>.</li>
 </ul></li>
-<li>Sample mapping and coverage generation:
+<li>Per-project run configuration (mapping): <a href="configs/run.yaml" target="_blank"><code>configs/run.yaml</code></a>
 <ul>
-<li><code>workflow/mapping.smk</code></li>
-<li>config: <code>configs/run.yaml</code></li>
+<li>Project ID, input <code>path</code>, organism, threads, etc.</li>
 </ul></li>
 </ol>
-<p>For most users, the recommended entrypoint is the wrapper:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>It adds preflight checks and standard defaults around Snakemake execution.</p>
-</section>
-<section id="core-snakemake-commands-general-examples" class="level2">
-<h2 class="anchored" data-anchor-id="core-snakemake-commands-general-examples">Core Snakemake commands (general examples)</h2>
-<p>Lint a workflow:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">--lint</span> <span class="at">-s</span> workflow/genomes.smk</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Preview what would run (dry-run + print commands + reason summary):</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-npr</span> <span class="at">-s</span> workflow/genomes.smk <span class="at">--configfile</span> configs/genomes.yaml</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Run locally with a fixed number of cores:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-pr</span> <span class="at">-j</span> 20 <span class="at">-s</span> workflow/genomes.smk <span class="at">--configfile</span> configs/genomes.yaml</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Dry-run mapping workflow with current run configuration:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-npr</span> <span class="at">-s</span> workflow/mapping.smk <span class="at">--configfile</span> configs/run.yaml</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-<section id="typical-ways-to-use-it-in-this-project" class="level2">
-<h2 class="anchored" data-anchor-id="typical-ways-to-use-it-in-this-project">Typical ways to use it in this project</h2>
-<p>Use <code>bcfngs</code> for day-to-day operations:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># environment</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env check</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># genomes</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes plan</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co"># mapping</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping plan</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Use direct Snakemake commands when you want lower-level control, debugging, or development work.</p>
-</section>
-<section id="where-to-find-task-specific-instructions" class="level2">
-<h2 class="anchored" data-anchor-id="where-to-find-task-specific-instructions">Where to find task-specific instructions</h2>
-<p>This page is the Snakemake overview.</p>
-<p>For detailed procedures, use:</p>
+<section id="notes" class="level3">
+<h3 class="anchored" data-anchor-id="notes">Notes</h3>
 <ul>
-<li><a href="environment.html">Environment setup</a></li>
-<li><a href="updating_genomes.html">Updating genomes and indices</a></li>
-<li><a href="mapping.html">Mapping workflow</a></li>
+<li>Genome indexing uses <code>workflow/genomes.smk</code> (not the legacy <code>getGenome_IndexGenome.Snakefile</code>).</li>
+<li>Mapping uses the STAR mapping Snakefiles and expects <code>/fs/pool/pool-bcfngs/genomes/&lt;Organism&gt;/starIndex</code> to exist (symlink to the versioned index).</li>
+</ul>
+</section>
+</section>
+<section id="how-to-cookbook" class="level2">
+<h2 class="anchored" data-anchor-id="how-to-cookbook">How-to (cookbook)</h2>
+<section id="build-all-genomes-indices" class="level3">
+<h3 class="anchored" data-anchor-id="build-all-genomes-indices">Build all genomes + indices</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes plan</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="build-only-a-subset-faster" class="level3">
+<h3 class="anchored" data-anchor-id="build-only-a-subset-faster">Build only a subset (faster)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20 <span class="at">--organism</span> Homo_sapiens,Mus_musculus</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="ensembl-has-a-newer-release-bump-pinned-release" class="level3">
+<h3 class="anchored" data-anchor-id="ensembl-has-a-newer-release-bump-pinned-release">Ensembl has a newer release (bump pinned release)</h3>
+<ol type="1">
+<li>Check:</li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes check-updates</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ol start="2" type="1">
+<li>If an update is available, edit <code>configs/genomes.yaml</code> and bump:</li>
+</ol>
+<ul>
+<li><code>releases.ensembl: 116</code> → <code>117</code> (etc.)</li>
+</ul>
+<ol start="3" type="1">
+<li>Then:</li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes plan</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="new-starbwabowtie2-version-rebuild-indices" class="level3">
+<h3 class="anchored" data-anchor-id="new-starbwabowtie2-version-rebuild-indices">New STAR/bwa/bowtie2 version (rebuild indices)</h3>
+<ol type="1">
+<li>Update tools:</li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env update</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env check</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ol start="2" type="1">
+<li>Update <code>configs/genomes.yaml</code>:</li>
+</ol>
+<ul>
+<li>set <code>index_versions.star</code>, <code>index_versions.bwa</code>, <code>index_versions.bowtie2</code> (these strings are used in output folder names)</li>
+</ul>
+<ol start="3" type="1">
+<li>Rebuild:</li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="use-hpc-modules-for-aligners-fallback" class="level3">
+<h3 class="anchored" data-anchor-id="use-hpc-modules-for-aligners-fallback">Use HPC modules for aligners (fallback)</h3>
+<p>This still uses the micromamba env for python/snakemake, but loads vendor tools via modules:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load bclconvert/4.3.13 star bowtie2 bwa</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--profile</span> modules env check</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--profile</span> modules genomes plan</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--profile</span> modules genomes build <span class="at">--cores</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="genome-download-indexing" class="level2">
+<h2 class="anchored" data-anchor-id="genome-download-indexing">Genome download + indexing</h2>
+<p>Workflow file: <a href="workflow/genomes.smk" target="_blank">workflow/genomes.smk</a></p>
+<section id="mapping-the-samples-with-the-star" class="level3">
+<h3 class="anchored" data-anchor-id="mapping-the-samples-with-the-star">Mapping the samples with the <code>STAR</code></h3>
+<p><a href="Star.MappingQuant.PairedEndFastq.Snakefile" target="_blank">mapping the samples in a paired-end format</a></p>
+<p>This script contains three (four) steps. in the first step the <code>fastq</code> samples are mapped to the indexed genome. Then, they are being indexed. Last, after creating a chromosome-size file, the <code>bam</code> files are converted into <code>bigwig</code> files for better visualization using the <a href="http://genome.ucsc.edu/cgi-bin/hgTracks">UCSC browser</a>.</p>
+<p>We have two separate scripts for single-end and paired-end runs. The PE run looks for both R1 and R2 fastq files, while the SE script will ignore all R2 samples.</p>
+<p>After the environment was created <strong>and activated</strong>, one must change to the directory of the concatenated fast files. E.g.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>To run mapping, update <code>configs/run.yaml</code> in the repo, then run one of these Snakefiles.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># for single-end samples</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-nps</span> /path/to/repo/Star.MappingQuant.SingleEndFastq.Snakefile <span class="at">-j</span> 50</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co"># for paired-end samples</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="at">-nps</span> /path/to/repo/Star.MappingQuant.PairedEndFastq.Snakefile <span class="at">-j</span> 50</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li><code>-n</code> - dry-run. This parameter will only output the command, but execute them. This should be used to test the parameters, but must be removed for the analysis to be done.</li>
+<li><code>-p</code> - Print the commands to be execute.</li>
+<li><code>-s</code> - the name of the snakeake file to be executed.</li>
+<li><code>-j</code> - #cores. How many cores should be used in the run.</li>
 </ul>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

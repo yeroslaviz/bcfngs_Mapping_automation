@@ -7,14 +7,22 @@ import re
 import shlex
 import shutil
 import subprocess
-import sys
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_ENV_PREFIX = REPO_ROOT / ".mamba" / "env"
+CLUSTER_ENV_PREFIX = Path("/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes")
+DEFAULT_ENV_PREFIX = CLUSTER_ENV_PREFIX if CLUSTER_ENV_PREFIX.exists() else REPO_ROOT / ".mamba" / "env"
+ALLOWED_MAPPERS = {"star", "bwa", "bowtie2"}
+
+DEFAULT_SLURM_PARTITION = "p.hpcl8"
+DEFAULT_SLURM_MAIL_USER = "yeroslaviz@biochem.mpg.de"
+DEFAULT_SLURM_MAIL_TYPE = "ALL"
+DEFAULT_SLURM_TIME = "04:00:00"
+DEFAULT_SLURM_MEM_PER_CPU_MB = 20480
 
 
 @dataclass(frozen=True)
@@ -23,7 +31,32 @@ class RunContext:
     env_prefix: Path
 
 
-def _run(cmd: list[str], *, check: bool = True, capture: bool = False, env: dict | None = None) -> subprocess.CompletedProcess:
+@dataclass(frozen=True)
+class MappingSettings:
+    run_cfg_path: Path
+    genomes_cfg_path: Path
+    workflow_path: Path
+    project: str
+    organism: str
+    fastq_dir: Path
+    outdir: Path
+    genomes_root: Path
+    mappers: list[str]
+    read_mode: str
+    threads: int
+    ram_bytes: int
+    keep_intermediary_files: bool
+    bw_bin_size: int
+    bw_normalization: str
+
+
+def _run(
+    cmd: list[str],
+    *,
+    check: bool = True,
+    capture: bool = False,
+    env: dict | None = None,
+) -> subprocess.CompletedProcess:
     kwargs = {
         "check": check,
         "text": True,
@@ -33,10 +66,6 @@ def _run(cmd: list[str], *, check: bool = True, capture: bool = False, env: dict
         kwargs["stdout"] = subprocess.PIPE
         kwargs["stderr"] = subprocess.PIPE
     return subprocess.run(cmd, **kwargs)  # noqa: S603,S607
-
-
-def _bash_lc(script: str, *, check: bool = True) -> None:
-    _run(["bash", "-lc", script], check=check)
 
 
 def _micromamba() -> str:
@@ -67,11 +96,18 @@ def cmd_env_update(ctx: RunContext, args: argparse.Namespace) -> None:
     env_yml = REPO_ROOT / "env" / "environment.yml"
     _run([mm, "update", "-y", "-p", str(ctx.env_prefix), "-f", str(env_yml)])
 
+
 def _module_load_snippet() -> str:
     return "module load bclconvert/4.3.13 star bowtie2 bwa"
 
 
-def _run_tool(ctx: RunContext, tool_cmd: list[str], *, check: bool = True, capture: bool = False) -> subprocess.CompletedProcess:
+def _run_tool(
+    ctx: RunContext,
+    tool_cmd: list[str],
+    *,
+    check: bool = True,
+    capture: bool = False,
+) -> subprocess.CompletedProcess:
     """
     Run a command either directly via micromamba (profile=micromamba) or
     with `module load ...` prepended (profile=modules).
@@ -84,7 +120,13 @@ def _run_tool(ctx: RunContext, tool_cmd: list[str], *, check: bool = True, captu
         quoted = " ".join(shlex.quote(x) for x in [mm, "run", "-p", str(ctx.env_prefix), *tool_cmd])
         script = f"{_module_load_snippet()} && {quoted}"
         if capture:
-            return subprocess.run(["bash", "-lc", script], check=check, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # noqa: S603,S607
+            return subprocess.run(
+                ["bash", "-lc", script],
+                check=check,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )  # noqa: S603,S607
         return subprocess.run(["bash", "-lc", script], check=check, text=True)  # noqa: S603,S607
 
     raise SystemExit(f"Unknown profile: {ctx.profile}")
@@ -101,14 +143,122 @@ def _require_tools(ctx: RunContext, tools: Iterable[str]) -> None:
         raise SystemExit(f"Missing tools in environment: {', '.join(missing)}")
 
 
+def _first_nonempty_line(text: str) -> str:
+    for line in text.splitlines():
+        line = line.strip()
+        if line:
+            return line
+    return ""
+
+
+def _extract_version_token(text: str) -> str:
+    match = re.search(r"\b\d+(?:\.\d+)+(?:[A-Za-z0-9._-]*)\b", text)
+    if match:
+        return match.group(0).strip()
+    return ""
+
+
+def _extract_bwa_version(out: subprocess.CompletedProcess) -> str:
+    combined = f"{out.stdout or ''}\n{out.stderr or ''}"
+    for line in combined.splitlines():
+        match = re.search(r"\bVersion:\s*([^\s]+)", line)
+        if match:
+            token = _extract_version_token(match.group(1))
+            if token:
+                return token
+    return _extract_version_token(combined)
+
+
+def _extract_bowtie2_version(out: subprocess.CompletedProcess) -> str:
+    combined = f"{out.stdout or ''}\n{out.stderr or ''}"
+    for line in combined.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        match = re.search(r"\bversion\s+([^\s]+)", line, flags=re.IGNORECASE)
+        if match:
+            token = _extract_version_token(match.group(1))
+            if token:
+                return token
+    return _extract_version_token(combined)
+
+
+def _extract_star_version(out: subprocess.CompletedProcess) -> str:
+    combined = f"{out.stdout or ''}\n{out.stderr or ''}"
+    return _extract_version_token(combined)
+
+
+def _resolve_genomes_index_versions(ctx: RunContext, genomes_cfg_path: Path) -> tuple[dict, dict[str, str]]:
+    cfg = _load_yaml(ctx, genomes_cfg_path)
+    raw_versions = cfg.get("index_versions")
+    if not isinstance(raw_versions, dict):
+        raw_versions = {}
+
+    versions = {
+        "star": str(raw_versions.get("star", "") or "").strip(),
+        "bwa": str(raw_versions.get("bwa", "") or "").strip(),
+        "bowtie2": str(raw_versions.get("bowtie2", "") or "").strip(),
+    }
+    detected: dict[str, str] = {}
+
+    if not versions["star"]:
+        star_out = _run_tool(ctx, ["STAR", "--version"], check=False, capture=True)
+        star_ver = _extract_star_version(star_out)
+        if star_ver:
+            versions["star"] = star_ver
+            detected["star"] = star_ver
+
+    if not versions["bwa"]:
+        bwa_out = _run_tool(ctx, ["bwa"], check=False, capture=True)
+        bwa_ver = _extract_bwa_version(bwa_out)
+        if bwa_ver:
+            versions["bwa"] = bwa_ver
+            detected["bwa"] = bwa_ver
+
+    if not versions["bowtie2"]:
+        bowtie2_out = _run_tool(ctx, ["bowtie2-build", "--version"], check=False, capture=True)
+        bowtie2_ver = _extract_bowtie2_version(bowtie2_out)
+        if bowtie2_ver:
+            versions["bowtie2"] = bowtie2_ver
+            detected["bowtie2"] = bowtie2_ver
+
+    missing = [tool for tool, ver in versions.items() if not ver]
+    if missing:
+        missing_csv = ", ".join(missing)
+        raise SystemExit(
+            "Missing genomes index_versions for "
+            f"{missing_csv}. Set configs/genomes.yaml:index_versions or ensure those tools are available "
+            "in the selected environment so versions can be auto-detected."
+        )
+
+    cfg["index_versions"] = versions
+    return cfg, detected
+
+
+def _write_temp_config_json(data: dict) -> Path:
+    fh = tempfile.NamedTemporaryFile(
+        mode="w",
+        prefix="bcfngs-genomes-",
+        suffix=".json",
+        delete=False,
+    )
+    with fh:
+        json.dump(data, fh)
+    return Path(fh.name)
+
+
 def cmd_env_check(ctx: RunContext, args: argparse.Namespace) -> None:
-    _require_tools(ctx, ["python", "snakemake", "STAR", "bwa", "bowtie2-build", "samtools", "curl"])
+    _require_tools(ctx, ["python", "snakemake", "STAR", "bwa", "bowtie2-build", "samtools", "curl", "bamCoverage"])
+    bwa_out = _run_tool(ctx, ["bwa"], check=False, capture=True)
+    star_out = _run_tool(ctx, ["STAR", "--version"], check=False, capture=True)
+    bowtie2_out = _run_tool(ctx, ["bowtie2-build", "--version"], check=False, capture=True)
     versions = {
         "snakemake": _run_tool(ctx, ["snakemake", "--version"], capture=True).stdout.strip(),
-        "STAR": _run_tool(ctx, ["STAR", "--version"], capture=True).stdout.strip(),
-        "bwa": (_run_tool(ctx, ["bwa"], check=False, capture=True).stderr.splitlines() or [""])[0].strip(),
-        "bowtie2": (_run_tool(ctx, ["bowtie2-build", "--version"], check=False, capture=True).stdout.splitlines() or [""])[0].strip(),
+        "STAR": _extract_star_version(star_out),
+        "bwa": _extract_bwa_version(bwa_out),
+        "bowtie2": _extract_bowtie2_version(bowtie2_out),
         "samtools": (_run_tool(ctx, ["samtools", "--version"], capture=True).stdout.splitlines() or [""])[0].strip(),
+        "bamCoverage": _run_tool(ctx, ["bamCoverage", "--version"], capture=True).stdout.strip(),
     }
     print(json.dumps(versions, indent=2))
 
@@ -121,7 +271,11 @@ def _load_yaml(ctx: RunContext, path: Path) -> dict:
         "print('OK');"
     )
     _run_tool(ctx, ["python", "-c", code, str(path)])
-    out = _run_tool(ctx, ["python", "-c", "import sys,yaml,json; print(json.dumps(yaml.safe_load(open(sys.argv[1]))))", str(path)], capture=True)
+    out = _run_tool(
+        ctx,
+        ["python", "-c", "import sys,yaml,json; print(json.dumps(yaml.safe_load(open(sys.argv[1]))))", str(path)],
+        capture=True,
+    )
     return json.loads(out.stdout)
 
 
@@ -147,7 +301,7 @@ def cmd_genomes_check_updates(ctx: RunContext, args: argparse.Namespace) -> None
 
     try:
         html = _run_tool(ctx, ["curl", "-fsSL", "https://ftp.ensembl.org/pub/"], capture=True).stdout
-        releases = [int(m.group(1)) for m in re.finditer(r"release-(\\d+)/", html)]
+        releases = [int(m.group(1)) for m in re.finditer(r"release-(\d+)/", html)]
         latest = max(releases) if releases else None
     except subprocess.CalledProcessError:
         latest = None
@@ -164,7 +318,7 @@ def cmd_genomes_check_updates(ctx: RunContext, args: argparse.Namespace) -> None
 
 def _genomes_urls_from_cfg(cfg: dict) -> list[str]:
     urls: list[str] = []
-    for org_key, org in cfg["organisms"].items():
+    for org in cfg["organisms"].values():
         if org.get("source") == "ensemblgenomes":
             urls.append(org["fasta_url"])
             urls.append(org["gtf_url"])
@@ -178,6 +332,41 @@ def _genomes_urls_from_cfg(cfg: dict) -> list[str]:
         urls.append(f"{root}/fasta/{species}/dna/{cap}.{assembly}.{fasta_kind}.fa.gz")
         urls.append(f"{root}/gtf/{species}/{cap}.{assembly}.{rel}.gtf.gz")
     return urls
+
+
+def _snakemake_available_executors(ctx: RunContext) -> set[str]:
+    out = _run_tool(ctx, ["snakemake", "--help"], check=False, capture=True)
+    if out.returncode != 0:
+        details = (out.stderr or out.stdout or "").strip()
+        msg = (
+            "Failed to run 'snakemake --help' in the selected environment.\n"
+            f"env-prefix: {ctx.env_prefix}\n"
+            "Use an environment that contains snakemake (and slurm executor plugin if needed), e.g.:\n"
+            "  ./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes genomes build ...\n"
+            "or update/create the environment first:\n"
+            "  ./scripts/bcfngs --env-prefix /fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes env update"
+        )
+        if details:
+            msg += f"\n\nsnakemake output:\n{details}"
+        raise SystemExit(msg)
+    help_text = f"{out.stdout}\n{out.stderr}"
+    match = re.search(r"--executor\s+\{([^}]+)\}", help_text)
+    if not match:
+        return set()
+    return {x.strip() for x in match.group(1).split(",") if x.strip()}
+
+
+def _require_snakemake_slurm_executor(ctx: RunContext) -> None:
+    executors = _snakemake_available_executors(ctx)
+    if "slurm" in executors:
+        return
+    available = ", ".join(sorted(executors)) if executors else "unknown"
+    raise SystemExit(
+        "Requested --executor slurm, but this Snakemake installation has no slurm executor "
+        f"(available executors: {available}).\n"
+        "Update environment and try again:\n"
+        "  ./scripts/bcfngs env update"
+    )
 
 
 def cmd_genomes_plan(ctx: RunContext, args: argparse.Namespace) -> None:
@@ -196,15 +385,398 @@ def cmd_genomes_plan(ctx: RunContext, args: argparse.Namespace) -> None:
 
 
 def cmd_genomes_build(ctx: RunContext, args: argparse.Namespace) -> None:
-    cmd_genomes_plan(ctx, args)
+    if args.no_skip_plan:
+        cmd_genomes_plan(ctx, args)
+    else:
+        print("Skipping genomes plan checks by default; running build directly.")
     genomes_cfg_path = REPO_ROOT / "configs" / "genomes.yaml"
+    genomes_cfg, detected_versions = _resolve_genomes_index_versions(ctx, genomes_cfg_path)
+    versions = genomes_cfg["index_versions"]
+    if detected_versions:
+        detected_txt = ", ".join(f"{tool}={ver}" for tool, ver in detected_versions.items())
+        print(f"Auto-detected missing index_versions from environment: {detected_txt}")
+    print("Using index versions:", json.dumps(versions, indent=2))
+    tmp_genomes_cfg_path = _write_temp_config_json(genomes_cfg)
     smk = REPO_ROOT / "workflow" / "genomes.smk"
 
     extra: list[str] = []
     if args.organism:
         orgs = [o.strip() for o in args.organism.split(",") if o.strip()]
         extra += ["--config", f"org_subset={','.join(orgs)}"]
-    _run_tool(ctx, ["snakemake", "-pr", "-j", str(args.cores), "-s", str(smk), "--configfile", str(genomes_cfg_path), *extra])
+
+    snakemake_cmd: list[str] = ["snakemake", "--printshellcmds"]
+    if args.executor == "slurm":
+        _require_snakemake_slurm_executor(ctx)
+        print(f"Using SLURM executor (max concurrent jobs: {args.jobs}).")
+        snakemake_cmd += ["--executor", "slurm", "--jobs", str(args.jobs)]
+
+        runtime_min = _slurm_time_to_minutes(args.slurm_time)
+        slurm_extra_parts = []
+        if args.slurm_mail_user:
+            slurm_extra_parts.append(f"--mail-user={args.slurm_mail_user}")
+        if args.slurm_mail_type:
+            slurm_extra_parts.append(f"--mail-type={args.slurm_mail_type}")
+        if args.slurm_account:
+            slurm_extra_parts.append(f"--account={args.slurm_account}")
+        if args.slurm_exclusive:
+            slurm_extra_parts.append("--exclusive")
+
+        default_resources = [
+            f"slurm_partition={args.slurm_partition!r}",
+            f"runtime={runtime_min}",
+            "cpus_per_task=1",
+            "mem_mb=4096",
+        ]
+        if args.slurm_qos:
+            default_resources.append(f"slurm_qos={args.slurm_qos!r}")
+        if slurm_extra_parts:
+            default_resources.append(f"slurm_extra={' '.join(slurm_extra_parts)!r}")
+
+        set_resources = [
+            f"star_index:cpus_per_task={_as_int(args.slurm_cpus_per_task, field='slurm_cpus_per_task', minimum=1)}",
+            f"bowtie2_index:cpus_per_task={_as_int(args.slurm_cpus_per_task, field='slurm_cpus_per_task', minimum=1)}",
+            "download_sources:cpus_per_task=1",
+            "chrom_size:cpus_per_task=1",
+            "bwa_index:cpus_per_task=1",
+        ]
+
+        if args.slurm_mem is not None:
+            mem_mb = _as_int(args.slurm_mem, field="slurm_mem", minimum=1)
+            light_mem = min(mem_mb, 4096)
+            set_resources += [
+                f"star_index:mem_mb={mem_mb}",
+                f"bowtie2_index:mem_mb={mem_mb}",
+                f"bwa_index:mem_mb={mem_mb}",
+                f"download_sources:mem_mb={light_mem}",
+                f"chrom_size:mem_mb={light_mem}",
+            ]
+        else:
+            mem_per_cpu = _as_int(args.slurm_mem_per_cpu, field="slurm_mem_per_cpu", minimum=1)
+            light_mem = min(mem_per_cpu, 4096)
+            set_resources += [
+                f"star_index:mem_mb_per_cpu={mem_per_cpu}",
+                f"bowtie2_index:mem_mb_per_cpu={mem_per_cpu}",
+                f"bwa_index:mem_mb_per_cpu={mem_per_cpu}",
+                f"download_sources:mem_mb_per_cpu={light_mem}",
+                f"chrom_size:mem_mb_per_cpu={light_mem}",
+            ]
+
+        snakemake_cmd += ["--default-resources", *default_resources, "--set-resources", *set_resources]
+    else:
+        snakemake_cmd += ["--cores", str(args.cores)]
+
+    snakemake_cmd += ["-s", str(smk), "--configfile", str(tmp_genomes_cfg_path), *extra]
+    try:
+        _run_tool(ctx, snakemake_cmd)
+    finally:
+        tmp_genomes_cfg_path.unlink(missing_ok=True)
+
+
+def _as_int(value: object, *, field: str, minimum: int | None = None) -> int:
+    try:
+        out = int(value)
+    except (TypeError, ValueError) as e:
+        raise SystemExit(f"Invalid integer for {field}: {value!r}") from e
+    if minimum is not None and out < minimum:
+        raise SystemExit(f"Invalid value for {field}: {out} (must be >= {minimum})")
+    return out
+
+
+def _parse_mappers(raw: str) -> list[str]:
+    items = [x.strip().lower() for x in raw.split(",") if x.strip()]
+    if not items:
+        raise SystemExit("No mapper selected. Use --mapper star,bwa,bowtie2.")
+    seen: set[str] = set()
+    out: list[str] = []
+    for item in items:
+        if item not in ALLOWED_MAPPERS:
+            raise SystemExit(
+                f"Unknown mapper: {item}. Allowed values: {', '.join(sorted(ALLOWED_MAPPERS))}"
+            )
+        if item not in seen:
+            seen.add(item)
+            out.append(item)
+    return out
+
+
+def _slurm_time_to_minutes(s: str) -> int:
+    if re.fullmatch(r"\d+", s):
+        mins = int(s)
+        if mins < 1:
+            raise SystemExit(f"Invalid --slurm-time value: {s!r}. Use a positive integer (minutes) or HH:MM:SS.")
+        return mins
+    m = re.fullmatch(r"(\d+):([0-5]\d):([0-5]\d)", s)
+    if not m:
+        raise SystemExit(
+            f"Invalid --slurm-time value: {s!r}. Use minutes (e.g. 600) or HH:MM:SS (e.g. 04:00:00)."
+        )
+    h, mins, secs = map(int, m.groups())
+    total = (h * 3600) + (mins * 60) + secs
+    return max(1, total // 60)
+
+
+def _resolve_mapping_settings(ctx: RunContext, args: argparse.Namespace) -> MappingSettings:
+    run_cfg_path = REPO_ROOT / "configs" / "run.yaml"
+    genomes_cfg_path = REPO_ROOT / "configs" / "genomes.yaml"
+    workflow_path = REPO_ROOT / "workflow" / "mapping.smk"
+
+    run_cfg = _load_yaml(ctx, run_cfg_path)
+    genomes_cfg = _load_yaml(ctx, genomes_cfg_path)
+
+    project = (args.project or run_cfg.get("project") or "").strip()
+    if not project:
+        raise SystemExit("Missing mapping project. Set configs/run.yaml:project or pass --project.")
+
+    organism = (args.organism or run_cfg.get("organism") or run_cfg.get("org") or "").strip()
+    if not organism:
+        raise SystemExit("Missing mapping organism. Set configs/run.yaml:organism or pass --organism.")
+    if "," in organism:
+        raise SystemExit("Mapping supports exactly one organism per run. Do not pass a comma-separated list.")
+
+    fastq_dir_raw = (args.fastq_dir or run_cfg.get("path") or "").strip()
+    if not fastq_dir_raw:
+        raise SystemExit("Missing FASTQ input path. Set configs/run.yaml:path or pass --fastq-dir.")
+    fastq_dir = Path(fastq_dir_raw).expanduser()
+    if not fastq_dir.exists() or not fastq_dir.is_dir():
+        raise SystemExit(f"FASTQ directory not found or not a directory: {fastq_dir}")
+
+    outdir_raw = (args.outdir or run_cfg.get("outdir") or "").strip()
+    if not outdir_raw:
+        raise SystemExit("Missing output root. Set configs/run.yaml:outdir or pass --outdir.")
+    outdir = Path(outdir_raw).expanduser()
+    _check_write_permission(outdir)
+
+    mappers = _parse_mappers(args.mapper)
+    read_mode = "paired" if args.paired_end else "single"
+
+    threads = _as_int(args.threads if args.threads is not None else run_cfg.get("threads", 16), field="threads", minimum=1)
+    ram_bytes = _as_int(
+        args.ram_bytes if args.ram_bytes is not None else run_cfg.get("ram_bytes", run_cfg.get("RAM", 168632718037)),
+        field="ram_bytes",
+        minimum=1,
+    )
+    bw_bin_size = _as_int(args.bw_bin_size, field="bw_bin_size", minimum=1)
+    bw_normalization = str(args.bw_normalization).strip()
+    if not bw_normalization:
+        raise SystemExit("Empty --bw-normalization value is not allowed.")
+
+    genomes_root = Path(genomes_cfg.get("genomes_root", "/fs/pool/pool-bcfngs/genomes")).expanduser()
+    if not genomes_root.exists():
+        raise SystemExit(f"Configured genomes_root does not exist: {genomes_root}")
+
+    missing_indices: list[str] = []
+    if "star" in mappers and not (genomes_root / organism / "starIndex" / "SA").exists():
+        missing_indices.append(str(genomes_root / organism / "starIndex" / "SA"))
+    if "bwa" in mappers and not (genomes_root / organism / "bwaIndex" / f"{organism}.bwt").exists():
+        missing_indices.append(str(genomes_root / organism / "bwaIndex" / f"{organism}.bwt"))
+    if "bowtie2" in mappers and not (genomes_root / organism / "bowtie2Index" / f"{organism}.1.bt2").exists():
+        missing_indices.append(str(genomes_root / organism / "bowtie2Index" / f"{organism}.1.bt2"))
+    if not (genomes_root / f"{organism}.chromSize").exists():
+        missing_indices.append(str(genomes_root / f"{organism}.chromSize"))
+    if missing_indices:
+        pretty = "\n  - ".join([""] + missing_indices)
+        raise SystemExit(f"Missing required genome resource(s):{pretty}")
+
+    return MappingSettings(
+        run_cfg_path=run_cfg_path,
+        genomes_cfg_path=genomes_cfg_path,
+        workflow_path=workflow_path,
+        project=project,
+        organism=organism,
+        fastq_dir=fastq_dir,
+        outdir=outdir,
+        genomes_root=genomes_root,
+        mappers=mappers,
+        read_mode=read_mode,
+        threads=threads,
+        ram_bytes=ram_bytes,
+        keep_intermediary_files=bool(args.keep_intermediary_files),
+        bw_bin_size=bw_bin_size,
+        bw_normalization=bw_normalization,
+    )
+
+
+def _mapping_config_kv(settings: MappingSettings) -> list[str]:
+    return [
+        f"project={settings.project}",
+        f"organism={settings.organism}",
+        f"fastq_dir={settings.fastq_dir}",
+        f"outdir={settings.outdir}",
+        f"genomes_root={settings.genomes_root}",
+        f"mappers={','.join(settings.mappers)}",
+        f"read_mode={settings.read_mode}",
+        f"threads={settings.threads}",
+        f"ram_bytes={settings.ram_bytes}",
+        f"keep_intermediary_files={'true' if settings.keep_intermediary_files else 'false'}",
+        f"bw_bin_size={settings.bw_bin_size}",
+        f"bw_normalization={settings.bw_normalization}",
+    ]
+
+
+def _mapping_snakemake_cmd(settings: MappingSettings, args: argparse.Namespace, *, dry_run: bool) -> list[str]:
+    cmd = [
+        "snakemake",
+        "--printshellcmds",
+        "-s",
+        str(settings.workflow_path),
+        "--configfile",
+        str(settings.run_cfg_path),
+        "--config",
+        *_mapping_config_kv(settings),
+        "--latency-wait",
+        str(args.latency_wait),
+    ]
+    if dry_run:
+        cmd.append("--dry-run")
+
+    if args.executor == "local":
+        cmd += ["--jobs", str(args.jobs)]
+        return cmd
+
+    runtime_min = _slurm_time_to_minutes(args.slurm_time)
+    slurm_extra_parts: list[str] = []
+    if args.slurm_mail_user:
+        slurm_extra_parts.append(f"--mail-user={args.slurm_mail_user}")
+    if args.slurm_mail_type:
+        slurm_extra_parts.append(f"--mail-type={args.slurm_mail_type}")
+    if args.slurm_account:
+        slurm_extra_parts.append(f"--account={args.slurm_account}")
+
+    default_resources = [
+        f"slurm_partition={args.slurm_partition!r}",
+        f"runtime={runtime_min}",
+        "cpus_per_task=1",
+        "mem_mb=4096",
+    ]
+    if slurm_extra_parts:
+        default_resources.append(f"slurm_extra={' '.join(slurm_extra_parts)!r}")
+
+    mapper_cpus = _as_int(args.slurm_cpus_per_task, field="slurm_cpus_per_task", minimum=1)
+    star_mem_mb = _as_int(args.slurm_star_mem_mb, field="slurm_star_mem_mb", minimum=1)
+    aligner_mem_mb = _as_int(args.slurm_aligner_mem_mb, field="slurm_aligner_mem_mb", minimum=1)
+    bigwig_cpus = _as_int(args.slurm_bigwig_cpus, field="slurm_bigwig_cpus", minimum=1)
+    bigwig_mem_mb = _as_int(args.slurm_bigwig_mem_mb, field="slurm_bigwig_mem_mb", minimum=1)
+    index_mem_mb = _as_int(args.slurm_index_mem_mb, field="slurm_index_mem_mb", minimum=1)
+
+    set_resources = [
+        f"map_star:cpus_per_task={mapper_cpus}",
+        f"map_star:mem_mb={star_mem_mb}",
+        f"map_bwa:cpus_per_task={mapper_cpus}",
+        f"map_bwa:mem_mb={aligner_mem_mb}",
+        f"map_bowtie2:cpus_per_task={mapper_cpus}",
+        f"map_bowtie2:mem_mb={aligner_mem_mb}",
+        "index_bam:cpus_per_task=1",
+        f"index_bam:mem_mb={index_mem_mb}",
+        f"create_bigwig:cpus_per_task={bigwig_cpus}",
+        f"create_bigwig:mem_mb={bigwig_mem_mb}",
+    ]
+
+    cmd += [
+        "--executor",
+        "slurm",
+        "--jobs",
+        str(args.jobs),
+        "--default-resources",
+        *default_resources,
+        "--set-resources",
+        *set_resources,
+    ]
+    return cmd
+
+
+def _run_mapping_lint(ctx: RunContext, settings: MappingSettings) -> None:
+    cmd = [
+        "snakemake",
+        "--lint",
+        "-s",
+        str(settings.workflow_path),
+        "--configfile",
+        str(settings.run_cfg_path),
+        "--config",
+        *_mapping_config_kv(settings),
+    ]
+    _run_tool(ctx, cmd)
+
+
+def _print_mapping_summary(settings: MappingSettings, args: argparse.Namespace) -> None:
+    print(
+        "Mapping settings:",
+        json.dumps(
+            {
+                "project": settings.project,
+                "organism": settings.organism,
+                "fastq_dir": str(settings.fastq_dir),
+                "outdir": str(settings.outdir),
+                "mappers": settings.mappers,
+                "read_mode": settings.read_mode,
+                "threads": settings.threads,
+                "executor": args.executor,
+                "keep_intermediary_files": settings.keep_intermediary_files,
+                "bw_bin_size": settings.bw_bin_size,
+                "bw_normalization": settings.bw_normalization,
+            },
+            indent=2,
+        ),
+    )
+
+
+def cmd_mapping_plan(ctx: RunContext, args: argparse.Namespace) -> None:
+    settings = _resolve_mapping_settings(ctx, args)
+    _print_mapping_summary(settings, args)
+    _run_mapping_lint(ctx, settings)
+    _run_tool(ctx, _mapping_snakemake_cmd(settings, args, dry_run=True))
+
+
+def cmd_mapping_run(ctx: RunContext, args: argparse.Namespace) -> None:
+    settings = _resolve_mapping_settings(ctx, args)
+    _print_mapping_summary(settings, args)
+    _run_tool(ctx, _mapping_snakemake_cmd(settings, args, dry_run=False))
+
+
+def _add_mapping_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--mapper",
+        default="star",
+        help="Comma-separated mapper list: star,bwa,bowtie2 (default: star)",
+    )
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--paired-end", dest="paired_end", action="store_true", help="Use paired-end FASTQ input (default).")
+    mode.add_argument("--single-end", dest="paired_end", action="store_false", help="Use single-end FASTQ input.")
+    parser.set_defaults(paired_end=True)
+
+    parser.add_argument("--organism", help="Override configs/run.yaml organism for this run.")
+    parser.add_argument("--fastq-dir", help="Override configs/run.yaml path for this run.")
+    parser.add_argument("--project", help="Override configs/run.yaml project for this run.")
+    parser.add_argument("--outdir", help="Override configs/run.yaml outdir for this run.")
+    parser.add_argument("--threads", type=int, help="Override mapping threads from configs/run.yaml.")
+    parser.add_argument("--ram-bytes", type=int, help="Override STAR --limitBAMsortRAM value.")
+    parser.add_argument(
+        "--keep-intermediary-files",
+        action="store_true",
+        help="Keep mapper intermediary files (default: delete intermediaries).",
+    )
+    parser.add_argument("--bw-bin-size", type=int, default=10, help="bamCoverage --binSize (default: 10).")
+    parser.add_argument(
+        "--bw-normalization",
+        default="CPM",
+        help="bamCoverage --normalizeUsing value (default: CPM).",
+    )
+
+    parser.add_argument("--executor", choices=["local", "slurm"], default="local", help="Execution backend (default: local).")
+    parser.add_argument("--jobs", type=int, default=20, help="Max concurrent jobs (default: 20).")
+    parser.add_argument("--latency-wait", type=int, default=10, help="Snakemake latency wait in seconds (default: 10).")
+
+    parser.add_argument("--slurm-partition", default=DEFAULT_SLURM_PARTITION, help=f"SLURM partition (default: {DEFAULT_SLURM_PARTITION}).")
+    parser.add_argument("--slurm-time", default=DEFAULT_SLURM_TIME, help=f"SLURM walltime HH:MM:SS (default: {DEFAULT_SLURM_TIME}).")
+    parser.add_argument("--slurm-mail-user", default=DEFAULT_SLURM_MAIL_USER, help=f"SLURM mail user (default: {DEFAULT_SLURM_MAIL_USER}).")
+    parser.add_argument("--slurm-mail-type", default=DEFAULT_SLURM_MAIL_TYPE, help=f"SLURM mail type (default: {DEFAULT_SLURM_MAIL_TYPE}).")
+    parser.add_argument("--slurm-account", default="", help="Optional SLURM account.")
+    parser.add_argument("--slurm-cpus-per-task", type=int, default=20, help="Mapper rule cpus-per-task on SLURM (default: 20).")
+    parser.add_argument("--slurm-star-mem-mb", type=int, default=64000, help="SLURM mem_mb for STAR mapping rule (default: 64000).")
+    parser.add_argument("--slurm-aligner-mem-mb", type=int, default=32000, help="SLURM mem_mb for BWA/Bowtie2 mapping rules (default: 32000).")
+    parser.add_argument("--slurm-index-mem-mb", type=int, default=4096, help="SLURM mem_mb for BAM indexing rule (default: 4096).")
+    parser.add_argument("--slurm-bigwig-cpus", type=int, default=4, help="SLURM cpus-per-task for bamCoverage rule (default: 4).")
+    parser.add_argument("--slurm-bigwig-mem-mb", type=int, default=8192, help="SLURM mem_mb for bamCoverage rule (default: 8192).")
 
 
 def main() -> None:
@@ -225,8 +797,72 @@ def main() -> None:
     genomes_sub.add_parser("check-updates")
     genomes_sub.add_parser("plan")
     build_p = genomes_sub.add_parser("build")
+    build_p.add_argument(
+        "--executor",
+        choices=["local", "slurm"],
+        default="local",
+        help="Execution backend: local (default) or slurm.",
+    )
     build_p.add_argument("--cores", type=int, default=16)
+    build_p.add_argument("--jobs", type=int, default=20, help="Max concurrent jobs for --executor slurm.")
+    build_p.add_argument(
+        "--slurm-partition",
+        default=DEFAULT_SLURM_PARTITION,
+        help="SLURM partition name (for --executor slurm).",
+    )
+    build_p.add_argument("--slurm-account", help="SLURM account name (for --executor slurm).")
+    build_p.add_argument("--slurm-qos", help="SLURM QoS name (for --executor slurm).")
+    build_p.add_argument(
+        "--slurm-mail-user",
+        default=DEFAULT_SLURM_MAIL_USER,
+        help="SLURM mail user for --executor slurm.",
+    )
+    build_p.add_argument(
+        "--slurm-mail-type",
+        default=DEFAULT_SLURM_MAIL_TYPE,
+        help="SLURM mail type for --executor slurm (e.g. ALL or END,FAIL).",
+    )
+    build_p.add_argument(
+        "--slurm-time",
+        default=DEFAULT_SLURM_TIME,
+        help=f"SLURM walltime HH:MM:SS (default: {DEFAULT_SLURM_TIME}).",
+    )
+    build_p.add_argument(
+        "--slurm-cpus-per-task",
+        type=int,
+        default=20,
+        help="SLURM cpus-per-task for heavy index rules (default: 20).",
+    )
+    build_p.add_argument(
+        "--slurm-mem-per-cpu",
+        type=int,
+        default=DEFAULT_SLURM_MEM_PER_CPU_MB,
+        help="SLURM mem-per-cpu in MB for --executor slurm (default: 20480 = 20G). Ignored if --slurm-mem is set.",
+    )
+    build_p.add_argument(
+        "--slurm-mem",
+        type=int,
+        help="SLURM total memory (--mem) in MB for heavy index rules; use this to decouple memory from CPU count.",
+    )
+    build_p.add_argument(
+        "--slurm-exclusive",
+        action="store_true",
+        help="Request exclusive node allocation per submitted SLURM job.",
+    )
     build_p.add_argument("--organism", help="Comma-separated subset of organism keys (e.g. Homo_sapiens,Mus_musculus)")
+    build_p.add_argument(
+        "-no-skip-plan",
+        "--no-skip-plan",
+        action="store_true",
+        help="Run plan preflight checks before build (config validation, URL checks, lint, dry-run).",
+    )
+
+    mapping_p = sub.add_parser("mapping")
+    mapping_sub = mapping_p.add_subparsers(dest="mapping_cmd", required=True)
+    mapping_plan_p = mapping_sub.add_parser("plan")
+    _add_mapping_args(mapping_plan_p)
+    mapping_run_p = mapping_sub.add_parser("run")
+    _add_mapping_args(mapping_run_p)
 
     args = parser.parse_args()
     ctx = RunContext(profile=args.profile, env_prefix=Path(args.env_prefix))
@@ -253,6 +889,15 @@ def main() -> None:
             cmd_genomes_build(ctx, args)
         else:
             raise SystemExit("Unknown genomes command")
+        return
+
+    if args.cmd == "mapping":
+        if args.mapping_cmd == "plan":
+            cmd_mapping_plan(ctx, args)
+        elif args.mapping_cmd == "run":
+            cmd_mapping_run(ctx, args)
+        else:
+            raise SystemExit("Unknown mapping command")
         return
 
     raise SystemExit("Unknown command")

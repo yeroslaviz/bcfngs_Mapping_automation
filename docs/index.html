@@ -2,15 +2,18 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.27">
+<meta name="generator" content="quarto-1.9.23">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Assa Yeroslaviz">
-<meta name="dcterms.date" content="2026-03-05">
+<meta name="dcterms.date" content="2026-03-06">
 
-<title>Home – Bioinformatics Core Facility MPI Biochemistry</title>
+<title>index – Bioinformatics Core Facility MPI Biochemistry</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -21,41 +24,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -76,7 +44,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-9cc46d4bd74022fbb745545fb6c4cdfc.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-8e955b7ce0181ffea43a0319902a8cc0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -130,32 +98,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="nav-link active" href="./index.html" aria-current="page"> 
 <span class="menu-text">Home</span></a>
   </li>  
-  <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-environment" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">environment</span>
-    </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-environment">    
-        <li>
-    <a class="dropdown-item" href="./environment.html">
- <span class="dropdown-text">micromamba + bcfngs</span></a>
+  <li class="nav-item">
+    <a class="nav-link" href="./environment.html"> 
+<span class="menu-text">environment</span></a>
   </li>  
-        <li>
-    <a class="dropdown-item" href="./conda.html">
- <span class="dropdown-text">conda</span></a>
+  <li class="nav-item">
+    <a class="nav-link" href="./snakemake.html"> 
+<span class="menu-text">snakemake</span></a>
   </li>  
-        <li>
-    <a class="dropdown-item" href="./snakemake.html">
- <span class="dropdown-text">snakemake</span></a>
-  </li>  
-    </ul>
-  </li>
   <li class="nav-item">
     <a class="nav-link" href="./updating_genomes.html"> 
 <span class="menu-text">Updating genomes</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./mapping.html"> 
-<span class="menu-text">Mapping</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
@@ -194,20 +147,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#why-this-tool-exists" id="toc-why-this-tool-exists" class="nav-link active" data-scroll-target="#why-this-tool-exists">Why this tool exists</a></li>
-  <li><a href="#what-the-workflow-can-do" id="toc-what-the-workflow-can-do" class="nav-link" data-scroll-target="#what-the-workflow-can-do">What the workflow can do</a></li>
-  <li><a href="#main-entry-point-scriptsbcfngs" id="toc-main-entry-point-scriptsbcfngs" class="nav-link" data-scroll-target="#main-entry-point-scriptsbcfngs">Main entry point: <code>scripts/bcfngs</code></a></li>
-  <li><a href="#available-steps-in-bcfngs" id="toc-available-steps-in-bcfngs" class="nav-link" data-scroll-target="#available-steps-in-bcfngs">Available steps in <code>bcfngs</code></a></li>
-  <li><a href="#short-usage-summary" id="toc-short-usage-summary" class="nav-link" data-scroll-target="#short-usage-summary">Short usage summary</a></li>
-  <li><a href="#detailed-guides" id="toc-detailed-guides" class="nav-link" data-scroll-target="#detailed-guides">Detailed guides</a></li>
-  <li><a href="#available-organisms" id="toc-available-organisms" class="nav-link" data-scroll-target="#available-organisms">Available Organisms</a></li>
+  <li><a href="#steps-to-do" id="toc-steps-to-do" class="nav-link active" data-scroll-target="#steps-to-do">steps to do</a></li>
+  <li><a href="#folder-structure" id="toc-folder-structure" class="nav-link" data-scroll-target="#folder-structure">folder structure</a></li>
+  <li><a href="#workflow" id="toc-workflow" class="nav-link" data-scroll-target="#workflow">Workflow</a>
+  <ul class="collapse">
+  <li><a href="#wigtobigwig" id="toc-wigtobigwig" class="nav-link" data-scroll-target="#wigtobigwig">wigToBigwig</a></li>
+  </ul></li>
   <li><a href="#changes" id="toc-changes" class="nav-link" data-scroll-target="#changes">CHANGES</a>
   <ul class="collapse">
-  <li><a href="#section" id="toc-section" class="nav-link" data-scroll-target="#section">04.03.2026</a></li>
-  <li><a href="#section-1" id="toc-section-1" class="nav-link" data-scroll-target="#section-1">20.02.2026</a></li>
-  <li><a href="#section-2" id="toc-section-2" class="nav-link" data-scroll-target="#section-2">27.06.2022</a></li>
-  <li><a href="#section-3" id="toc-section-3" class="nav-link" data-scroll-target="#section-3">13.01.2020</a></li>
-  <li><a href="#section-4" id="toc-section-4" class="nav-link" data-scroll-target="#section-4">11.12.2019</a></li>
+  <li><a href="#section" id="toc-section" class="nav-link" data-scroll-target="#section">20.02.2026</a></li>
+  <li><a href="#section-1" id="toc-section-1" class="nav-link" data-scroll-target="#section-1">27.06.2022</a></li>
+  <li><a href="#section-2" id="toc-section-2" class="nav-link" data-scroll-target="#section-2">13.01.2020</a></li>
+  <li><a href="#section-3" id="toc-section-3" class="nav-link" data-scroll-target="#section-3">11.12.2019</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -217,7 +168,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Home</h1>
+<h1 class="title">index</h1>
 </div>
 
 
@@ -234,7 +185,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 5, 2026</p>
+      <p class="date">March 6, 2026</p>
     </div>
   </div>
   
@@ -246,178 +197,74 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>This website documents the BCF NGS mapping automation workflow. It is designed for reproducible, fast, and consistent preliminary analysis of sequencing projects at the core facility.</p>
-<section id="why-this-tool-exists" class="level2">
-<h2 class="anchored" data-anchor-id="why-this-tool-exists">Why this tool exists</h2>
-<p>The same mapping tasks are repeated across many projects: environment setup, genome preparation, and standardized alignment/output generation. This tool provides one consistent interface so these steps are less error-prone, easier to review, and easier to run on local machines or HPC.</p>
-</section>
-<section id="what-the-workflow-can-do" class="level2">
-<h2 class="anchored" data-anchor-id="what-the-workflow-can-do">What the workflow can do</h2>
-<ul>
-<li>Build and maintain a dedicated micromamba environment for the pipeline.</li>
-<li>Check whether a newer Ensembl release is available.</li>
-<li>Download FASTA/GTF files and build versioned genome indices.</li>
-<li>Build indices for multiple aligners (<code>STAR</code>, <code>bwa</code>, <code>bowtie2</code>).</li>
-<li>Run preflight validation (<code>lint</code>, config checks, dry-run) before real execution.</li>
-<li>Map single-end or paired-end FASTQ data to a selected organism.</li>
-<li>Produce mapping outputs and normalized <code>bigWig</code> tracks for visualization.</li>
-<li>Run with local execution or SLURM execution.</li>
-</ul>
-</section>
-<section id="main-entry-point-scriptsbcfngs" class="level2">
-<h2 class="anchored" data-anchor-id="main-entry-point-scriptsbcfngs">Main entry point: <code>scripts/bcfngs</code></h2>
-<p>The main command-line wrapper is <code>bcfngs</code> (<code>scripts/bcfngs</code>). It is the recommended way to run the workflow end-to-end because it centralizes checks, planning, and execution.</p>
-<p>Available command groups:</p>
-<ul>
-<li><code>bcfngs env ...</code> for environment management.</li>
-<li><code>bcfngs genomes ...</code> for genome download/index lifecycle.</li>
-<li><code>bcfngs mapping ...</code> for project mapping runs.</li>
-</ul>
-</section>
-<section id="available-steps-in-bcfngs" class="level2">
-<h2 class="anchored" data-anchor-id="available-steps-in-bcfngs">Available steps in <code>bcfngs</code></h2>
+<p>The repository contains a conda-snakemake workflow for the mapping of the concatenated fastq file created at the BCF of the MPIB.</p>
+<p>This README file for the sequencing center to help them run a preliminary analysis on the sequenced samples</p>
+<p>The file will contains instruction on how to create a conda environment with the needed tools for the mapping and will also include snakemake for the automation of the scripts.</p>
+<section id="steps-to-do" class="level2">
+<h2 class="anchored" data-anchor-id="steps-to-do">steps to do</h2>
+<p><strong>Preparing the genomes for mapping</strong></p>
 <ol type="1">
-<li>Environment setup and validation
-<ul>
-<li><code>bcfngs env create</code></li>
-<li><code>bcfngs env update</code></li>
-<li><code>bcfngs env check</code></li>
-</ul></li>
-<li>Genome maintenance
-<ul>
-<li><code>bcfngs genomes check-updates</code></li>
-<li><code>bcfngs genomes plan</code></li>
-<li><code>bcfngs genomes build</code></li>
-</ul></li>
-<li>Mapping workflow
-<ul>
-<li><code>bcfngs mapping plan</code> (dry-run + checks)</li>
-<li><code>bcfngs mapping run</code> (real run)</li>
-</ul></li>
+<li>Download the genomes and the annotations from the FTP server (Ensembl genome builds are used here.)</li>
+<li>For each genome, an index for the <code>star</code> aligner is created.</li>
 </ol>
+<p>This two steps should be done only once, when the workflow was set up. It only needs to be re-run, when a new organism is being added, or when newer genome build of exiting organisms or a newer version of the STAR mapping tool are needed.</p>
+<p><strong>Mapping step</strong></p>
+<ol start="3" type="1">
+<li>Map the samples with the needed parameter.</li>
+<li>Index the fastA file to create a <code>chromSize</code> file for the <code>bigwig</code> conversion.</li>
+<li>Convert the <code>bam</code> files to <code>wig</code> and then to <code>bigwig</code>.</li>
+</ol>
+<p>points to consider: If this is only a preliminary analysis -</p>
+<ol type="1">
+<li>Would it make more sense to take only 50% of the fastq file for a faster analysis / visualization</li>
+<li>Do they need the bam files also - deleting them would save a lot of storage space</li>
+</ol>
+<p>The examples in this document are based on fictive data as well as a fictional project named <em>Project0815</em>. When a new project is done, this term must be changed with the proper name of the project, wherever it is mentioned.</p>
 </section>
-<section id="short-usage-summary" class="level2">
-<h2 class="anchored" data-anchor-id="short-usage-summary">Short usage summary</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1) create/update and validate environment</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env create</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env check</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 2) (optional) check for newer Ensembl release</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes check-updates</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 3) plan and build genomes/indices</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes plan</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co"># 4) plan and run mapping</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping plan <span class="at">--paired-end</span> <span class="at">--mapper</span> star</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run  <span class="at">--paired-end</span> <span class="at">--mapper</span> star</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Configuration is split into:</p>
+<section id="folder-structure" class="level2">
+<h2 class="anchored" data-anchor-id="folder-structure">folder structure</h2>
+<p>The workflow works from within the folder of the concatenated <code>fastq</code> files created after running the <code>bcl2fastq</code> script from the project management website (in the core facility here, this folder is called <code>conc.fastq</code>).</p>
 <ul>
-<li><code>configs/genomes.yaml</code> for organisms, releases, and index settings.</li>
-<li><code>configs/run.yaml</code> for per-project mapping settings (project, input path, organism, output path).</li>
+<li>A <code>config</code> file is saved under <code>/fs/pool/pool-bcfngs/scripts/config.yaml</code>, where all the mapping and genome parameters are saved.</li>
+<li>The genome indexing step will run only once and creates a folder named <code>genomes/</code> on the <code>/fs/pool/pool-bcfngs/</code>. Within this folder all the <code>fastA</code> and the <code>gtf</code> files are saved as well as a folder for each organism, containing the <code>star</code>-indexed files.</li>
+<li>The mapping step expect to find within the working directory the files with the pattern <em>.conc.R1.fastq.gz</em>, as this is the current pattern given by the sequencing facility. (<strong>If, in the future, this will be changed, the search pattern must be changed as well</strong>).</li>
 </ul>
+<p>There are two separate files for single-ended and paired-ended data sets. The single-ended one expects to find only <em>.conc.R1.fastq.gz</em>, while the paired-end data set must also contain <em>.conc.R2.fastq.gz</em> files.</p>
 </section>
-<section id="detailed-guides" class="level2">
-<h2 class="anchored" data-anchor-id="detailed-guides">Detailed guides</h2>
-<p>This page is an overview. Full details are documented in the dedicated sections:</p>
+<section id="workflow" class="level2">
+<h2 class="anchored" data-anchor-id="workflow">Workflow</h2>
+<p>The workflow uses a combination of a <code>conda</code> environment with the <code>snakemake</code> tool (based on python). The advantage of <code>conda</code> is that it creates a container, separated from the rest of the tools installed on the system. This gives a better management and control over the tools used in the workflow, as well as less conflict potentials with other/older version of tools with non-compatible parameters. To learn more about the conda environment and its advantages, take a look at the <a href="https://conda.io/en/latest/">conda web site</a>.</p>
+<p><code>snakemake</code> offers a lot of advantages as well. It allows better controls over different steps of the analysis, easier automation of the workflow and reduce running time through parallelization of the steps, just to mention some of them. to learn more about <code>snakemake</code> take a look at <a href="https://snakemake.readthedocs.io/en/stable/index.html">the snakemake doc site</a>.</p>
 <ul>
-<li><a href="environment.html">Environment setup</a></li>
-<li><a href="snakemake.html">Snakemake workflow details</a></li>
-<li><a href="updating_genomes.html">Updating genomes</a></li>
-<li><a href="HOWTO.html">Legacy quick HOWTO</a></li>
+<li><a href="environment.html">environment</a></li>
+<li><a href="snakemake.html">snakemake</a></li>
 </ul>
-</section>
-<section id="available-organisms" class="level1">
-<h1>Available Organisms</h1>
-<p>To keep the list short and focus on the organisms used most often, the tool contains the following organisms:</p>
+<section id="wigtobigwig" class="level3">
+<h3 class="anchored" data-anchor-id="wigtobigwig">wigToBigwig</h3>
+<p>First the <code>bam</code> files are converted into <code>wig</code> files. This is done using the <code>bam2wig.py</code> script from the <code>rseqc</code>-software package.<br>
+In order for the automatic conversion of <code>wig</code> to <code>bigwig</code> files to work, one must have the tool <code>wigToBigwig</code> from the UCSC repository installed and <strong>in the path</strong>. As we are working with <code>conda</code>, the easiest place to put it is the the path of the environment. In this case, as we are working with <code>miniconda</code> the path would be under <code>/fs/home/USERNAME/miniconda3/envs/ENVNAME/bin/</code>. So far I have copied the file manually to the folder, but I have now added it to the <code>environment.yaml</code> file, which is ran during the environment creation step. This was not tested yet!.</p>
+<p>TO DO</p>
+<p>In this case it would probably be better if the indexed genomes would already be saved on the server for various organisms, as it doesn’t make sense to download one each time. We sort of know which organisms are needed in most cases.</p>
 <ol type="1">
 <li>human</li>
 <li>mouse</li>
-<li>zebrafish</li>
+<li>zebra fish</li>
 <li>fruit fly</li>
 <li>yeast</li>
 <li>worm (C. elegans)</li>
-<li>Chicken</li>
 </ol>
-<p>as well as the following mappers:</p>
+<p>as well as which mappers we need</p>
 <ol type="1">
 <li>star</li>
 <li>bwa</li>
 <li>bowtie2</li>
 </ol>
-<p>For any other tools or organisms, please don’t hesitate to contact me.</p>
+</section>
 </section>
 <section id="changes" class="level1">
 <h1>CHANGES</h1>
 <section id="section" class="level3">
-<h3 class="anchored" data-anchor-id="section">04.03.2026</h3>
-<ul>
-<li>Improved <code>./scripts/bcfngs genomes plan</code> preflight output:
-<ul>
-<li>Replaced the generic <code>OK</code> with a clear config validation message (<code>Config file is OK: ...</code>).</li>
-<li>Replaced raw <code>HTTP/1.1 200 OK</code> header output from URL checks with readable per-organism status lines for FASTA and GTF URLs.</li>
-</ul></li>
-<li>Added version reporting in <code>genomes plan</code>:
-<ul>
-<li>Prints pinned genome build release(s), including Ensembl (currently 115 from config).</li>
-<li>Prints configured tool versions for STAR, bwa, and bowtie2.</li>
-</ul></li>
-<li>Added unified mapping workflow: <code>workflow/mapping.smk</code>.</li>
-<li>Added wrapper commands:
-<ul>
-<li><code>./scripts/bcfngs mapping plan</code></li>
-<li><code>./scripts/bcfngs mapping run</code></li>
-</ul></li>
-<li>Added mapper selection via <code>--mapper star,bwa,bowtie2</code> (default <code>star</code>).</li>
-<li>Added unified read-mode selection via <code>--paired-end</code> (default) / <code>--single-end</code>.</li>
-<li>Added single-organism enforcement for mapping runs.</li>
-<li>Added FASTQ auto-detection with ordered pattern matching:
-<ul>
-<li><code>*_R1.fastq.gz</code></li>
-<li><code>*_R1_001.fastq.gz</code></li>
-<li><code>*_L1_R1.fastq.gz</code></li>
-<li><code>*.conc.R1.fastq.gz</code></li>
-</ul></li>
-<li>Replaced <code>bam2wig.py</code> conversion with <code>deeptools bamCoverage</code>.</li>
-<li>Added <code>--keep-intermediary-files</code> (default behavior removes intermediaries).</li>
-<li>Added mapping output layout:
-<ul>
-<li><code>&lt;outdir&gt;/&lt;project&gt;/&lt;organism&gt;/&lt;mapper&gt;/&lt;sample&gt;.bam</code></li>
-<li><code>&lt;outdir&gt;/&lt;project&gt;/&lt;organism&gt;/&lt;mapper&gt;/&lt;sample&gt;.bam.bai</code></li>
-<li><code>&lt;outdir&gt;/&lt;project&gt;/&lt;organism&gt;/&lt;mapper&gt;/bigwig/&lt;sample&gt;.bw</code></li>
-</ul></li>
-<li>Added optional SLURM execution for mapping (<code>--executor slurm</code>) with per-rule resource defaults.</li>
-<li>Added dedicated mapping documentation page: <code>mapping.qmd</code>.</li>
-<li>Updated navigation and examples to reference mapping wrapper commands.</li>
-<li>Added <code>outdir</code> to <code>configs/run.yaml</code>.</li>
-<li>Added <code>deeptools</code> dependency in <code>env/environment.yml</code>.</li>
-<li>Added Snakemake per-rule logging and environment declarations in <code>workflow/genomes.smk</code>:
-<ul>
-<li>Added <code>log:</code> targets for <code>download_sources</code>, <code>star_index</code>, <code>bwa_index</code>, <code>bowtie2_index</code>, and <code>chrom_size</code>.</li>
-<li>Redirected rule command output to the corresponding log files.</li>
-<li>Added <code>conda: "../env/environment.yml"</code> to those rules.</li>
-</ul></li>
-<li>Fixed follow-up issues introduced during logging changes:
-<ul>
-<li>Updated <code>download_sources</code> log path to include <code>{src_rel}</code> so output and log wildcards match.</li>
-<li>Escaped shell block braces in <code>shell:</code> commands (<code>{ ... }</code>) to avoid Snakemake formatting errors.</li>
-</ul></li>
-<li>Archived old STAR-only mapping Snakefiles under <code>archive/legacy/mapping/</code>.</li>
-<li>Documented the default cluster micromamba environment path consistently across docs:
-<ul>
-<li><code>/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes</code></li>
-</ul></li>
-<li>Updated environment/setup command examples in:
-<ul>
-<li><a href="environment.html"><code>environment</code></a></li>
-<li><a href="snakemake.html"><code>snakemake</code></a></li>
-<li><a href="updating_genomes.html"><code>Updating genomes</code></a></li>
-</ul></li>
-</ul>
-</section>
-<section id="section-1" class="level3">
-<h3 class="anchored" data-anchor-id="section-1">20.02.2026</h3>
+<h3 class="anchored" data-anchor-id="section">20.02.2026</h3>
 <ul>
 <li>Added Quarto website configuration (<code>_quarto.yml</code>) and re-rendered site with <code>quarto render</code>.</li>
 <li>Updated navbar:
@@ -442,9 +289,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Updated the STAR mapping Snakefiles to use <code>configs/run.yaml</code> and scientific organism IDs.</li>
 </ul>
 </section>
-<section id="section-2" class="level3">
-<h3 class="anchored" data-anchor-id="section-2">27.06.2022</h3>
-<p>new genome builds were added to the workflow</p>
+<section id="section-1" class="level3">
+<h3 class="anchored" data-anchor-id="section-1">27.06.2022</h3>
+<p>new genome built were added to the workflow</p>
 <ul>
 <li><em>D. melanogaster</em> - <code>BDGP6.28</code></li>
 <li><em>E. coli</em> - <code>HUSEC2011CHR1</code></li>
@@ -452,22 +299,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><em>C. elegans</em> - <code>WBcel 2.35</code></li>
 </ul>
 </section>
-<section id="section-3" class="level3">
-<h3 class="anchored" data-anchor-id="section-3">13.01.2020</h3>
+<section id="section-2" class="level3">
+<h3 class="anchored" data-anchor-id="section-2">13.01.2020</h3>
 <ul>
 <li>a short <a href="HOWTO.html"><code>HOWTO</code></a> was added. This serves as a fast introduction, if <code>conda</code> and <code>snakemake</code> are already installed and set for the mapping.</li>
 <li>the genome of <em>D. pseudoobscura</em> was added to the <code>config.yaml</code> file.</li>
 </ul>
 </section>
-<section id="section-4" class="level3">
-<h3 class="anchored" data-anchor-id="section-4">11.12.2019</h3>
-<p>The workflow now should work on the HPC cluster of the MPI. For that reason some changes were made to the folder structure and the depth of the analysis.</p>
+<section id="section-3" class="level3">
+<h3 class="anchored" data-anchor-id="section-3">11.12.2019</h3>
+<p>The workflow now should work on the hpcl cluster of the MPI. For that reason some changes were made to the folder structure and the depth of the analysis</p>
 <ol type="1">
-<li>the mappers <code>bowtie2</code> and <code>bwa</code> were removed from the analysis. It will be done from now on only with <code>STAR</code>.</li>
+<li>the mappers <code>bowtie2</code> and <code>bwa</code> were removed from the analysis. It will done from now on only with <code>STAR</code>.</li>
 <li>the working directory of the analysis should be the <code>conc.fastq</code> folder in the pool-bcfngs pool folder of the Sequencing core facility.</li>
-<li>The workflow will create a new folder with the structure <code>ProjectNumber/Organism/</code> where it will save two new folders for the star mapping results and the bigwig files.</li>
+<li>The workflow will create a new folder with the structure <code>ProjectNumber/Organism/</code> were it will save two new folders for the star mapping results and the bigwig files.</li>
 <li>the first script to get the genomes should be only run once, or when the genome version must be updated.</li>
-<li>The second script was split into single-end and paired-end versions and should be run accordingly.</li>
+<li>The second script was splitted into single-end and paired-end version and should be run accordingly.</li>
 </ol>
 
 
