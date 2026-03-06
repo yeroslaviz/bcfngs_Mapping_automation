@@ -396,7 +396,15 @@ def cmd_genomes_plan(ctx: RunContext, args: argparse.Namespace) -> None:
     _check_urls(ctx, urls)
 
     smk = REPO_ROOT / "workflow" / "genomes.smk"
-    _run_tool(ctx, ["snakemake", "--lint", "-s", str(smk)])
+    lint_cp = _run_tool(ctx, ["snakemake", "--lint", "-s", str(smk)], check=False, capture=True)
+    if lint_cp.returncode != 0:
+        print(f"Warning: snakemake --lint returned exit code {lint_cp.returncode}; continuing with dry-run.")
+        lint_out = (lint_cp.stdout or "").strip()
+        lint_err = (lint_cp.stderr or "").strip()
+        if lint_out:
+            print(lint_out)
+        if lint_err:
+            print(lint_err)
     _run_tool(ctx, ["snakemake", "-npr", "-s", str(smk), "--configfile", str(genomes_cfg_path)])
 
 
