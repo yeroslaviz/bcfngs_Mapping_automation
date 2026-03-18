@@ -43,6 +43,8 @@ website:
         href: snakemake.html
       - text: "Updating genomes"
         href: updating_genomes.html
+      - text: "Mapping"
+        href: mapping.html
     right:
       - icon: envelope
         href: "mailto:yeroslaviz@biochem.mpg.de"
