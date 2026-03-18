@@ -16,28 +16,20 @@ This page documents the current mapping workflow in this repository.
 
 ## Overview
 
-- Genome download and indexing are handled by `./scripts/bcfngs`.
-- Mapping is still run directly through the STAR Snakefiles already present in the repository:
-  - `Star.MappingQuant.PairedEndFastq.Snakefile`
-  - `Star.MappingQuant.SingleEndFastq.Snakefile`
-- Current mapping support is STAR-based. The genome preparation workflow creates additional bwa and bowtie2 indices for future use, but those mappers are not yet wired into a mapping wrapper.
+- Genome download and indexing are handled by `./scripts/bcfngs genomes ...`.
+- Mapping is now implemented in [`workflow/mapping.smk`](/Users/yeroslaviz/Documents/Github/bcfngs_Mapping_automation/workflow/mapping.smk).
+- The recommended entry point is [`./scripts/bcfngs`](/Users/yeroslaviz/Documents/Github/bcfngs_Mapping_automation/scripts/bcfngs), using `mapping plan` for validation and dry-run and `mapping run` for execution.
+- The workflow supports `star`, `bwa`, and `bowtie2`.
+- For every selected mapper, the workflow creates BAM, BAM index, and bigWig output files.
 
-Output layout:
-
-```text
-<workdir>/<project>/<organism>/star_mapping/<sample>.bam
-<workdir>/<project>/<organism>/star_mapping/<sample>.bam.bai
-<workdir>/<project>/<organism>/bigwig/<sample>.bw
-```
-
-The STAR workflow also keeps:
+If `star` is selected, the workflow also writes:
 
 - `<sample>.counts.tab`
 - `<sample>.SJ.out.tab`
 
 ## Required configuration
 
-Update `configs/run.yaml`:
+Base project settings are stored in [`configs/run.yaml`](/Users/yeroslaviz/Documents/Github/bcfngs_Mapping_automation/configs/run.yaml):
 
 ```yaml
 project: "P000"
@@ -48,42 +40,163 @@ threads: 16
 ram_bytes: 168632718037
 ```
 
-`organism` must be one organism key from `configs/genomes.yaml`, using the scientific-name format such as `Homo_sapiens` or `Mus_musculus`.
+Important fields:
+
+- `project`: used in the output layout
+- `path`: FASTQ input directory
+- `outdir`: output root directory
+- `organism`: one organism key from [`configs/genomes.yaml`](/Users/yeroslaviz/Documents/Github/bcfngs_Mapping_automation/configs/genomes.yaml)
+- `threads`: mapping threads per job
+- `ram_bytes`: STAR BAM sort memory limit
+
+The wrapper also allows runtime overrides such as:
+
+- `--project`
+- `--organism`
+- `--fastq-dir`
+- `--outdir`
+- `--threads`
+- `--mapper`
+- `--paired-end` or `--single-end`
+
+## Required genome resources
+
+Before mapping starts, the workflow checks that the needed indices and chromosome size file already exist under the configured genomes root.
+
+Depending on the mapper selection, it expects:
+
+- `star`: `<genomes_root>/<organism>/starIndex/SA`
+- `bwa`: `<genomes_root>/<organism>/bwaIndex/<organism>.bwt`
+- `bowtie2`: `<genomes_root>/<organism>/bowtie2Index/<organism>.1.bt2`
+- all runs: `<genomes_root>/<organism>.chromSize`
+
+If one of these files is missing, the run stops before any mapping jobs are submitted.
 
 ## FASTQ pattern auto-detection
 
-The legacy STAR Snakefiles expect concatenated FASTQ files in the working directory. The important patterns are:
+The workflow detects the input pattern directly from the FASTQ directory. The supported R1 patterns are:
 
-1. `*.conc.R1.fastq.gz`
-2. `*.conc.R2.fastq.gz` for paired-end runs
+1. `*_R1.fastq.gz`
+2. `*_R1_001.fastq.gz`
+3. `*_L1_R1.fastq.gz`
+4. `*.conc.R1.fastq.gz`
 
-The single-end Snakefile ignores `R2`, while the paired-end Snakefile requires both mates.
+For paired-end mode, the matching R2 files must also exist.
+
+## Output layout
+
+Outputs are written below:
+
+```text
+<outdir>/<project>/<organism>/
+```
+
+For each selected mapper, the workflow creates:
+
+```text
+<outdir>/<project>/<organism>/star/<sample>.bam
+<outdir>/<project>/<organism>/star/<sample>.bam.bai
+<outdir>/<project>/<organism>/star/bigwig/<sample>.bw
+<outdir>/<project>/<organism>/star/<sample>.counts.tab
+<outdir>/<project>/<organism>/star/<sample>.SJ.out.tab
+
+<outdir>/<project>/<organism>/bwa/<sample>.bam
+<outdir>/<project>/<organism>/bwa/<sample>.bam.bai
+<outdir>/<project>/<organism>/bwa/bigwig/<sample>.bw
+
+<outdir>/<project>/<organism>/bowtie2/<sample>.bam
+<outdir>/<project>/<organism>/bowtie2/<sample>.bam.bai
+<outdir>/<project>/<organism>/bowtie2/bigwig/<sample>.bw
+
+<outdir>/<project>/<organism>/logs/
+```
 
 ## Basic usage
 
-Dry-run first:
+### Dry-run and validation
+
+Use `plan` first. This validates config and inputs, runs Snakemake lint, and performs a dry-run.
 
 ```bash
-cd /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/
-
-# paired-end
-snakemake -nps /path/to/repo/Star.MappingQuant.PairedEndFastq.Snakefile -j 20
-
-# single-end
-snakemake -nps /path/to/repo/Star.MappingQuant.SingleEndFastq.Snakefile -j 20
+./scripts/bcfngs mapping plan \
+  --mapper star \
+  --paired-end \
+  --project P000 \
+  --organism Caenorhabditis_elegans \
+  --fastq-dir /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq \
+  --outdir /fs/pool/pool-bcfngs/mapping
 ```
 
-Remove `-n` after the dry-run looks correct.
+### Local run
+
+```bash
+./scripts/bcfngs mapping run \
+  --mapper star \
+  --paired-end \
+  --project P000 \
+  --organism Caenorhabditis_elegans \
+  --fastq-dir /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq \
+  --outdir /fs/pool/pool-bcfngs/mapping \
+  --executor local \
+  --jobs 20
+```
+
+### SLURM run
+
+```bash
+./scripts/bcfngs mapping run \
+  --mapper star,bwa \
+  --paired-end \
+  --project P000 \
+  --organism Caenorhabditis_elegans \
+  --fastq-dir /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq \
+  --outdir /fs/pool/pool-bcfngs/mapping \
+  --executor slurm \
+  --jobs 20 \
+  --slurm-partition p.hpcl93 \
+  --slurm-time 04:00:00 \
+  --slurm-cpus-per-task 20
+```
+
+## Direct Snakemake usage
+
+The workflow can also be called directly:
+
+```bash
+snakemake \
+  --printshellcmds \
+  --dry-run \
+  -s workflow/mapping.smk \
+  --configfile configs/run.yaml \
+  --config \
+    project=P000 \
+    organism=Caenorhabditis_elegans \
+    fastq_dir=/fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq \
+    outdir=/fs/pool/pool-bcfngs/mapping \
+    mappers=star,bwa \
+    read_mode=paired \
+    threads=16 \
+    ram_bytes=168632718037 \
+    bw_bin_size=10 \
+    bw_normalization=CPM
+```
 
 ## Notes
 
-- Run `./scripts/bcfngs env check` first to confirm the required tools are available in `~/miniconda3/envs/update_genomes`.
-- The mapping Snakefiles use the stable STAR index symlink under `/fs/pool/pool-bcfngs/genomes/<Organism>/starIndex`.
-- `wigToBigwig` and `bam2wig.py` must be available in the same environment.
+- The workflow supports exactly one organism per run.
+- Unknown mapper names are rejected.
+- Duplicate mapper names are removed automatically.
+- The default read mode is paired-end. Use `--single-end` explicitly for single-end data.
+- STAR intermediary files are removed unless `--keep-intermediary-files` is set.
+- bigWig files are produced directly with `bamCoverage`. The old wig conversion step is no longer part of this workflow.
+- Run `./scripts/bcfngs env check` first if you want to verify that `snakemake`, `STAR`, `bwa`, `bowtie2-build`, `samtools`, and `bamCoverage` are available in the configured environment.
 
-## Flag meanings
+## Useful flags
 
-- `-n`: dry-run
-- `-p`: print shell commands
-- `-s`: snakefile path
-- `-j`: number of cores/jobs
+- `--mapper`: comma-separated mapper list such as `star,bwa,bowtie2`
+- `--threads`: override mapping threads from `configs/run.yaml`
+- `--ram-bytes`: override STAR `--limitBAMsortRAM`
+- `--bw-bin-size`: set `bamCoverage --binSize`
+- `--bw-normalization`: set `bamCoverage --normalizeUsing`
+- `--jobs`: maximum concurrent jobs
+- `--executor`: choose `local` or `slurm`
