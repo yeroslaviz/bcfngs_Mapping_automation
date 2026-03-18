@@ -1,13 +1,16 @@
 ---
 title: "snakemake"
 author: "AY"
-date: '`r format(Sys.time(), "%d %B, %Y")`'
-output: html_document
+editor: source
+date: last-modified
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    toc-expand: false
+    number-sections: true
+    number-depth: 4
 ---
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 This part is still work in progress.
 
@@ -17,6 +20,8 @@ This repository uses `snakemake` for:
 2. **Mapping** (currently STAR) using per-project run settings.
 
 For non-experts, prefer the single wrapper command `./scripts/bcfngs` (runs checks, then snakemake).
+
+By default, `./scripts/bcfngs` uses the micromamba environment at `~/miniconda3/envs/update_genomes`. If your environment is elsewhere, add `--env-prefix /path/to/env`.
 
 ## Quickstart
 

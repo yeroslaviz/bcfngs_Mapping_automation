@@ -1,13 +1,16 @@
 ---
 title: "conda"
 author: "AY"
-date: '`r format(Sys.time(), "%d %B, %Y")`'
-output: html_document
+editor: source
+date: last-modified
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    toc-expand: false
+    number-sections: true
+    number-depth: 4
 ---
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 
 ## conda - how to
@@ -17,7 +20,7 @@ To learn more about the conda environment and its advantages, take a look at the
 
 Environments can be created with the help of a file, e.g. `environment.yaml` using the following command
 
-```{r, engine='bash', eval=FALSE}
+```bash
 conda env create --name Project0815 --file environment.yaml
 ```
 This file would look like that:
@@ -45,7 +48,7 @@ In this workflow we will use the `snakemake` package as well as `python` version
 
 After this was done *one must activate the environment* using the command
 
-```{r, engine='bash', eval=FALSE}
+```bash
 source activate Project0815
 ```
 
@@ -59,13 +62,11 @@ The brackets on the left side must contains the name of the environment.
 
 If, after the environment was created, new tools must be added, they can just be added to the list of tools in the `environment.yaml` file and than the conda environment must be updated, using the command
 
-```{r, engine='bash', eval=FALSE}	
+```bash
 conda env update -f environment.yaml 
 ```
 
 The conda environment should be created only once, but with each login one must activate it, so that the snakemake script can be run from the correct paths.
-
-
 
 
 

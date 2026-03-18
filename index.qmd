@@ -1,13 +1,16 @@
 ---
 title: "index"
 author: "Assa Yeroslaviz"
-date: '**last update** - `r format(Sys.time(), "%d %B, %Y")`'
-output: html_document
+editor: source
+date: last-modified
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    toc-expand: false
+    number-sections: true
+    number-depth: 4
 ---
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 The repository contains a conda-snakemake workflow for the mapping of the concatenated fastq file created at the BCF of the MPIB.
 
@@ -51,7 +54,7 @@ There are two separate files for single-ended and paired-ended data sets. The si
 
 ## Workflow
 
-The workflow uses a combination of a `conda` environment with the `snakemake` tool (based on python). The advantage of `conda` is that it creates a container, separated from the rest of the tools installed on the system. This gives a better management and control over the tools used in the workflow, as well as less conflict potentials with other/older version of tools with non-compatible parameters. To learn more about the conda environment and its advantages, take a look at the [conda web site](https://conda.io/en/latest/).
+The workflow uses a **micromamba** environment with the `snakemake` tool (based on python). The advantage of micromamba is that it creates an isolated environment, separated from the rest of the tools installed on the system. This gives better control over the tool versions used in the workflow, with fewer conflicts from older system installations. To learn more about micromamba, take a look at the [mamba documentation](https://mamba.readthedocs.io/en/latest/).
 
 `snakemake` offers a lot of advantages as well. It allows better controls over different steps of the analysis, easier automation of the workflow and reduce running time through parallelization of the steps, just to mention some of them. to learn more about `snakemake` take a look at [the snakemake doc site](https://snakemake.readthedocs.io/en/stable/index.html).
 
@@ -62,7 +65,7 @@ The workflow uses a combination of a `conda` environment with the `snakemake` to
 
 First the `bam` files are converted into `wig` files. This is done using the `bam2wig.py` script from the `rseqc`-software package.  
 In order for the automatic conversion of `wig` to `bigwig` files to work, one must have the tool `wigToBigwig` from the UCSC repository installed and **in the path**.
-As we are working with `conda`, the easiest place to put it is the the path of the environment. In this case, as we are working with `miniconda` the path would be under `/fs/home/USERNAME/miniconda3/envs/ENVNAME/bin/`.
+As we are working with `micromamba`, the easiest place to put it is the path of the environment. In this case the path would be under `~/miniconda3/envs/ENVNAME/bin/`.
 So far I have copied the file manually to the folder, but I have now added it to the `environment.yaml` file, which is ran during the environment creation step. This was not tested yet!.
 
 

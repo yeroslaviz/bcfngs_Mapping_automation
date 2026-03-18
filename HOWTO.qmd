@@ -1,13 +1,16 @@
 ---
 title: "HOWTO"
 author: "AY"
-date: "1/13/2020"
-output: html_document
+editor: source
+date: last-modified
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    toc-expand: false
+    number-sections: true
+    number-depth: 4
 ---
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 This is an internal HOW-TO for the workflow of the automation for the bcfngs core facility.
 
@@ -71,6 +74,4 @@ snakemake -nps /fs/pool/pool-bcfngs/scripts/Star.MappingQuant.SingleEndFastq.Sna
 # for paired-end samples
 snakemake -ps /fs/pool/pool-bcfngs/scripts/Star.MappingQuant.PairedEndFastq.Snakefile -j 50
 ```
-
-
 
