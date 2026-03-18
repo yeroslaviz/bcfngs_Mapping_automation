@@ -133,17 +133,32 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="nav-link" href="./index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./environment.html"> 
-<span class="menu-text">environment</span></a>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-environment" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">environment</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-environment">    
+        <li>
+    <a class="dropdown-item" href="./environment.html">
+ <span class="dropdown-text">micromamba + bcfngs</span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./snakemake.html"> 
-<span class="menu-text">snakemake</span></a>
+        <li>
+    <a class="dropdown-item" href="./conda.html">
+ <span class="dropdown-text">conda</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="./snakemake.html">
+ <span class="dropdown-text">snakemake</span></a>
+  </li>  
+    </ul>
+  </li>
   <li class="nav-item">
     <a class="nav-link" href="./updating_genomes.html"> 
 <span class="menu-text">Updating genomes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./mapping.html"> 
+<span class="menu-text">Mapping</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
@@ -178,7 +193,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
     <h2 id="toc-title">On this page</h2>
    
   <ul>
@@ -224,9 +239,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="conda---how-to">conda - how to</h2>
 <p>The first step is to create a conda environment, containing the necessary tools for the required analysis. In this workflow, we use the <code>snakemake</code> package to help running the workflow, as well as some mappers. To learn more about the conda environment and its advantages, take a look at the <a href="https://conda.io/en/latest/">conda web site</a>.</p>
 <p>Environments can be created with the help of a file, e.g.&nbsp;<code>environment.yaml</code> using the following command</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> env create <span class="at">--name</span> Project0815 <span class="at">--file</span> environment.yaml</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> env create <span class="at">--name</span> Project0815 <span class="at">--file</span> environment.yaml</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>This file would look like that:</p>
 <pre><code>name: Project0815
 channels:
@@ -244,16 +257,12 @@ dependencies:
 <p>The first row of the file contains the name of the project, i.e.&nbsp;the name of the conda environment created. Next are the <code>channels</code> listed, from which the conda environment should look for the tools needed for the analysis.</p>
 <p>the last part of the environment file is a list of the needed <code>dependencies</code>. Each one of them has its version attached to it. This can be very helpful, when a data set needs to be re-analyzed to check for problems or conflicts with older/newer results or for debugging purposes. In this workflow we will use the <code>snakemake</code> package as well as <code>python</code> version 3.6. we also install here the mappers <code>star</code>, <code>bwa</code> and <code>bowtie2</code>. WE also need the <code>samtool</code> package for the manipulation of the bam files (sorting, filtering, etc.).</p>
 <p>After this was done <em>one must activate the environment</em> using the command</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> activate Project0815</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> activate Project0815</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>If one look at the command line one can now see this</p>
 <pre><code>(Project0815) USER@SERVERNAME:Project0815$ ..</code></pre>
 <p>The brackets on the left side must contains the name of the environment.</p>
 <p>If, after the environment was created, new tools must be added, they can just be added to the list of tools in the <code>environment.yaml</code> file and than the conda environment must be updated, using the command</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> env update <span class="at">-f</span> environment.yaml </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> env update <span class="at">-f</span> environment.yaml</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The conda environment should be created only once, but with each login one must activate it, so that the snakemake script can be run from the correct paths.</p>
 
 

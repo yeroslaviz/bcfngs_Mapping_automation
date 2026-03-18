@@ -133,17 +133,32 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="nav-link" href="./index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./environment.html"> 
-<span class="menu-text">environment</span></a>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-environment" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">environment</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-environment">    
+        <li>
+    <a class="dropdown-item" href="./environment.html">
+ <span class="dropdown-text">micromamba + bcfngs</span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link active" href="./snakemake.html" aria-current="page"> 
-<span class="menu-text">snakemake</span></a>
+        <li>
+    <a class="dropdown-item" href="./conda.html">
+ <span class="dropdown-text">conda</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="./snakemake.html">
+ <span class="dropdown-text">snakemake</span></a>
+  </li>  
+    </ul>
+  </li>
   <li class="nav-item">
     <a class="nav-link" href="./updating_genomes.html"> 
 <span class="menu-text">Updating genomes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./mapping.html"> 
+<span class="menu-text">Mapping</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
@@ -178,17 +193,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
     <h2 id="toc-title">On this page</h2>
    
   <ul>
   <li><a href="#quickstart" id="toc-quickstart" class="nav-link active" data-scroll-target="#quickstart">Quickstart</a></li>
   <li><a href="#configuration-files" id="toc-configuration-files" class="nav-link" data-scroll-target="#configuration-files">Configuration files</a>
-  <ul class="collapse">
+  <ul>
   <li><a href="#notes" id="toc-notes" class="nav-link" data-scroll-target="#notes">Notes</a></li>
   </ul></li>
   <li><a href="#how-to-cookbook" id="toc-how-to-cookbook" class="nav-link" data-scroll-target="#how-to-cookbook">How-to (cookbook)</a>
-  <ul class="collapse">
+  <ul>
   <li><a href="#build-all-genomes-indices" id="toc-build-all-genomes-indices" class="nav-link" data-scroll-target="#build-all-genomes-indices">Build all genomes + indices</a></li>
   <li><a href="#build-only-a-subset-faster" id="toc-build-only-a-subset-faster" class="nav-link" data-scroll-target="#build-only-a-subset-faster">Build only a subset (faster)</a></li>
   <li><a href="#ensembl-has-a-newer-release-bump-pinned-release" id="toc-ensembl-has-a-newer-release-bump-pinned-release" class="nav-link" data-scroll-target="#ensembl-has-a-newer-release-bump-pinned-release">Ensembl has a newer release (bump pinned release)</a></li>
@@ -196,7 +211,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#use-hpc-modules-for-aligners-fallback" id="toc-use-hpc-modules-for-aligners-fallback" class="nav-link" data-scroll-target="#use-hpc-modules-for-aligners-fallback">Use HPC modules for aligners (fallback)</a></li>
   </ul></li>
   <li><a href="#genome-download-indexing" id="toc-genome-download-indexing" class="nav-link" data-scroll-target="#genome-download-indexing">Genome download + indexing</a>
-  <ul class="collapse">
+  <ul>
   <li><a href="#mapping-the-samples-with-the-star" id="toc-mapping-the-samples-with-the-star" class="nav-link" data-scroll-target="#mapping-the-samples-with-the-star">Mapping the samples with the <code>STAR</code></a></li>
   </ul></li>
   </ul>
@@ -243,6 +258,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>Mapping</strong> (currently STAR) using per-project run settings.</li>
 </ol>
 <p>For non-experts, prefer the single wrapper command <code>./scripts/bcfngs</code> (runs checks, then snakemake).</p>
+<p>By default, <code>./scripts/bcfngs</code> uses the micromamba environment at <code>~/miniconda3/envs/update_genomes</code>. If your environment is elsewhere, add <code>--env-prefix /path/to/env</code>.</p>
 <section id="quickstart" class="level2">
 <h2 class="anchored" data-anchor-id="quickstart">Quickstart</h2>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1) create/update env (only once, then as needed)</span></span>

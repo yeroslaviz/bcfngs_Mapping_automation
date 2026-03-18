@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="AY">
-<meta name="dcterms.date" content="2020-01-13">
+<meta name="dcterms.date" content="2026-03-18">
 
 <title>HOWTO – Bioinformatics Core Facility MPI Biochemistry</title>
 <style>
@@ -98,17 +98,32 @@ ul.task-list li input[type="checkbox"] {
     <a class="nav-link" href="./index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./environment.html"> 
-<span class="menu-text">environment</span></a>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-environment" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">environment</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-environment">    
+        <li>
+    <a class="dropdown-item" href="./environment.html">
+ <span class="dropdown-text">micromamba + bcfngs</span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./snakemake.html"> 
-<span class="menu-text">snakemake</span></a>
+        <li>
+    <a class="dropdown-item" href="./conda.html">
+ <span class="dropdown-text">conda</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="./snakemake.html">
+ <span class="dropdown-text">snakemake</span></a>
+  </li>  
+    </ul>
+  </li>
   <li class="nav-item">
     <a class="nav-link" href="./updating_genomes.html"> 
 <span class="menu-text">Updating genomes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./mapping.html"> 
+<span class="menu-text">Mapping</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
@@ -143,13 +158,13 @@ ul.task-list li input[type="checkbox"] {
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
     <h2 id="toc-title">On this page</h2>
    
   <ul>
   <li><a href="#genome-indexing" id="toc-genome-indexing" class="nav-link active" data-scroll-target="#genome-indexing">genome indexing</a></li>
   <li><a href="#mapping" id="toc-mapping" class="nav-link" data-scroll-target="#mapping">Mapping</a>
-  <ul class="collapse">
+  <ul>
   <li><a href="#changing-parameters-before-mapping" id="toc-changing-parameters-before-mapping" class="nav-link" data-scroll-target="#changing-parameters-before-mapping">Changing parameters before mapping</a></li>
   <li><a href="#running-the-star-mapping-step." id="toc-running-the-star-mapping-step." class="nav-link" data-scroll-target="#running-the-star-mapping-step.">running the <code>star</code> mapping step.</a></li>
   </ul></li>
@@ -178,7 +193,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">January 13, 2020</p>
+      <p class="date">March 18, 2026</p>
     </div>
   </div>
   
@@ -229,7 +244,7 @@ org: "Dme.BDGP6.22"</code></pre>
 <p>first, change the working directory to the path of the actual project on the pool-bcfngs. e.g.</p>
 <pre><code>cd /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/</code></pre>
 <p>Next run the snakemake script first as a dry-run (<code>-n</code>) and if all seems well than run it for real.</p>
-<p>e.g.&nbsp;</p>
+<p>e.g.</p>
 <pre><code># for single-end samples
 snakemake -nps /fs/pool/pool-bcfngs/scripts/Star.MappingQuant.SingleEndFastq.Snakefile -j 50
 # for paired-end samples

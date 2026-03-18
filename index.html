@@ -98,17 +98,32 @@ ul.task-list li input[type="checkbox"] {
     <a class="nav-link active" href="./index.html" aria-current="page"> 
 <span class="menu-text">Home</span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./environment.html"> 
-<span class="menu-text">environment</span></a>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-environment" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">environment</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-environment">    
+        <li>
+    <a class="dropdown-item" href="./environment.html">
+ <span class="dropdown-text">micromamba + bcfngs</span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./snakemake.html"> 
-<span class="menu-text">snakemake</span></a>
+        <li>
+    <a class="dropdown-item" href="./conda.html">
+ <span class="dropdown-text">conda</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="./snakemake.html">
+ <span class="dropdown-text">snakemake</span></a>
+  </li>  
+    </ul>
+  </li>
   <li class="nav-item">
     <a class="nav-link" href="./updating_genomes.html"> 
 <span class="menu-text">Updating genomes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./mapping.html"> 
+<span class="menu-text">Mapping</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
@@ -143,22 +158,27 @@ ul.task-list li input[type="checkbox"] {
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
     <h2 id="toc-title">On this page</h2>
    
   <ul>
   <li><a href="#steps-to-do" id="toc-steps-to-do" class="nav-link active" data-scroll-target="#steps-to-do">steps to do</a></li>
   <li><a href="#folder-structure" id="toc-folder-structure" class="nav-link" data-scroll-target="#folder-structure">folder structure</a></li>
   <li><a href="#workflow" id="toc-workflow" class="nav-link" data-scroll-target="#workflow">Workflow</a>
-  <ul class="collapse">
+  <ul>
   <li><a href="#wigtobigwig" id="toc-wigtobigwig" class="nav-link" data-scroll-target="#wigtobigwig">wigToBigwig</a></li>
   </ul></li>
   <li><a href="#changes" id="toc-changes" class="nav-link" data-scroll-target="#changes">CHANGES</a>
-  <ul class="collapse">
-  <li><a href="#section" id="toc-section" class="nav-link" data-scroll-target="#section">20.02.2026</a></li>
-  <li><a href="#section-1" id="toc-section-1" class="nav-link" data-scroll-target="#section-1">27.06.2022</a></li>
-  <li><a href="#section-2" id="toc-section-2" class="nav-link" data-scroll-target="#section-2">13.01.2020</a></li>
-  <li><a href="#section-3" id="toc-section-3" class="nav-link" data-scroll-target="#section-3">11.12.2019</a></li>
+  <ul>
+  <li><a href="#section" id="toc-section" class="nav-link" data-scroll-target="#section">06.03.2026</a></li>
+  <li><a href="#section-1" id="toc-section-1" class="nav-link" data-scroll-target="#section-1">05.03.2026</a></li>
+  <li><a href="#section-2" id="toc-section-2" class="nav-link" data-scroll-target="#section-2">04.03.2026</a></li>
+  <li><a href="#section-3" id="toc-section-3" class="nav-link" data-scroll-target="#section-3">27.02.2026</a></li>
+  <li><a href="#section-4" id="toc-section-4" class="nav-link" data-scroll-target="#section-4">26.02.2026</a></li>
+  <li><a href="#section-5" id="toc-section-5" class="nav-link" data-scroll-target="#section-5">20.02.2026</a></li>
+  <li><a href="#section-6" id="toc-section-6" class="nav-link" data-scroll-target="#section-6">27.06.2022</a></li>
+  <li><a href="#section-7" id="toc-section-7" class="nav-link" data-scroll-target="#section-7">13.01.2020</a></li>
+  <li><a href="#section-8" id="toc-section-8" class="nav-link" data-scroll-target="#section-8">11.12.2019</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -233,7 +253,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="workflow" class="level2">
 <h2 class="anchored" data-anchor-id="workflow">Workflow</h2>
-<p>The workflow uses a combination of a <code>conda</code> environment with the <code>snakemake</code> tool (based on python). The advantage of <code>conda</code> is that it creates a container, separated from the rest of the tools installed on the system. This gives a better management and control over the tools used in the workflow, as well as less conflict potentials with other/older version of tools with non-compatible parameters. To learn more about the conda environment and its advantages, take a look at the <a href="https://conda.io/en/latest/">conda web site</a>.</p>
+<p>The workflow uses a <strong>micromamba</strong> environment with the <code>snakemake</code> tool (based on python). The advantage of micromamba is that it creates an isolated environment, separated from the rest of the tools installed on the system. This gives better control over the tool versions used in the workflow, with fewer conflicts from older system installations. To learn more about micromamba, take a look at the <a href="https://mamba.readthedocs.io/en/latest/">mamba documentation</a>.</p>
 <p><code>snakemake</code> offers a lot of advantages as well. It allows better controls over different steps of the analysis, easier automation of the workflow and reduce running time through parallelization of the steps, just to mention some of them. to learn more about <code>snakemake</code> take a look at <a href="https://snakemake.readthedocs.io/en/stable/index.html">the snakemake doc site</a>.</p>
 <ul>
 <li><a href="environment.html">environment</a></li>
@@ -241,8 +261,7 @@ ul.task-list li input[type="checkbox"] {
 </ul>
 <section id="wigtobigwig" class="level3">
 <h3 class="anchored" data-anchor-id="wigtobigwig">wigToBigwig</h3>
-<p>First the <code>bam</code> files are converted into <code>wig</code> files. This is done using the <code>bam2wig.py</code> script from the <code>rseqc</code>-software package.<br>
-In order for the automatic conversion of <code>wig</code> to <code>bigwig</code> files to work, one must have the tool <code>wigToBigwig</code> from the UCSC repository installed and <strong>in the path</strong>. As we are working with <code>conda</code>, the easiest place to put it is the the path of the environment. In this case, as we are working with <code>miniconda</code> the path would be under <code>/fs/home/USERNAME/miniconda3/envs/ENVNAME/bin/</code>. So far I have copied the file manually to the folder, but I have now added it to the <code>environment.yaml</code> file, which is ran during the environment creation step. This was not tested yet!.</p>
+<p>First the <code>bam</code> files are converted into <code>wig</code> files. This is done using the <code>bam2wig.py</code> script from the <code>rseqc</code>-software package. In order for the automatic conversion of <code>wig</code> to <code>bigwig</code> files to work, one must have the tool <code>wigToBigwig</code> from the UCSC repository installed and <strong>in the path</strong>. As we are working with <code>micromamba</code>, the easiest place to put it is the path of the environment. In this case the path would be under <code>~/miniconda3/envs/ENVNAME/bin/</code>. So far I have copied the file manually to the folder, but I have now added it to the <code>environment.yaml</code> file, which is ran during the environment creation step. This was not tested yet!.</p>
 <p>TO DO</p>
 <p>In this case it would probably be better if the indexed genomes would already be saved on the server for various organisms, as it doesn’t make sense to download one each time. We sort of know which organisms are needed in most cases.</p>
 <ol type="1">
@@ -264,7 +283,66 @@ In order for the automatic conversion of <code>wig</code> to <code>bigwig</code>
 <section id="changes" class="level1">
 <h1>CHANGES</h1>
 <section id="section" class="level3">
-<h3 class="anchored" data-anchor-id="section">20.02.2026</h3>
+<h3 class="anchored" data-anchor-id="section">06.03.2026</h3>
+<ul>
+<li>Continued the Quarto migration and switched the remaining main pages from <code>.Rmd</code> to <code>.qmd</code>.</li>
+<li>Reworked and expanded the documentation pages:
+<ul>
+<li><a href="./index.html"><code>index.qmd</code></a></li>
+<li><a href="./environment.html"><code>environment.qmd</code></a></li>
+<li><a href="./snakemake.html"><code>snakemake.qmd</code></a></li>
+<li><a href="./updating_genomes.html"><code>updating_genomes.qmd</code></a></li>
+<li><a href="./mapping.html"><code>mapping.qmd</code></a></li>
+</ul></li>
+<li>Updated the docs to match the current <a href="scripts/bcfngs"><code>scripts/bcfngs</code></a> wrapper and the latest published workflow resources.</li>
+<li>Restructured the “Updating genomes” documentation and added more explanatory notes across the site.</li>
+</ul>
+</section>
+<section id="section-1" class="level3">
+<h3 class="anchored" data-anchor-id="section-1">05.03.2026</h3>
+<ul>
+<li>Reworked the homepage content and refreshed the published documentation structure.</li>
+<li>Updated the rendered workflow resources shipped with the site, including:
+<ul>
+<li><a href="docs/configs/genomes.yaml"><code>docs/configs/genomes.yaml</code></a></li>
+<li><a href="docs/configs/run.yaml"><code>docs/configs/run.yaml</code></a></li>
+<li><a href="docs/env/environment.yml"><code>docs/env/environment.yml</code></a></li>
+<li><a href="docs/workflow/genomes.smk"><code>docs/workflow/genomes.smk</code></a></li>
+<li><a href="docs/workflow/mapping.smk"><code>docs/workflow/mapping.smk</code></a></li>
+<li><a href="docs/scripts/bcfngs"><code>docs/scripts/bcfngs</code></a></li>
+</ul></li>
+</ul>
+</section>
+<section id="section-2" class="level3">
+<h3 class="anchored" data-anchor-id="section-2">04.03.2026</h3>
+<ul>
+<li>Added and published major documentation updates for:
+<ul>
+<li><a href="./mapping.html"><code>mapping.qmd</code></a></li>
+<li><a href="./snakemake.html"><code>snakemake.qmd</code></a></li>
+<li><a href="./updating_genomes.html"><code>updating_genomes.qmd</code></a></li>
+</ul></li>
+<li>Refreshed the published Quarto site after multiple docs-source updates and site rebuilds.</li>
+</ul>
+</section>
+<section id="section-3" class="level3">
+<h3 class="anchored" data-anchor-id="section-3">27.02.2026</h3>
+<ul>
+<li>Refreshed the published site files and synchronized bundled workflow resources in the documentation output.</li>
+<li>Updated the environment-related docs/output to use the correct <code>update_genomes</code> environment naming.</li>
+</ul>
+</section>
+<section id="section-4" class="level3">
+<h3 class="anchored" data-anchor-id="section-4">26.02.2026</h3>
+<ul>
+<li>Published the Quarto site from the <code>docs/</code> output directory for GitHub Pages.</li>
+<li>Updated the environment instructions to reflect the correct micromamba / miniconda environment path.</li>
+<li>Added sanity-check output examples to the environment documentation.</li>
+<li>Cleaned up legacy repository artifacts related to the old docs/site layout.</li>
+</ul>
+</section>
+<section id="section-5" class="level3">
+<h3 class="anchored" data-anchor-id="section-5">20.02.2026</h3>
 <ul>
 <li>Added Quarto website configuration (<code>_quarto.yml</code>) and re-rendered site with <code>quarto render</code>.</li>
 <li>Updated navbar:
@@ -289,8 +367,8 @@ In order for the automatic conversion of <code>wig</code> to <code>bigwig</code>
 <li>Updated the STAR mapping Snakefiles to use <code>configs/run.yaml</code> and scientific organism IDs.</li>
 </ul>
 </section>
-<section id="section-1" class="level3">
-<h3 class="anchored" data-anchor-id="section-1">27.06.2022</h3>
+<section id="section-6" class="level3">
+<h3 class="anchored" data-anchor-id="section-6">27.06.2022</h3>
 <p>new genome built were added to the workflow</p>
 <ul>
 <li><em>D. melanogaster</em> - <code>BDGP6.28</code></li>
@@ -299,15 +377,15 @@ In order for the automatic conversion of <code>wig</code> to <code>bigwig</code>
 <li><em>C. elegans</em> - <code>WBcel 2.35</code></li>
 </ul>
 </section>
-<section id="section-2" class="level3">
-<h3 class="anchored" data-anchor-id="section-2">13.01.2020</h3>
+<section id="section-7" class="level3">
+<h3 class="anchored" data-anchor-id="section-7">13.01.2020</h3>
 <ul>
 <li>a short <a href="HOWTO.html"><code>HOWTO</code></a> was added. This serves as a fast introduction, if <code>conda</code> and <code>snakemake</code> are already installed and set for the mapping.</li>
 <li>the genome of <em>D. pseudoobscura</em> was added to the <code>config.yaml</code> file.</li>
 </ul>
 </section>
-<section id="section-3" class="level3">
-<h3 class="anchored" data-anchor-id="section-3">11.12.2019</h3>
+<section id="section-8" class="level3">
+<h3 class="anchored" data-anchor-id="section-8">11.12.2019</h3>
 <p>The workflow now should work on the hpcl cluster of the MPI. For that reason some changes were made to the folder structure and the depth of the analysis</p>
 <ol type="1">
 <li>the mappers <code>bowtie2</code> and <code>bwa</code> were removed from the analysis. It will done from now on only with <code>STAR</code>.</li>

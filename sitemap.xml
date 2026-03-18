@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://yeroslaviz.github.io/bcfngs_Mapping_automation/conda.html</loc>
-    <lastmod>2026-03-18T15:07:23.243Z</lastmod>
+    <loc>https://yeroslaviz.github.io/bcfngs_Mapping_automation/mapping.html</loc>
+    <lastmod>2026-03-18T15:59:41.871Z</lastmod>
   </url>
   <url>
     <loc>https://yeroslaviz.github.io/bcfngs_Mapping_automation/environment.html</loc>
-    <lastmod>2026-03-18T15:07:23.287Z</lastmod>
+    <lastmod>2026-03-18T15:59:44.252Z</lastmod>
+  </url>
+  <url>
+    <loc>https://yeroslaviz.github.io/bcfngs_Mapping_automation/HOWTO.html</loc>
+    <lastmod>2026-03-18T15:59:42.854Z</lastmod>
   </url>
   <url>
     <loc>https://yeroslaviz.github.io/bcfngs_Mapping_automation/updating_genomes.html</loc>
-    <lastmod>2026-03-18T15:07:23.292Z</lastmod>
+    <lastmod>2026-03-18T15:58:25.812Z</lastmod>
   </url>
   <url>
     <loc>https://yeroslaviz.github.io/bcfngs_Mapping_automation/branch_publish_workflow.html</loc>
@@ -18,14 +22,14 @@
   </url>
   <url>
     <loc>https://yeroslaviz.github.io/bcfngs_Mapping_automation/index.html</loc>
-    <lastmod>2026-03-18T15:07:23.289Z</lastmod>
+    <lastmod>2026-03-18T15:59:46.754Z</lastmod>
+  </url>
+  <url>
+    <loc>https://yeroslaviz.github.io/bcfngs_Mapping_automation/conda.html</loc>
+    <lastmod>2026-03-18T15:59:45.537Z</lastmod>
   </url>
   <url>
     <loc>https://yeroslaviz.github.io/bcfngs_Mapping_automation/snakemake.html</loc>
-    <lastmod>2026-03-18T15:07:23.291Z</lastmod>
-  </url>
-  <url>
-    <loc>https://yeroslaviz.github.io/bcfngs_Mapping_automation/HOWTO.html</loc>
-    <lastmod>2026-03-18T15:07:23.240Z</lastmod>
+    <lastmod>2026-03-18T15:59:40.099Z</lastmod>
   </url>
 </urlset>
