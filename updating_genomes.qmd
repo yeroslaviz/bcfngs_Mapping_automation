@@ -1,15 +1,6 @@
 ---
 title: "Updating genomes and indices"
 author: "AY"
-editor: source
-date: last-modified
-format:
-  html:
-    toc: true
-    toc-depth: 4
-    toc-expand: false
-    number-sections: true
-    number-depth: 4
 ---
 
 This page is the operator guide for `./scripts/bcfngs genomes`.

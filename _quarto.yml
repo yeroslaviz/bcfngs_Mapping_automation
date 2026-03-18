@@ -9,7 +9,8 @@ project:
 
 execute:
   enabled: false
-
+editor: source
+date: last-modified
 format:
   html:
     theme: flatly

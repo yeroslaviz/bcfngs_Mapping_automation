@@ -1,15 +1,7 @@
 ---
 title: "snakemake"
 author: "AY"
-editor: source
-date: last-modified
-format:
-  html:
-    toc: true
-    toc-depth: 4
-    toc-expand: false
-    number-sections: true
-    number-depth: 4
+
 ---
 
 This part is still work in progress.
@@ -131,7 +123,7 @@ Workflow file: [workflow/genomes.smk](workflow/genomes.smk){target="_blank"}
 
 This script contains three (four) steps. in the first step the `fastq` samples are mapped to the indexed genome. Then, they are being indexed. Last, after creating a chromosome-size file, the `bam` files are converted into `bigwig` files for better visualization using the [UCSC browser](http://genome.ucsc.edu/cgi-bin/hgTracks).
 
-We have two separate scripts for single-end and paired-end runs. The PE run looks for both R1 and R2 fastq files, while the SE script will ignore all R2 samples. 
+We have two separate scripts for single-end and paired-end runs. The PE run looks for both R1 and R2 fastq files, while the SE script will ignore all R2 samples.
 
 After the environment was created **and activated**, one must change to the directory of the concatenated fast files. E.g.
 
@@ -150,5 +142,5 @@ snakemake -nps /path/to/repo/Star.MappingQuant.PairedEndFastq.Snakefile -j 50
 
 * `-n` - dry-run. This parameter will only output the command, but execute them. This should be used to test the parameters, but must be removed for the analysis to be done.
 * `-p` -  Print the commands to be execute.
-* `-s` - the name of the snakeake file to be executed. 
-* `-j` - #cores. How many cores should be used in the run. 
+* `-s` - the name of the snakeake file to be executed.
+* `-j` - #cores. How many cores should be used in the run.
