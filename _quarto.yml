@@ -15,6 +15,10 @@ format:
     theme: flatly
     highlight-style: textmate
     toc: true
+    toc-depth: 4
+    toc-expand: false
+    number-sections: false
+    number-depth: 4
     include-in-header:
       - text: |
           <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css" />

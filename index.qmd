@@ -106,6 +106,49 @@ as well as which mappers we need
   - [`workflow/genomes.smk`](workflow/genomes.smk) (downloads FASTA/GTF, builds STAR+bwa+bowtie2 indices, updates symlinks, creates chromSize)
 - Updated the STAR mapping Snakefiles to use `configs/run.yaml` and scientific organism IDs.
 
+### 06.03.2026
+
+- Continued the Quarto migration and switched the remaining main pages from `.Rmd` to `.qmd`.
+- Reworked and expanded the documentation pages:
+  - [`index.qmd`](index.qmd)
+  - [`environment.qmd`](environment.qmd)
+  - [`snakemake.qmd`](snakemake.qmd)
+  - [`updating_genomes.qmd`](updating_genomes.qmd)
+  - [`mapping.qmd`](mapping.qmd)
+- Updated the docs to match the current [`scripts/bcfngs`](scripts/bcfngs) wrapper and the latest published workflow resources.
+- Restructured the "Updating genomes" documentation and added more explanatory notes across the site.
+
+### 05.03.2026
+
+- Reworked the homepage content and refreshed the published documentation structure.
+- Updated the rendered workflow resources shipped with the site, including:
+  - [`docs/configs/genomes.yaml`](docs/configs/genomes.yaml)
+  - [`docs/configs/run.yaml`](docs/configs/run.yaml)
+  - [`docs/env/environment.yml`](docs/env/environment.yml)
+  - [`docs/workflow/genomes.smk`](docs/workflow/genomes.smk)
+  - [`docs/workflow/mapping.smk`](docs/workflow/mapping.smk)
+  - [`docs/scripts/bcfngs`](docs/scripts/bcfngs)
+
+### 04.03.2026
+
+- Added and published major documentation updates for:
+  - [`mapping.qmd`](mapping.qmd)
+  - [`snakemake.qmd`](snakemake.qmd)
+  - [`updating_genomes.qmd`](updating_genomes.qmd)
+- Refreshed the published Quarto site after multiple docs-source updates and site rebuilds.
+
+### 27.02.2026
+
+- Refreshed the published site files and synchronized bundled workflow resources in the documentation output.
+- Updated the environment-related docs/output to use the correct `update_genomes` environment naming.
+
+### 26.02.2026
+
+- Published the Quarto site from the `docs/` output directory for GitHub Pages.
+- Updated the environment instructions to reflect the correct micromamba / miniconda environment path.
+- Added sanity-check output examples to the environment documentation.
+- Cleaned up legacy repository artifacts related to the old docs/site layout.
+
 ### 27.06.2022
 
 new genome built were added to the workflow
