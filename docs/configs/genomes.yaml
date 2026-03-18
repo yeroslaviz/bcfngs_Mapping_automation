@@ -2,22 +2,18 @@ genomes_root: /fs/pool/pool-bcfngs/genomes
 
 # Pinned releases (bumpable).
 releases:
-  ensembl: 115
+  ensembl: 116
   ensemblgenomes:
-    metazoa: 62
+    metazoa: 61
 
 default_threads: 16
 default_ram_bytes: 168632718037
-bwa_index_algorithm: bwtsw
-bwa_index_mem_mb: 16000
 
-# Tool versions for versioned output directories are auto-detected from the
-# active environment at runtime (same parsing as `./scripts/bcfngs env check`).
-# Optional reference only:
-# index_versions:
-#   star: "2.7.11b"
-#   bwa: "0.7.19-r1273"
-#   bowtie2: "2.5.5"
+# Versions are used for versioned output directories (and symlink targets).
+index_versions:
+  star: "unknown"
+  bwa: "unknown"
+  bowtie2: "unknown"
 
 organisms:
   Homo_sapiens:
@@ -27,8 +23,6 @@ organisms:
     fasta_kind: dna.primary_assembly
     gtf_kind: gtf
     sa_index: 14
-    bwa_index_algorithm: bwtsw
-    bwa_index_mem_mb: 64000
   Mus_musculus:
     source: ensembl
     species: mus_musculus
@@ -36,23 +30,6 @@ organisms:
     fasta_kind: dna.primary_assembly
     gtf_kind: gtf
     sa_index: 14
-    bwa_index_algorithm: bwtsw
-  Danio_rerio:
-    source: ensembl
-    species: danio_rerio
-    assembly: GRCz11
-    fasta_kind: dna.primary_assembly
-    gtf_kind: gtf
-    sa_index: 14
-    bwa_index_algorithm: bwtsw
-  Gallus_gallus:
-    source: ensembl
-    species: gallus_gallus
-    assembly: bGalGal1.mat.broiler.GRCg7b
-    fasta_kind: dna.toplevel
-    gtf_kind: gtf
-    sa_index: 12
-    bwa_index_algorithm: bwtsw
   Caenorhabditis_elegans:
     source: ensembl
     species: caenorhabditis_elegans
@@ -80,6 +57,7 @@ organisms:
     species: drosophila_pseudoobscura
     assembly: Dpse_3.0
     # EnsemblGenomes file naming differs; use explicit URLs below.
-    fasta_url: "https://ftp.ensemblgenomes.ebi.ac.uk/pub/metazoa/release-61/fasta/drosophila_pseudoobscura/dna/Drosophila_pseudoobscura.Dpse_3.0.dna.toplevel.fa.gz"
-    gtf_url: "https://ftp.ensemblgenomes.ebi.ac.uk/pub/metazoa/release-61/gtf/drosophila_pseudoobscura/Drosophila_pseudoobscura.Dpse_3.0.61.gtf.gz"
+    fasta_url: "https://ftp.ensemblgenomes.org/pub/metazoa/release-61/fasta/drosophila_pseudoobscura/dna/Drosophila_pseudoobscura.Dpse_3.0.dna.toplevel.fa.gz"
+    gtf_url: "https://ftp.ensemblgenomes.org/pub/metazoa/release-61/gtf/drosophila_pseudoobscura/Drosophila_pseudoobscura.Dpse_3.0.61.gtf.gz"
     sa_index: 12
+

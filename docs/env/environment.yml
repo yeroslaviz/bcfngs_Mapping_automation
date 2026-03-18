@@ -1,17 +1,14 @@
-name: bcfngs-mapping
 channels:
   - conda-forge
   - bioconda
 dependencies:
   - python >=3.10
   - snakemake >=8,<9
-  - snakemake-executor-plugin-slurm
   - pyyaml
   - star
   - bwa
   - bowtie2
   - samtools
-  - deeptools
   - bedtools
   - rseqc
   - ucsc-wigtobigwig
