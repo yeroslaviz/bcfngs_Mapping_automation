@@ -177,6 +177,19 @@ module load star/2.7.10b
   --star-index-version 2.7.10b
 ```
 
+If the needed genome index for this version is not available, it will resultsin an error message and the run will be aborted:
+
+```bash
+$ ./scripts/bcfngs --profile modules mapping plan   --mapper star   --star-index-version 2.7.10b
+Resolved tool versions:
+  - python: micromamba 3.12.13 (/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes/bin/python)
+  - snakemake: micromamba 8.30.0 (/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes/bin/snakemake)
+  - samtools: micromamba 1.23.1 (/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes/bin/samtools)
+  - bamCoverage: micromamba 3.5.6 (/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes/bin/bamCoverage)
+  - STAR: star/2.7.10b 2.7.10b (/fs/pool/pool-cox-modules-software/STAR/2.7.10b/STAR)
+Missing required STAR index resource: /fs/pool/pool-bcfngs/genomes/Caenorhabditis_elegans/starIndex-2.7.10b/SA
+```
+
 ### Demultiplexing with `bcl-convert`
 
 This repo does not automate demultiplexing yet. Typical usage on the cluster is:
