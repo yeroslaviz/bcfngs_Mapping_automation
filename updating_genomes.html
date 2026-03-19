@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.9.26">
+<meta name="generator" content="quarto-1.8.27">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -11,9 +11,6 @@
 
 <title>Updating genomes and indices – Bioinformatics Core Facility MPI Biochemistry</title>
 <style>
-/* Default styles provided by pandoc.
-** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
-*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -72,13 +69,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="./">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-8e955b7ce0181ffea43a0319902a8cc0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dab0a54519bc261a632fcb2ddcc76d18.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -106,9 +104,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css">
+<style>html{ scroll-behavior: smooth; }</style>
 
 
+<link rel="stylesheet" href="styles.css">
 </head>
 
 <body class="nav-fixed quarto-light">
@@ -162,18 +161,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
-    <a class="nav-link" href="mailto:yeroslaviz@biochem.mpg.de"> <i class="bi bi-envelope" role="img" aria-label="Email">
+    <a class="nav-link" href="https://github.com/yeroslaviz"> <i class="bi bi-github" role="img">
 </i> 
 <span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/yeroslaviz"> <i class="bi bi-github" role="img" aria-label="GitHub">
+    <a class="nav-link" href="https://bsky.app/profile/frymor"> <i class="bi bi-bluesky" role="img">
 </i> 
 <span class="menu-text"></span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="https://bsky.app/profile/assayeroslaviz.bsky.social"> 
-<span class="menu-text">Bluesky</span></a>
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.biochem.mpg.de/en"> <i class="bi bi-globe" role="img">
+</i> 
+<span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
     <a class="nav-link" href="https://www.linkedin.com/in/ayeroslaviz/"> <i class="bi bi-linkedin" role="img" aria-label="LinkedIn">
@@ -192,40 +192,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
-    <h2 id="toc-title">On this page</h2>
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="2">
+    <h2 id="toc-title">Content</h2>
    
-  <ul>
+  <ul class="collapse">
   <li><a href="#command-overview" id="toc-command-overview" class="nav-link active" data-scroll-target="#command-overview">Command overview</a></li>
   <li><a href="#shared-wrapper-parameters" id="toc-shared-wrapper-parameters" class="nav-link" data-scroll-target="#shared-wrapper-parameters">Shared wrapper parameters</a></li>
   <li><a href="#common-config-fields" id="toc-common-config-fields" class="nav-link" data-scroll-target="#common-config-fields">Common config fields</a></li>
-  <li><a href="#check-updates" id="toc-check-updates" class="nav-link" data-scroll-target="#check-updates"><code>check-updates</code></a>
-  <ul>
-  <li><a href="#parameters-and-defaults" id="toc-parameters-and-defaults" class="nav-link" data-scroll-target="#parameters-and-defaults">Parameters and defaults</a></li>
-  <li><a href="#micromamba-conda-style-environment" id="toc-micromamba-conda-style-environment" class="nav-link" data-scroll-target="#micromamba-conda-style-environment">Micromamba / conda-style environment</a></li>
-  <li><a href="#modules-profile" id="toc-modules-profile" class="nav-link" data-scroll-target="#modules-profile">Modules profile</a></li>
-  <li><a href="#if-an-update-is-available" id="toc-if-an-update-is-available" class="nav-link" data-scroll-target="#if-an-update-is-available">If an update is available</a></li>
-  </ul></li>
-  <li><a href="#plan" id="toc-plan" class="nav-link" data-scroll-target="#plan"><code>plan</code></a>
-  <ul>
-  <li><a href="#parameters-and-defaults-1" id="toc-parameters-and-defaults-1" class="nav-link" data-scroll-target="#parameters-and-defaults-1">Parameters and defaults</a></li>
-  <li><a href="#local-run-with-micromamba-conda-style-environment" id="toc-local-run-with-micromamba-conda-style-environment" class="nav-link" data-scroll-target="#local-run-with-micromamba-conda-style-environment">Local run with micromamba / conda-style environment</a></li>
-  <li><a href="#local-run-with-modules" id="toc-local-run-with-modules" class="nav-link" data-scroll-target="#local-run-with-modules">Local run with modules</a></li>
-  <li><a href="#direct-snakemake-subset-dry-run" id="toc-direct-snakemake-subset-dry-run" class="nav-link" data-scroll-target="#direct-snakemake-subset-dry-run">Direct Snakemake subset dry-run</a></li>
-  <li><a href="#slurm-oriented-dry-run-example" id="toc-slurm-oriented-dry-run-example" class="nav-link" data-scroll-target="#slurm-oriented-dry-run-example">SLURM-oriented dry-run example</a></li>
-  </ul></li>
-  <li><a href="#build" id="toc-build" class="nav-link" data-scroll-target="#build"><code>build</code></a>
-  <ul>
-  <li><a href="#parameters-and-defaults-2" id="toc-parameters-and-defaults-2" class="nav-link" data-scroll-target="#parameters-and-defaults-2">Parameters and defaults</a></li>
-  <li><a href="#local-run-with-micromamba-conda-style-environment-1" id="toc-local-run-with-micromamba-conda-style-environment-1" class="nav-link" data-scroll-target="#local-run-with-micromamba-conda-style-environment-1">Local run with micromamba / conda-style environment</a></li>
-  <li><a href="#local-run-with-modules-1" id="toc-local-run-with-modules-1" class="nav-link" data-scroll-target="#local-run-with-modules-1">Local run with modules</a></li>
-  <li><a href="#build-only-selected-organisms" id="toc-build-only-selected-organisms" class="nav-link" data-scroll-target="#build-only-selected-organisms">Build only selected organisms</a></li>
-  <li><a href="#slurm-oriented-build-example" id="toc-slurm-oriented-build-example" class="nav-link" data-scroll-target="#slurm-oriented-build-example">SLURM-oriented build example</a></li>
-  <li><a href="#memory-and-threading" id="toc-memory-and-threading" class="nav-link" data-scroll-target="#memory-and-threading">Memory and threading</a></li>
-  <li><a href="#build-only-one-index-type-with-direct-snakemake" id="toc-build-only-one-index-type-with-direct-snakemake" class="nav-link" data-scroll-target="#build-only-one-index-type-with-direct-snakemake">Build only one index type with direct Snakemake</a></li>
-  <li><a href="#rebuild-after-a-genome-release-change" id="toc-rebuild-after-a-genome-release-change" class="nav-link" data-scroll-target="#rebuild-after-a-genome-release-change">Rebuild after a genome release change</a></li>
-  <li><a href="#rebuild-after-a-tool-version-change" id="toc-rebuild-after-a-tool-version-change" class="nav-link" data-scroll-target="#rebuild-after-a-tool-version-change">Rebuild after a tool version change</a></li>
-  </ul></li>
+  <li><a href="#check-updates" id="toc-check-updates" class="nav-link" data-scroll-target="#check-updates"><code>check-updates</code></a></li>
+  <li><a href="#plan" id="toc-plan" class="nav-link" data-scroll-target="#plan"><code>plan</code></a></li>
+  <li><a href="#build" id="toc-build" class="nav-link" data-scroll-target="#build"><code>build</code></a></li>
   </ul>
 </nav>
     </div>
@@ -290,18 +266,45 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit</code></pre>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes plan <span class="at">--help</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<pre class="text"><code>usage: bcfngs genomes plan [-h]
+<pre class="text"><code>usage: bcfngs genomes plan [-h] [--organism ORGANISM]
+                           [--star-index-version STAR_INDEX_VERSION]
+                           [--bwa-index-version BWA_INDEX_VERSION]
+                           [--bowtie2-index-version BOWTIE2_INDEX_VERSION]
 
 optional arguments:
-  -h, --help  show this help message and exit</code></pre>
+  -h, --help            show this help message and exit
+  --organism ORGANISM   Comma-separated subset of organism keys (e.g.
+                        Homo_sapiens,Mus_musculus)
+  --star-index-version STAR_INDEX_VERSION
+                        Require/use this STAR index version label.
+  --bwa-index-version BWA_INDEX_VERSION
+                        Require/use this bwa index version label.
+  --bowtie2-index-version BOWTIE2_INDEX_VERSION
+                        Require/use this bowtie2 index version label.</code></pre>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--help</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<pre class="text"><code>usage: bcfngs genomes build [-h] [--cores CORES] [--organism ORGANISM]
+<pre class="text"><code>usage: bcfngs genomes build [-h] [--executor {local,slurm}] [--cores CORES]
+                            [--jobs JOBS] [--organism ORGANISM]
+                            [--star-index-version STAR_INDEX_VERSION]
+                            [--bwa-index-version BWA_INDEX_VERSION]
+                            [--bowtie2-index-version BOWTIE2_INDEX_VERSION]
+                            [-no-skip-plan]
 
 optional arguments:
-  -h, --help           show this help message and exit
+  -h, --help            show this help message and exit
+  --executor {local,slurm}
   --cores CORES
-  --organism ORGANISM  Comma-separated subset of organism keys (e.g.
-                       Homo_sapiens,Mus_musculus)</code></pre>
+  --jobs JOBS
+  --organism ORGANISM   Comma-separated subset of organism keys (e.g.
+                        Homo_sapiens,Mus_musculus)
+  --star-index-version STAR_INDEX_VERSION
+                        Require/use this STAR index version label.
+  --bwa-index-version BWA_INDEX_VERSION
+                        Require/use this bwa index version label.
+  --bowtie2-index-version BOWTIE2_INDEX_VERSION
+                        Require/use this bowtie2 index version label.
+  -no-skip-plan, --no-skip-plan
+                        Run plan preflight checks before build (config
+                        validation, URL checks, lint, dry-run).</code></pre>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes check-updates <span class="at">--help</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <pre class="text"><code>usage: bcfngs genomes check-updates [-h]
 
@@ -311,6 +314,7 @@ optional arguments:
 <ul>
 <li>use <code>--cores</code> to control total workflow parallelism</li>
 <li>use <code>--organism</code> for a comma-separated subset of organism keys</li>
+<li>use <code>--star-index-version</code>, <code>--bwa-index-version</code>, and <code>--bowtie2-index-version</code> when the resolved tool version should target a matching versioned index explicitly</li>
 <li>use direct <code>snakemake</code> for advanced cases such as scheduler memory flags or building only one index type</li>
 </ul>
 </section>
@@ -331,7 +335,7 @@ optional arguments:
 <td><code>--profile</code></td>
 <td><code>micromamba</code></td>
 <td><code>check-updates</code>, <code>plan</code>, <code>build</code></td>
-<td><code>modules</code> prepends <code>module load bclconvert/4.3.13 star bowtie2 bwa</code>, but still runs <code>python</code> and <code>snakemake</code> through micromamba.</td>
+<td><code>modules</code> now resolves <code>STAR</code>, <code>bwa</code>, and <code>bowtie2</code> from modules while keeping <code>python</code>, <code>snakemake</code>, and <code>curl</code> in micromamba.</td>
 </tr>
 <tr class="even">
 <td><code>--env-prefix</code></td>
@@ -371,7 +375,7 @@ optional arguments:
 <td><code>genomes_root</code></td>
 <td><code>/fs/pool/pool-bcfngs/genomes</code></td>
 <td><code>plan</code>, <code>build</code></td>
-<td><code>plan</code> checks write access here. <code>build</code> writes sources, indices, and symlinks here.</td>
+<td><code>plan</code> checks write access here. <code>build</code> writes sources, indices, stable symlinks, and per-organism manifests here.</td>
 </tr>
 <tr class="even">
 <td><code>releases.ensembl</code></td>
@@ -537,9 +541,9 @@ Suggested bump: set releases.ensembl to 117 in configs/genomes.yaml</code></pre>
 </tr>
 <tr class="even">
 <td>Command-specific flags</td>
-<td>none</td>
+<td><code>--organism</code>, <code>--star-index-version</code>, <code>--bwa-index-version</code>, <code>--bowtie2-index-version</code></td>
 <td>CLI</td>
-<td>The wrapper exposes no extra <code>plan</code> flags.</td>
+<td>Use these to dry-run a subset or validate an explicit tool/index version pairing.</td>
 </tr>
 <tr class="odd">
 <td>Organism scope</td>
@@ -586,7 +590,7 @@ Suggested bump: set releases.ensembl to 117 in configs/genomes.yaml</code></pre>
 <p>If your cluster provides aligners via modules:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load bclconvert/4.3.13 star bowtie2 bwa</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--profile</span> modules genomes plan</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>The <code>modules</code> profile still uses the micromamba environment for <code>python</code> and <code>snakemake</code>; it only changes how tool discovery happens for the aligners.</p>
+<p>The <code>modules</code> profile now resolves mapper binaries explicitly. <code>python</code>, <code>snakemake</code>, and <code>curl</code> stay in micromamba, while <code>STAR</code>, <code>bwa</code>, and <code>bowtie2</code> are reused or loaded from modules. Each top-level command prints the resolved tool/version report to <code>stderr</code>.</p>
 </section>
 <section id="direct-snakemake-subset-dry-run" class="level3">
 <h3 class="anchored" data-anchor-id="direct-snakemake-subset-dry-run">Direct Snakemake subset dry-run</h3>
@@ -647,34 +651,46 @@ Suggested bump: set releases.ensembl to 117 in configs/genomes.yaml</code></pre>
 <td>Optional comma-separated subset such as <code>Homo_sapiens,Mus_musculus</code>.</td>
 </tr>
 <tr class="even">
+<td><code>--star-index-version</code>, <code>--bwa-index-version</code>, <code>--bowtie2-index-version</code></td>
+<td>resolved binary version</td>
+<td>CLI</td>
+<td>If set, each flag must match the actual resolved binary version for that tool.</td>
+</tr>
+<tr class="odd">
 <td><code>default_threads</code></td>
 <td><code>16</code></td>
 <td><a href="configs/genomes.yaml"><code>configs/genomes.yaml</code></a></td>
 <td>Used by <code>STAR</code> genome generation and <code>bowtie2-build</code>. This is separate from <code>--cores</code>.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>default_ram_bytes</code></td>
 <td><code>168632718037</code></td>
 <td><a href="configs/genomes.yaml"><code>configs/genomes.yaml</code></a></td>
 <td>Passed to <code>STAR --limitGenomeGenerateRAM</code>.</td>
 </tr>
-<tr class="even">
-<td><code>index_versions.*</code></td>
-<td><code>unknown</code> for all three tools</td>
-<td><a href="configs/genomes.yaml"><code>configs/genomes.yaml</code></a></td>
-<td>Controls output directory names and symlink targets.</td>
-</tr>
 <tr class="odd">
+<td><code>index_versions.*</code></td>
+<td>resolved at runtime</td>
+<td>wrapper behavior</td>
+<td>Controls versioned output paths such as <code>starIndex-&lt;version&gt;</code>.</td>
+</tr>
+<tr class="even">
 <td><code>organisms.*.sa_index</code></td>
 <td>organism-specific</td>
 <td><a href="configs/genomes.yaml"><code>configs/genomes.yaml</code></a></td>
 <td>Controls STAR suffix-array sizing.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>Stable symlink outputs</td>
 <td><code>starIndex</code>, <code>bwaIndex</code>, <code>bowtie2Index</code></td>
-<td>workflow behavior</td>
-<td>Updated after successful index creation.</td>
+<td>wrapper behavior</td>
+<td>Repointed after build to the highest built version available for that organism and tool.</td>
+</tr>
+<tr class="even">
+<td>Per-organism manifest</td>
+<td><code>index-manifest.json</code></td>
+<td>wrapper behavior</td>
+<td>Written under each organism directory with assembly, source release, tool versions, stable targets, and discovered versioned builds.</td>
 </tr>
 <tr class="odd">
 <td>Advanced scheduler knobs</td>
@@ -792,13 +808,21 @@ Suggested bump: set releases.ensembl to 117 in configs/genomes.yaml</code></pre>
 <p>Then rerun:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes plan</span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--cores</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Successful builds update the stable symlinks automatically:</p>
+<p>Successful builds update the stable symlinks automatically to the highest built version detected on disk:</p>
 <ul>
 <li><code>/fs/pool/pool-bcfngs/genomes/&lt;Organism&gt;/starIndex</code></li>
 <li><code>/fs/pool/pool-bcfngs/genomes/&lt;Organism&gt;/bwaIndex</code></li>
 <li><code>/fs/pool/pool-bcfngs/genomes/&lt;Organism&gt;/bowtie2Index</code></li>
 </ul>
 <p>These stable names point to versioned directories such as <code>starIndex-2.7.11b</code>.</p>
+<p>Each organism directory also gets an <code>index-manifest.json</code> file recording:</p>
+<ul>
+<li>the assembly and source URLs</li>
+<li>the Ensembl or EnsemblGenomes release used for indexing</li>
+<li>the resolved tool versions used during the last build command</li>
+<li>the current stable symlink targets</li>
+<li>the discovered versioned index directories for STAR, bwa, and bowtie2</li>
+</ul>
 
 
 </section>
@@ -892,6 +916,11 @@ Suggested bump: set releases.ensembl to 117 in configs/genomes.yaml</code></pre>
           if (link.dataset.originalHref !== undefined) {
             link.href = link.dataset.originalHref;
           }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
         }
       }
     function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
@@ -1206,18 +1235,9 @@ Suggested bump: set releases.ensembl to 117 in configs/genomes.yaml</code></pre>
   });
   </script>
 </div> <!-- /content -->
-<script>
-  (function () {
-    var href = "https://bsky.app/profile/assayeroslaviz.bsky.social";
-    var links = document.querySelectorAll('a.nav-link[href="' + href + '"]');
-    links.forEach(function (a) {
-      a.setAttribute("aria-label", "Bluesky");
-      a.innerHTML = '<i class="fa-brands fa-bluesky fa-lg" aria-hidden="true"></i>';
-    });
-  })();
-</script>
 
 
 
 
+<script src="site_libs/quarto-html/zenscroll-min.js"></script>
 </body></html>

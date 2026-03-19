@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.9.26">
+<meta name="generator" content="quarto-1.8.27">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -11,9 +11,6 @@
 
 <title>Mapping Workflow – Bioinformatics Core Facility MPI Biochemistry</title>
 <style>
-/* Default styles provided by pandoc.
-** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
-*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -72,13 +69,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="./">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-8e955b7ce0181ffea43a0319902a8cc0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dab0a54519bc261a632fcb2ddcc76d18.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -106,9 +104,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css">
+<style>html{ scroll-behavior: smooth; }</style>
 
 
+<link rel="stylesheet" href="styles.css">
 </head>
 
 <body class="nav-fixed quarto-light">
@@ -162,18 +161,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
-    <a class="nav-link" href="mailto:yeroslaviz@biochem.mpg.de"> <i class="bi bi-envelope" role="img" aria-label="Email">
+    <a class="nav-link" href="https://github.com/yeroslaviz"> <i class="bi bi-github" role="img">
 </i> 
 <span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/yeroslaviz"> <i class="bi bi-github" role="img" aria-label="GitHub">
+    <a class="nav-link" href="https://bsky.app/profile/frymor"> <i class="bi bi-bluesky" role="img">
 </i> 
 <span class="menu-text"></span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="https://bsky.app/profile/assayeroslaviz.bsky.social"> 
-<span class="menu-text">Bluesky</span></a>
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.biochem.mpg.de/en"> <i class="bi bi-globe" role="img">
+</i> 
+<span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
     <a class="nav-link" href="https://www.linkedin.com/in/ayeroslaviz/"> <i class="bi bi-linkedin" role="img" aria-label="LinkedIn">
@@ -192,21 +192,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
-    <h2 id="toc-title">On this page</h2>
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="2">
+    <h2 id="toc-title">Content</h2>
    
-  <ul>
+  <ul class="collapse">
   <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
   <li><a href="#required-configuration" id="toc-required-configuration" class="nav-link" data-scroll-target="#required-configuration">Required configuration</a></li>
   <li><a href="#required-genome-resources" id="toc-required-genome-resources" class="nav-link" data-scroll-target="#required-genome-resources">Required genome resources</a></li>
   <li><a href="#fastq-pattern-auto-detection" id="toc-fastq-pattern-auto-detection" class="nav-link" data-scroll-target="#fastq-pattern-auto-detection">FASTQ pattern auto-detection</a></li>
   <li><a href="#output-layout" id="toc-output-layout" class="nav-link" data-scroll-target="#output-layout">Output layout</a></li>
-  <li><a href="#basic-usage" id="toc-basic-usage" class="nav-link" data-scroll-target="#basic-usage">Basic usage</a>
-  <ul>
-  <li><a href="#dry-run-and-validation" id="toc-dry-run-and-validation" class="nav-link" data-scroll-target="#dry-run-and-validation">Dry-run and validation</a></li>
-  <li><a href="#local-run" id="toc-local-run" class="nav-link" data-scroll-target="#local-run">Local run</a></li>
-  <li><a href="#slurm-run" id="toc-slurm-run" class="nav-link" data-scroll-target="#slurm-run">SLURM run</a></li>
-  </ul></li>
+  <li><a href="#wigtobigwig" id="toc-wigtobigwig" class="nav-link" data-scroll-target="#wigtobigwig">wigToBigwig</a></li>
+  <li><a href="#basic-usage" id="toc-basic-usage" class="nav-link" data-scroll-target="#basic-usage">Basic usage</a></li>
   <li><a href="#direct-snakemake-usage" id="toc-direct-snakemake-usage" class="nav-link" data-scroll-target="#direct-snakemake-usage">Direct Snakemake usage</a></li>
   <li><a href="#notes" id="toc-notes" class="nav-link" data-scroll-target="#notes">Notes</a></li>
   <li><a href="#useful-flags" id="toc-useful-flags" class="nav-link" data-scroll-target="#useful-flags">Useful flags</a></li>
@@ -289,6 +285,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><code>--outdir</code></li>
 <li><code>--threads</code></li>
 <li><code>--mapper</code></li>
+<li><code>--star-index-version</code></li>
+<li><code>--bwa-index-version</code></li>
+<li><code>--bowtie2-index-version</code></li>
 <li><code>--paired-end</code> or <code>--single-end</code></li>
 </ul>
 </section>
@@ -297,12 +296,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Before mapping starts, the workflow checks that the needed indices and chromosome size file already exist under the configured genomes root.</p>
 <p>Depending on the mapper selection, it expects:</p>
 <ul>
-<li><code>star</code>: <code>&lt;genomes_root&gt;/&lt;organism&gt;/starIndex/SA</code></li>
-<li><code>bwa</code>: <code>&lt;genomes_root&gt;/&lt;organism&gt;/bwaIndex/&lt;organism&gt;.bwt</code></li>
-<li><code>bowtie2</code>: <code>&lt;genomes_root&gt;/&lt;organism&gt;/bowtie2Index/&lt;organism&gt;.1.bt2</code></li>
+<li>default <code>star</code>: <code>&lt;genomes_root&gt;/&lt;organism&gt;/starIndex/SA</code></li>
+<li>default <code>bwa</code>: <code>&lt;genomes_root&gt;/&lt;organism&gt;/bwaIndex/&lt;organism&gt;.bwt</code></li>
+<li>default <code>bowtie2</code>: <code>&lt;genomes_root&gt;/&lt;organism&gt;/bowtie2Index/&lt;organism&gt;.1.bt2</code></li>
+<li>explicit versions: <code>&lt;genomes_root&gt;/&lt;organism&gt;/starIndex-&lt;version&gt;/...</code>, <code>bwaIndex-&lt;version&gt;/...</code>, <code>bowtie2Index-&lt;version&gt;/...</code></li>
 <li>all runs: <code>&lt;genomes_root&gt;/&lt;organism&gt;.chromSize</code></li>
 </ul>
 <p>If one of these files is missing, the run stops before any mapping jobs are submitted.</p>
+<p>If the resolved mapper binary version does not match the stable symlink target, the wrapper now fails before submission and asks you to pass the matching explicit version flag.</p>
 </section>
 <section id="fastq-pattern-auto-detection" class="level2">
 <h2 class="anchored" data-anchor-id="fastq-pattern-auto-detection">FASTQ pattern auto-detection</h2>
@@ -336,6 +337,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 &lt;outdir&gt;/&lt;project&gt;/&lt;organism&gt;/logs/</code></pre>
 </section>
+<section id="wigtobigwig" class="level2">
+<h2 class="anchored" data-anchor-id="wigtobigwig">wigToBigwig</h2>
+<p>changed to deeptools</p>
+<p>First the <code>bam</code> files are converted into <code>wig</code> files. This is done using the <code>bam2wig.py</code> script from the <code>rseqc</code>-software package. In order for the automatic conversion of <code>wig</code> to <code>bigwig</code> files to work, one must have the tool <code>wigToBigwig</code> from the UCSC repository installed and <strong>in the path</strong>. As we are working with <code>micromamba</code>, the easiest place to put it is the path of the environment. In this case the path would be under <code>~/miniconda3/envs/ENVNAME/bin/</code>. So far I have copied the file manually to the folder, but I have now added it to the <code>environment.yaml</code> file, which is ran during the environment creation step. This was not tested yet!.</p>
+</section>
 <section id="basic-usage" class="level2">
 <h2 class="anchored" data-anchor-id="basic-usage">Basic usage</h2>
 <section id="dry-run-and-validation" class="level3">
@@ -348,54 +354,63 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--organism</span> Caenorhabditis_elegans <span class="dt">\</span></span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--fastq-dir</span> /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq <span class="dt">\</span></span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">--outdir</span> /fs/pool/pool-bcfngs/mapping</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Example with an explicitly selected older STAR index:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--profile</span> modules mapping plan <span class="dt">\</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--mapper</span> star <span class="dt">\</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--star-index-version</span> 2.7.10b <span class="dt">\</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--paired-end</span> <span class="dt">\</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--project</span> P000 <span class="dt">\</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--organism</span> Caenorhabditis_elegans <span class="dt">\</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">--fastq-dir</span> /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq <span class="dt">\</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">--outdir</span> /fs/pool/pool-bcfngs/mapping</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="local-run" class="level3">
 <h3 class="anchored" data-anchor-id="local-run">Local run</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run <span class="dt">\</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--mapper</span> star <span class="dt">\</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--paired-end</span> <span class="dt">\</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--project</span> P000 <span class="dt">\</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--organism</span> Caenorhabditis_elegans <span class="dt">\</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--fastq-dir</span> /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq <span class="dt">\</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">--outdir</span> /fs/pool/pool-bcfngs/mapping <span class="dt">\</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">--executor</span> local <span class="dt">\</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">--jobs</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-<section id="slurm-run" class="level3">
-<h3 class="anchored" data-anchor-id="slurm-run">SLURM run</h3>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run <span class="dt">\</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--mapper</span> star,bwa <span class="dt">\</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--mapper</span> star <span class="dt">\</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--paired-end</span> <span class="dt">\</span></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--project</span> P000 <span class="dt">\</span></span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--organism</span> Caenorhabditis_elegans <span class="dt">\</span></span>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--fastq-dir</span> /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq <span class="dt">\</span></span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">--outdir</span> /fs/pool/pool-bcfngs/mapping <span class="dt">\</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">--executor</span> slurm <span class="dt">\</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">--jobs</span> 20 <span class="dt">\</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">--slurm-partition</span> p.hpcl93 <span class="dt">\</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">--slurm-time</span> 04:00:00 <span class="dt">\</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">--slurm-cpus-per-task</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">--executor</span> local <span class="dt">\</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">--jobs</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="slurm-run" class="level3">
+<h3 class="anchored" data-anchor-id="slurm-run">SLURM run</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> mapping run <span class="dt">\</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--mapper</span> star,bwa <span class="dt">\</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--paired-end</span> <span class="dt">\</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--project</span> P000 <span class="dt">\</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--organism</span> Caenorhabditis_elegans <span class="dt">\</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--fastq-dir</span> /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq <span class="dt">\</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">--outdir</span> /fs/pool/pool-bcfngs/mapping <span class="dt">\</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">--executor</span> slurm <span class="dt">\</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">--jobs</span> 20 <span class="dt">\</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">--slurm-partition</span> p.hpcl93 <span class="dt">\</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">--slurm-time</span> 04:00:00 <span class="dt">\</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">--slurm-cpus-per-task</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 </section>
 <section id="direct-snakemake-usage" class="level2">
 <h2 class="anchored" data-anchor-id="direct-snakemake-usage">Direct Snakemake usage</h2>
 <p>The workflow can also be called directly:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="dt">\</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--printshellcmds</span> <span class="dt">\</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--dry-run</span> <span class="dt">\</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">-s</span> workflow/mapping.smk <span class="dt">\</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--configfile</span> configs/run.yaml <span class="dt">\</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--config</span> <span class="dt">\</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    project=P000 <span class="dt">\</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    organism=Caenorhabditis_elegans <span class="dt">\</span></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    fastq_dir=/fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq <span class="dt">\</span></span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    outdir=/fs/pool/pool-bcfngs/mapping <span class="dt">\</span></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    mappers=star,bwa <span class="dt">\</span></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    read_mode=paired <span class="dt">\</span></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    threads=16 <span class="dt">\</span></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    ram_bytes=168632718037 <span class="dt">\</span></span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    bw_bin_size=10 <span class="dt">\</span></span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    bw_normalization=CPM</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">snakemake</span> <span class="dt">\</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--printshellcmds</span> <span class="dt">\</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--dry-run</span> <span class="dt">\</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">-s</span> workflow/mapping.smk <span class="dt">\</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--configfile</span> configs/run.yaml <span class="dt">\</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--config</span> <span class="dt">\</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    project=P000 <span class="dt">\</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    organism=Caenorhabditis_elegans <span class="dt">\</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    fastq_dir=/fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq <span class="dt">\</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    outdir=/fs/pool/pool-bcfngs/mapping <span class="dt">\</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    mappers=star,bwa <span class="dt">\</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    read_mode=paired <span class="dt">\</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    threads=16 <span class="dt">\</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    ram_bytes=168632718037 <span class="dt">\</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    bw_bin_size=10 <span class="dt">\</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    bw_normalization=CPM</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="notes" class="level2">
 <h2 class="anchored" data-anchor-id="notes">Notes</h2>
@@ -406,13 +421,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>The default read mode is paired-end. Use <code>--single-end</code> explicitly for single-end data.</li>
 <li>STAR intermediary files are removed unless <code>--keep-intermediary-files</code> is set.</li>
 <li>bigWig files are produced directly with <code>bamCoverage</code>. The old wig conversion step is no longer part of this workflow.</li>
-<li>Run <code>./scripts/bcfngs env check</code> first if you want to verify that <code>snakemake</code>, <code>STAR</code>, <code>bwa</code>, <code>bowtie2-build</code>, <code>samtools</code>, and <code>bamCoverage</code> are available in the configured environment.</li>
+<li>Run <code>./scripts/bcfngs env check</code> first if you want to verify that <code>snakemake</code>, <code>STAR</code>, <code>bwa</code>, <code>bowtie2-build</code>, <code>samtools</code>, and <code>bamCoverage</code> are available in the configured environment. With <code>--profile modules</code>, the wrapper also prints the resolved tool source/version report to <code>stderr</code>.</li>
 </ul>
 </section>
 <section id="useful-flags" class="level2">
 <h2 class="anchored" data-anchor-id="useful-flags">Useful flags</h2>
 <ul>
 <li><code>--mapper</code>: comma-separated mapper list such as <code>star,bwa,bowtie2</code></li>
+<li><code>--star-index-version</code>, <code>--bwa-index-version</code>, <code>--bowtie2-index-version</code>: require matching versioned indices instead of the stable symlinks</li>
 <li><code>--threads</code>: override mapping threads from <code>configs/run.yaml</code></li>
 <li><code>--ram-bytes</code>: override STAR <code>--limitBAMsortRAM</code></li>
 <li><code>--bw-bin-size</code>: set <code>bamCoverage --binSize</code></li>
@@ -512,6 +528,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           if (link.dataset.originalHref !== undefined) {
             link.href = link.dataset.originalHref;
           }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
         }
       }
     function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
@@ -826,18 +847,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   });
   </script>
 </div> <!-- /content -->
-<script>
-  (function () {
-    var href = "https://bsky.app/profile/assayeroslaviz.bsky.social";
-    var links = document.querySelectorAll('a.nav-link[href="' + href + '"]');
-    links.forEach(function (a) {
-      a.setAttribute("aria-label", "Bluesky");
-      a.innerHTML = '<i class="fa-brands fa-bluesky fa-lg" aria-hidden="true"></i>';
-    });
-  })();
-</script>
 
 
 
 
+<script src="site_libs/quarto-html/zenscroll-min.js"></script>
 </body></html>

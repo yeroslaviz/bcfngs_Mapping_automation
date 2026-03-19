@@ -2,18 +2,15 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.9.26">
+<meta name="generator" content="quarto-1.8.27">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Assa Yeroslaviz">
 <meta name="dcterms.date" content="2026-03-19">
 
-<title>index – Bioinformatics Core Facility MPI Biochemistry</title>
+<title>Genome update and mapping workflow – Bioinformatics Core Facility MPI Biochemistry</title>
 <style>
-/* Default styles provided by pandoc.
-** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
-*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -24,6 +21,41 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -37,13 +69,14 @@ ul.task-list li input[type="checkbox"] {
 <meta name="quarto:offset" content="./">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-8e955b7ce0181ffea43a0319902a8cc0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dab0a54519bc261a632fcb2ddcc76d18.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -71,9 +104,10 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css">
+<style>html{ scroll-behavior: smooth; }</style>
 
 
+<link rel="stylesheet" href="styles.css">
 </head>
 
 <body class="nav-fixed quarto-light">
@@ -127,18 +161,19 @@ ul.task-list li input[type="checkbox"] {
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
-    <a class="nav-link" href="mailto:yeroslaviz@biochem.mpg.de"> <i class="bi bi-envelope" role="img" aria-label="Email">
+    <a class="nav-link" href="https://github.com/yeroslaviz"> <i class="bi bi-github" role="img">
 </i> 
 <span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/yeroslaviz"> <i class="bi bi-github" role="img" aria-label="GitHub">
+    <a class="nav-link" href="https://bsky.app/profile/frymor"> <i class="bi bi-bluesky" role="img">
 </i> 
 <span class="menu-text"></span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="https://bsky.app/profile/assayeroslaviz.bsky.social"> 
-<span class="menu-text">Bluesky</span></a>
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.biochem.mpg.de/en"> <i class="bi bi-globe" role="img">
+</i> 
+<span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
     <a class="nav-link" href="https://www.linkedin.com/in/ayeroslaviz/"> <i class="bi bi-linkedin" role="img" aria-label="LinkedIn">
@@ -157,28 +192,20 @@ ul.task-list li input[type="checkbox"] {
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
-    <h2 id="toc-title">On this page</h2>
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="2">
+    <h2 id="toc-title">Content</h2>
    
-  <ul>
-  <li><a href="#steps-to-do" id="toc-steps-to-do" class="nav-link active" data-scroll-target="#steps-to-do">steps to do</a></li>
-  <li><a href="#folder-structure" id="toc-folder-structure" class="nav-link" data-scroll-target="#folder-structure">folder structure</a></li>
-  <li><a href="#workflow" id="toc-workflow" class="nav-link" data-scroll-target="#workflow">Workflow</a>
-  <ul>
-  <li><a href="#wigtobigwig" id="toc-wigtobigwig" class="nav-link" data-scroll-target="#wigtobigwig">wigToBigwig</a></li>
+  <ul class="collapse">
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#analysis-steps" id="toc-analysis-steps" class="nav-link" data-scroll-target="#analysis-steps">Analysis steps</a>
+  <ul class="collapse">
+  <li><a href="#preparing-the-genomeic-indicies" id="toc-preparing-the-genomeic-indicies" class="nav-link" data-scroll-target="#preparing-the-genomeic-indicies">Preparing the genomeic indicies</a></li>
+  <li><a href="#mapping-step" id="toc-mapping-step" class="nav-link" data-scroll-target="#mapping-step">Mapping step</a></li>
+  <li><a href="#folder-structure" id="toc-folder-structure" class="nav-link" data-scroll-target="#folder-structure">Folder structure</a></li>
   </ul></li>
-  <li><a href="#changes" id="toc-changes" class="nav-link" data-scroll-target="#changes">CHANGES</a>
-  <ul>
-  <li><a href="#section" id="toc-section" class="nav-link" data-scroll-target="#section">06.03.2026</a></li>
-  <li><a href="#section-1" id="toc-section-1" class="nav-link" data-scroll-target="#section-1">05.03.2026</a></li>
-  <li><a href="#section-2" id="toc-section-2" class="nav-link" data-scroll-target="#section-2">04.03.2026</a></li>
-  <li><a href="#section-3" id="toc-section-3" class="nav-link" data-scroll-target="#section-3">27.02.2026</a></li>
-  <li><a href="#section-4" id="toc-section-4" class="nav-link" data-scroll-target="#section-4">26.02.2026</a></li>
-  <li><a href="#section-5" id="toc-section-5" class="nav-link" data-scroll-target="#section-5">20.02.2026</a></li>
-  <li><a href="#section-6" id="toc-section-6" class="nav-link" data-scroll-target="#section-6">27.06.2022</a></li>
-  <li><a href="#section-7" id="toc-section-7" class="nav-link" data-scroll-target="#section-7">13.01.2020</a></li>
-  <li><a href="#section-8" id="toc-section-8" class="nav-link" data-scroll-target="#section-8">11.12.2019</a></li>
-  </ul></li>
+  <li><a href="#the-workflow" id="toc-the-workflow" class="nav-link" data-scroll-target="#the-workflow">The Workflow</a></li>
+  <li><a href="#to-do" id="toc-to-do" class="nav-link" data-scroll-target="#to-do">TO DO</a></li>
+  <li><a href="#changes" id="toc-changes" class="nav-link" data-scroll-target="#changes">CHANGES</a></li>
   </ul>
 </nav>
     </div>
@@ -187,7 +214,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">index</h1>
+<h1 class="title">Genome update and mapping workflow</h1>
 </div>
 
 
@@ -216,68 +243,135 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>The repository contains a conda-snakemake workflow for the mapping of the concatenated fastq file created at the BCF of the MPIB.</p>
-<p>This README file for the sequencing center to help them run a preliminary analysis on the sequenced samples</p>
-<p>The file will contains instruction on how to create a conda environment with the needed tools for the mapping and will also include snakemake for the automation of the scripts.</p>
-<section id="steps-to-do" class="level2">
-<h2 class="anchored" data-anchor-id="steps-to-do">steps to do</h2>
-<p><strong>Preparing the genomes for mapping</strong></p>
+<section id="overview" class="level1">
+<h1>Overview</h1>
+<p>This project contains a conda-snakemake workflow for the mapping of the concatenated fastq file sequenced at the NGS facility of the MPIB.</p>
+<p>The following documentation was meant for the sequencing center to help them run a preliminary analysis on the sequenced samples.</p>
+<p>Following steps will be cover in this documentation</p>
 <ol type="1">
-<li>Download the genomes and the annotations from the FTP server (Ensembl genome builds are used here.)</li>
-<li>For each genome, an index for the <code>star</code> aligner is created.</li>
+<li>Instruction on how to create the conda environment with the needed tools for the mapping and genomic indices updates</li>
+<li>The snakemake workflow for updating the genomic indices needed for the mapping</li>
+<li>Automation of themapping procedure using different mapping tools (Some <em>tools</em> are not yet incorporated in the workflow):</li>
 </ol>
-<p>This two steps should be done only once, when the workflow was set up. It only needs to be re-run, when a new organism is being added, or when newer genome build of exiting organisms or a newer version of the STAR mapping tool are needed.</p>
-<p><strong>Mapping step</strong></p>
-<ol start="3" type="1">
-<li>Map the samples with the needed parameter.</li>
-<li>Index the fastA file to create a <code>chromSize</code> file for the <code>bigwig</code> conversion.</li>
-<li>Convert the <code>bam</code> files to <code>wig</code> and then to <code>bigwig</code>.</li>
-</ol>
-<p>points to consider: If this is only a preliminary analysis -</p>
-<ol type="1">
-<li>Would it make more sense to take only 50% of the fastq file for a faster analysis / visualization</li>
-<li>Do they need the bam files also - deleting them would save a lot of storage space</li>
-</ol>
-<p>The examples in this document are based on fictive data as well as a fictional project named <em>Project0815</em>. When a new project is done, this term must be changed with the proper name of the project, wherever it is mentioned.</p>
+<ul>
+<li><a href="https://github.com/alexdobin/STAR">STAR</a></li>
+<li><a href="https://github.com/BenLangmead/bowtie2">bowtie2</a></li>
+<li><a href="https://github.com/lh3/BWA">bwa</a></li>
+<li><a href="https://kallisto.readthedocs.io/en/latest/"><em>kallisto</em></a></li>
+<li><a href="https://combine-lab.github.io/salmon/"><em>salmon</em></a></li>
+<li><a href="https://www.10xgenomics.com/support/software/cell-ranger/latest"><em>cellranger</em></a></li>
+</ul>
+</section>
+<section id="analysis-steps" class="level1">
+<h1>Analysis steps</h1>
+<p>This tool is straightforward to use First, one must first install the conda environment. Instruction for this step can be found in the <a href="./environment.html">environment file</a>.</p>
+<p>Updating the genomic indices should be done once, only when a new genome build is published. Ourwirkflow is using the Ensembl genomes fro various organisms. More can be added as needed. The list of genomes included in this project can be found in the <a href="configs/genomes.yaml">genomes config file</a>. At the top of this file one can also see the actulal version of the <a href="https://ftp.ensembl.org/pub/?C=M;O=D">public repository</a>.</p>
+<p>We prepared a script called <a href="scripts/bcfngs"><code>bcfngs</code></a>. This script can take three global paraemters for each of the three steps assigned in this project</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ./scripts/bcfngs <span class="at">--help</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">usage:</span> bcfngs <span class="pp">[-</span><span class="ss">h</span><span class="pp">]</span> [--profile <span class="dt">{micromamba</span><span class="op">,</span><span class="dt">modules}</span>] [--env-prefix ENV_PREFIX] <span class="dt">{env</span><span class="op">,</span><span class="dt">genomes</span><span class="op">,</span><span class="dt">mapping}</span> ...</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">positional</span> arguments:</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">{env</span><span class="op">,</span><span class="dt">genomes</span><span class="op">,</span><span class="dt">mapping}</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="ex">options:</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="ex">-h,</span> <span class="at">--help</span>            show this help message and exit</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--profile</span> <span class="dt">{micromamba</span><span class="op">,</span><span class="dt">modules}</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="ex">--env-prefix</span> ENV_PREFIX</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>                        <span class="ex">Micromamba</span> environment prefix <span class="er">(</span><span class="ex">default:</span> cluster env if present, else .mamba/env<span class="kw">)</span><span class="bu">.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The first parameter, <code>bcfngs env</code> take care of creating and maintaining the environent.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ./scripts/bcfngs env  <span class="at">--help</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">usage:</span> bcfngs env <span class="pp">[-</span><span class="ss">h</span><span class="pp">]</span> <span class="dt">{create</span><span class="op">,</span><span class="dt">update</span><span class="op">,</span><span class="dt">check}</span> ...</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">positional</span> arguments:</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">{create</span><span class="op">,</span><span class="dt">update</span><span class="op">,</span><span class="dt">check}</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="ex">options:</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="ex">-h,</span> <span class="at">--help</span>            show this help message and exit</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="preparing-the-genomeic-indicies" class="level2">
+<h2 class="anchored" data-anchor-id="preparing-the-genomeic-indicies">Preparing the genomeic indicies</h2>
+<p>For the genomic indices we need the chromosome sequences as fastA file as well as the genomic features in a gtf format. The <code>bcfngs genomes</code> script can download the genomes list in the aforementioned file and create the indicies for the tool listed above.</p>
+<p>A more elaborate instruction on how to run this step can be found in the <a href="./updating_genomes.html">Updating genomes</a> files.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ./scripts/bcfngs genomes <span class="at">--help</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">usage:</span> bcfngs genomes <span class="pp">[-</span><span class="ss">h</span><span class="pp">]</span> <span class="dt">{check-updates</span><span class="op">,</span><span class="dt">plan</span><span class="op">,</span><span class="dt">build}</span> ...</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="ex">positional</span> arguments:</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">{check-updates</span><span class="op">,</span><span class="dt">plan</span><span class="op">,</span><span class="dt">build}</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="ex">options:</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="ex">-h,</span> <span class="at">--help</span>            show this help message and exit</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="mapping-step" class="level2">
+<h2 class="anchored" data-anchor-id="mapping-step">Mapping step</h2>
+<p>After we nesured, that our needed genomic indices are available for the tool we would like to use, we can as easily run the mapping step for the proper tool using the sam <code>bcfngs mapping</code> command</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ./scripts/bcfngs mapping <span class="at">--help</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">usage:</span> bcfngs mapping <span class="pp">[-</span><span class="ss">h</span><span class="pp">]</span> <span class="dt">{plan</span><span class="op">,</span><span class="dt">run}</span> ...</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="ex">positional</span> arguments:</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">{plan</span><span class="op">,</span><span class="dt">run}</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="ex">options:</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="ex">-h,</span> <span class="at">--help</span>  show this help message and exit</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>More elaborate instructions as to how to use this script for mapping the genomes with your favorite tool can be found in the <a href="./mapping.html">mapping</a> file.</p>
 </section>
 <section id="folder-structure" class="level2">
-<h2 class="anchored" data-anchor-id="folder-structure">folder structure</h2>
-<p>The workflow works from within the folder of the concatenated <code>fastq</code> files created after running the <code>bcl2fastq</code> script from the project management website (in the core facility here, this folder is called <code>conc.fastq</code>).</p>
-<ul>
-<li>A <code>config</code> file is saved under <code>/fs/pool/pool-bcfngs/scripts/config.yaml</code>, where all the mapping and genome parameters are saved.</li>
-<li>The genome indexing step will run only once and creates a folder named <code>genomes/</code> on the <code>/fs/pool/pool-bcfngs/</code>. Within this folder all the <code>fastA</code> and the <code>gtf</code> files are saved as well as a folder for each organism, containing the <code>star</code>-indexed files.</li>
-<li>The mapping step expect to find within the working directory the files with the pattern <em>.conc.R1.fastq.gz</em>, as this is the current pattern given by the sequencing facility. (<strong>If, in the future, this will be changed, the search pattern must be changed as well</strong>).</li>
-</ul>
-<p>There are two separate files for single-ended and paired-ended data sets. The single-ended one expects to find only <em>.conc.R1.fastq.gz</em>, while the paired-end data set must also contain <em>.conc.R2.fastq.gz</em> files.</p>
+<h2 class="anchored" data-anchor-id="folder-structure">Folder structure</h2>
+<p>To set the path were the genomes can be downloaded to use the genome config file. In our project we’re taking advantage of the pool-folders structire of our institute and store all genomic indices in the pool folder of the ngs core facility (<code>pool-bcfngs</code>).</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">genomes_root:</span> /fs/pool/pool-bcfngs/genomes</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Downloading the genomes creates a specific directory per organism, as can be seen below. The folder is split into the separate tools, also keeping the version of the tool that was used. To assertain reproducibility, we can keep previous version of genomics indices, using a softlink to point to the latest version of the indices.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> tree <span class="at">-L</span> 3 Mus_musculus/</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Mus_musculus/</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> bowtie2Index <span class="at">-</span><span class="op">&gt;</span> .../Mus_musculus/bowtie2Index-2.5.4</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> bowtie2Index-2.5.4</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">│&nbsp;&nbsp;</span> ├── Mus_musculus.1.bt2</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ex">│&nbsp;&nbsp;</span> ├── Mus_musculus.2.bt2</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="ex">│&nbsp;&nbsp;</span> └── Mus_musculus.rev.2.bt2</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> bwaIndex <span class="at">-</span><span class="op">&gt;</span> .../genomes/Mus_musculus/bwaIndex-0.7.18</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> bwaIndex-0.7.18</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="ex">│&nbsp;&nbsp;</span> ├── Mus_musculus.amb</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="ex">│&nbsp;&nbsp;</span> └── Mus_musculus.sa</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> starIndex <span class="at">-</span><span class="op">&gt;</span> .../genomes/Mus_musculus/starIndex-2.7.11b</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="ex">└──</span> starIndex-2.7.11b</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    <span class="ex">├──</span> chrLength.txt</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    <span class="ex">├──</span> chrNameLength.txt</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    <span class="ex">├──</span> sjdbList.out.tab</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    <span class="ex">└──</span> transcriptInfo.tab</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="workflow" class="level2">
-<h2 class="anchored" data-anchor-id="workflow">Workflow</h2>
-<p>The workflow uses a <strong>micromamba</strong> environment with the <code>snakemake</code> tool (based on python). The advantage of micromamba is that it creates an isolated environment, separated from the rest of the tools installed on the system. This gives better control over the tool versions used in the workflow, with fewer conflicts from older system installations. To learn more about micromamba, take a look at the <a href="https://mamba.readthedocs.io/en/latest/">mamba documentation</a>.</p>
-<p><code>snakemake</code> offers a lot of advantages as well. It allows better controls over different steps of the analysis, easier automation of the workflow and reduce running time through parallelization of the steps, just to mention some of them. to learn more about <code>snakemake</code> take a look at <a href="https://snakemake.readthedocs.io/en/stable/index.html">the snakemake doc site</a>.</p>
+</section>
+<section id="the-workflow" class="level1">
+<h1>The Workflow</h1>
+<p>The workflow uses a <strong>micromamba</strong> environment with the <code>snakemake</code> tool (based on python). The advantage of micromamba is having an isolated environment, separated from the rest of the tools installed on the system. This gives better control over the tool versions used in the workflow, with fewer conflicts from older system installations. To learn more about micromamba, take a look at the <a href="https://mamba.readthedocs.io/en/latest/">mamba documentation</a>.</p>
+<p><code>snakemake</code> offers a lot of advantages as well. It allows better controls over different steps of the analysis, easier automation of the workflow and reduced running time through parallelization of the steps, just to mention some of them. to learn more about <code>snakemake</code> take a look at <a href="https://snakemake.readthedocs.io/en/stable/index.html">the snakemake doc site</a>.</p>
 <ul>
-<li><a href="environment.html">environment</a></li>
-<li><a href="snakemake.html">snakemake</a></li>
+<li><a href="./environment.html">environment</a></li>
+<li><a href="./snakemake.html">snakemake</a></li>
 </ul>
-<section id="wigtobigwig" class="level3">
-<h3 class="anchored" data-anchor-id="wigtobigwig">wigToBigwig</h3>
-<p>First the <code>bam</code> files are converted into <code>wig</code> files. This is done using the <code>bam2wig.py</code> script from the <code>rseqc</code>-software package. In order for the automatic conversion of <code>wig</code> to <code>bigwig</code> files to work, one must have the tool <code>wigToBigwig</code> from the UCSC repository installed and <strong>in the path</strong>. As we are working with <code>micromamba</code>, the easiest place to put it is the path of the environment. In this case the path would be under <code>~/miniconda3/envs/ENVNAME/bin/</code>. So far I have copied the file manually to the folder, but I have now added it to the <code>environment.yaml</code> file, which is ran during the environment creation step. This was not tested yet!.</p>
-<p>TO DO</p>
-<p>In this case it would probably be better if the indexed genomes would already be saved on the server for various organisms, as it doesn’t make sense to download one each time. We sort of know which organisms are needed in most cases.</p>
+</section>
+<section id="to-do" class="level1">
+<h1>TO DO</h1>
+<p>Below we list both the organisms and the tools used in this workflow</p>
 <ol type="1">
-<li>human</li>
-<li>mouse</li>
-<li>zebra fish</li>
-<li>fruit fly</li>
-<li>yeast</li>
-<li>worm (C. elegans)</li>
+<li><del>human</del></li>
+<li><del>mouse</del></li>
+<li><del>zebra fish</del></li>
+<li><del>fruit fly</del></li>
+<li><del>yeast</del></li>
+<li><del>worm (C. elegans)</del></li>
+<li><del>Chicken</del></li>
+<li></li>
 </ol>
 <p>as well as which mappers we need</p>
 <ol type="1">
-<li>star</li>
-<li>bwa</li>
-<li>bowtie2</li>
+<li><del>star</del></li>
+<li><del>bwa</del></li>
+<li><del>bowtie2</del></li>
+<li>kallisto</li>
+<li>salmon</li>
+<li>cellranger</li>
+<li>hisat2</li>
 </ol>
-</section>
 </section>
 <section id="changes" class="level1">
 <h1>CHANGES</h1>
@@ -486,6 +580,11 @@ ul.task-list li input[type="checkbox"] {
           if (link.dataset.originalHref !== undefined) {
             link.href = link.dataset.originalHref;
           }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
         }
       }
     function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
@@ -800,18 +899,9 @@ ul.task-list li input[type="checkbox"] {
   });
   </script>
 </div> <!-- /content -->
-<script>
-  (function () {
-    var href = "https://bsky.app/profile/assayeroslaviz.bsky.social";
-    var links = document.querySelectorAll('a.nav-link[href="' + href + '"]');
-    links.forEach(function (a) {
-      a.setAttribute("aria-label", "Bluesky");
-      a.innerHTML = '<i class="fa-brands fa-bluesky fa-lg" aria-hidden="true"></i>';
-    });
-  })();
-</script>
 
 
 
 
+<script src="site_libs/quarto-html/zenscroll-min.js"></script>
 </body></html>

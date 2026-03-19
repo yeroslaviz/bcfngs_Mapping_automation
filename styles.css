@@ -1,0 +1,87 @@
+:root {
+  --site-accent: #1d6f5f;
+  --site-accent-soft: #e7f3ef;
+  --site-border: #d7e2df;
+  --site-muted: #4d5b58;
+}
+
+body {
+  line-height: 1.65;
+}
+
+.sidebar nav[role="doc-toc"] {
+  font-size: 0.95rem;
+}
+
+.callout {
+  border-left-width: 0.35rem;
+}
+
+.callout-note {
+  background: #f7fbfa;
+  border-color: var(--site-border);
+}
+
+.callout-important,
+.callout-warning {
+  background: #fffaf0;
+}
+
+.grid-reading-paths {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin: 1.5rem 0 2rem;
+}
+
+.path-card {
+  border: 1px solid var(--site-border);
+  border-radius: 0.75rem;
+  padding: 1rem 1.1rem;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbfa 100%);
+}
+
+.path-card h3 {
+  margin-top: 0.1rem;
+  color: var(--site-accent);
+}
+
+.path-card p:last-child,
+.path-card ul:last-child {
+  margin-bottom: 0;
+}
+
+.wide-table {
+  overflow-x: auto;
+  margin: 1.25rem 0;
+}
+
+table {
+  font-size: 0.95rem;
+}
+
+th {
+  white-space: nowrap;
+}
+
+.muted {
+  color: var(--site-muted);
+}
+
+code {
+  color: #5a2f12;
+}
+
+pre code {
+  color: inherit;
+}
+/* Target the announcement bar background */
+.quarto-announcement-bar {
+  background-color: #b09792 !important; /* Your custom hex color */
+  color: white !important;             /* Your custom text color */
+}
+
+/* Optional: change the close button color */
+.quarto-announcement-bar .btn-close {
+  filter: invert(1); /* Makes the 'X' white for dark backgrounds */
+}

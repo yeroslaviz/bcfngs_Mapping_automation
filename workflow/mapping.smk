@@ -123,9 +123,9 @@ if READ_MODE == "paired":
             f"Paired-end mode selected, but missing R2 FASTQ files for samples: {preview}{extra}"
         )
 
-STAR_INDEX = GENOMES_ROOT / ORGANISM / "starIndex"
-BWA_PREFIX = GENOMES_ROOT / ORGANISM / "bwaIndex" / ORGANISM
-BOWTIE2_PREFIX = GENOMES_ROOT / ORGANISM / "bowtie2Index" / ORGANISM
+STAR_INDEX = Path(str(config.get("star_index_dir", GENOMES_ROOT / ORGANISM / "starIndex"))).expanduser()
+BWA_PREFIX = Path(str(config.get("bwa_index_prefix", GENOMES_ROOT / ORGANISM / "bwaIndex" / ORGANISM))).expanduser()
+BOWTIE2_PREFIX = Path(str(config.get("bowtie2_index_prefix", GENOMES_ROOT / ORGANISM / "bowtie2Index" / ORGANISM))).expanduser()
 CHROM_SIZE = GENOMES_ROOT / f"{ORGANISM}.chromSize"
 
 missing_refs = []

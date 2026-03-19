@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.9.26">
+<meta name="generator" content="quarto-1.8.27">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -11,9 +11,6 @@
 
 <title>conda – Bioinformatics Core Facility MPI Biochemistry</title>
 <style>
-/* Default styles provided by pandoc.
-** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
-*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -72,13 +69,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="./">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-8e955b7ce0181ffea43a0319902a8cc0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dab0a54519bc261a632fcb2ddcc76d18.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -106,9 +104,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css">
+<style>html{ scroll-behavior: smooth; }</style>
 
 
+<link rel="stylesheet" href="styles.css">
 </head>
 
 <body class="nav-fixed quarto-light">
@@ -162,18 +161,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
-    <a class="nav-link" href="mailto:yeroslaviz@biochem.mpg.de"> <i class="bi bi-envelope" role="img" aria-label="Email">
+    <a class="nav-link" href="https://github.com/yeroslaviz"> <i class="bi bi-github" role="img">
 </i> 
 <span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/yeroslaviz"> <i class="bi bi-github" role="img" aria-label="GitHub">
+    <a class="nav-link" href="https://bsky.app/profile/frymor"> <i class="bi bi-bluesky" role="img">
 </i> 
 <span class="menu-text"></span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="https://bsky.app/profile/assayeroslaviz.bsky.social"> 
-<span class="menu-text">Bluesky</span></a>
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.biochem.mpg.de/en"> <i class="bi bi-globe" role="img">
+</i> 
+<span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
     <a class="nav-link" href="https://www.linkedin.com/in/ayeroslaviz/"> <i class="bi bi-linkedin" role="img" aria-label="LinkedIn">
@@ -192,10 +192,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
-    <h2 id="toc-title">On this page</h2>
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="2">
+    <h2 id="toc-title">Content</h2>
    
-  <ul>
+  <ul class="collapse">
   <li><a href="#conda---how-to" id="toc-conda---how-to" class="nav-link active" data-scroll-target="#conda---how-to">conda - how to</a></li>
   </ul>
 </nav>
@@ -254,9 +254,9 @@ dependencies:
    - bowtie2 =2.3.5
    - bwa =0.7.17</code></pre>
 <p>The first row of the file contains the name of the project, i.e.&nbsp;the name of the conda environment created. Next are the <code>channels</code> listed, from which the conda environment should look for the tools needed for the analysis.</p>
-<p>the last part of the environment file is a list of the needed <code>dependencies</code>. Each one of them has its version attached to it. This can be very helpful, when a data set needs to be re-analyzed to check for problems or conflicts with older/newer results or for debugging purposes. In this workflow we will use the <code>snakemake</code> package as well as <code>python</code> version 3.6. we also install here the mappers <code>star</code>, <code>bwa</code> and <code>bowtie2</code>. WE also need the <code>samtool</code> package for the manipulation of the bam files (sorting, filtering, etc.).</p>
+<p>the last part of the environment file is a list of the needed <code>dependencies</code>. Each one of them has its version attached to it. This can be very helpful, when a data set needs to be re-analyzed to check for problems or conflicts with older/newer results or for debugging purposes.</p>
 <p>After this was done <em>one must activate the environment</em> using the command</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> activate Project0815</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> activate Project0815</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>If one look at the command line one can now see this</p>
 <pre><code>(Project0815) USER@SERVERNAME:Project0815$ ..</code></pre>
 <p>The brackets on the left side must contains the name of the environment.</p>
@@ -355,6 +355,11 @@ dependencies:
           if (link.dataset.originalHref !== undefined) {
             link.href = link.dataset.originalHref;
           }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
         }
       }
     function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
@@ -669,18 +674,9 @@ dependencies:
   });
   </script>
 </div> <!-- /content -->
-<script>
-  (function () {
-    var href = "https://bsky.app/profile/assayeroslaviz.bsky.social";
-    var links = document.querySelectorAll('a.nav-link[href="' + href + '"]');
-    links.forEach(function (a) {
-      a.setAttribute("aria-label", "Bluesky");
-      a.innerHTML = '<i class="fa-brands fa-bluesky fa-lg" aria-hidden="true"></i>';
-    });
-  })();
-</script>
 
 
 
 
+<script src="site_libs/quarto-html/zenscroll-min.js"></script>
 </body></html>

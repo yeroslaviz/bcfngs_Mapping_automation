@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.9.26">
+<meta name="generator" content="quarto-1.8.27">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -11,9 +11,6 @@
 
 <title>Environment (micromamba) – Bioinformatics Core Facility MPI Biochemistry</title>
 <style>
-/* Default styles provided by pandoc.
-** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
-*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -72,13 +69,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="./">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-8e955b7ce0181ffea43a0319902a8cc0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dab0a54519bc261a632fcb2ddcc76d18.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -106,9 +104,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css">
+<style>html{ scroll-behavior: smooth; }</style>
 
 
+<link rel="stylesheet" href="styles.css">
 </head>
 
 <body class="nav-fixed quarto-light">
@@ -162,18 +161,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
-    <a class="nav-link" href="mailto:yeroslaviz@biochem.mpg.de"> <i class="bi bi-envelope" role="img" aria-label="Email">
+    <a class="nav-link" href="https://github.com/yeroslaviz"> <i class="bi bi-github" role="img">
 </i> 
 <span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/yeroslaviz"> <i class="bi bi-github" role="img" aria-label="GitHub">
+    <a class="nav-link" href="https://bsky.app/profile/frymor"> <i class="bi bi-bluesky" role="img">
 </i> 
 <span class="menu-text"></span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="https://bsky.app/profile/assayeroslaviz.bsky.social"> 
-<span class="menu-text">Bluesky</span></a>
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.biochem.mpg.de/en"> <i class="bi bi-globe" role="img">
+</i> 
+<span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
     <a class="nav-link" href="https://www.linkedin.com/in/ayeroslaviz/"> <i class="bi bi-linkedin" role="img" aria-label="LinkedIn">
@@ -192,10 +192,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="-1">
-    <h2 id="toc-title">On this page</h2>
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="2">
+    <h2 id="toc-title">Content</h2>
    
-  <ul>
+  <ul class="collapse">
   <li><a href="#default-environment-location" id="toc-default-environment-location" class="nav-link active" data-scroll-target="#default-environment-location">Default environment location</a></li>
   <li><a href="#installing-micromamba" id="toc-installing-micromamba" class="nav-link" data-scroll-target="#installing-micromamba">Installing micromamba</a></li>
   <li><a href="#create-the-workflow-environment" id="toc-create-the-workflow-environment" class="nav-link" data-scroll-target="#create-the-workflow-environment">Create the workflow environment</a></li>
@@ -204,12 +204,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#health-checks" id="toc-health-checks" class="nav-link" data-scroll-target="#health-checks">Health checks</a></li>
   <li><a href="#troubleshooting-missing-tools" id="toc-troubleshooting-missing-tools" class="nav-link" data-scroll-target="#troubleshooting-missing-tools">Troubleshooting missing tools</a></li>
   <li><a href="#how-to-common-scenarios" id="toc-how-to-common-scenarios" class="nav-link" data-scroll-target="#how-to-common-scenarios">How-to (common scenarios)</a>
-  <ul>
+  <ul class="collapse">
   <li><a href="#first-time-setup" id="toc-first-time-setup" class="nav-link" data-scroll-target="#first-time-setup">First-time setup</a></li>
-  <li><a href="#run-a-one-off-command-without-activating" id="toc-run-a-one-off-command-without-activating" class="nav-link" data-scroll-target="#run-a-one-off-command-without-activating">Run a one-off command without activating</a></li>
   <li><a href="#keep-tools-up-to-date" id="toc-keep-tools-up-to-date" class="nav-link" data-scroll-target="#keep-tools-up-to-date">Keep tools up to date</a></li>
   <li><a href="#use-hpc-modules-for-vendor-tools" id="toc-use-hpc-modules-for-vendor-tools" class="nav-link" data-scroll-target="#use-hpc-modules-for-vendor-tools">Use HPC modules for vendor tools</a></li>
-  <li><a href="#demultiplexing-with-bcl-convert" id="toc-demultiplexing-with-bcl-convert" class="nav-link" data-scroll-target="#demultiplexing-with-bcl-convert">Demultiplexing with <code>bcl-convert</code></a></li>
   </ul></li>
   </ul>
 </nav>
@@ -256,41 +254,47 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>On the HPC cluster this expands to:</p>
 <pre class="text"><code>/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes</code></pre>
 <p>The wrapper <code>./scripts/bcfngs</code> uses the same path by default. If you keep the environment somewhere else, add <code>--env-prefix /path/to/env</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">REPO_ROOT</span> = Path<span class="er">(</span><span class="ex">__file__</span><span class="kw">)</span><span class="fu">.resolve()</span><span class="ex">.parents[1]</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">CLUSTER_ENV_PREFIX</span> = Path<span class="er">(</span><span class="st">"/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes"</span><span class="kw">)</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ex">DEFAULT_ENV_PREFIX</span> = CLUSTER_ENV_PREFIX if CLUSTER_ENV_PREFIX.exists<span class="er">(</span><span class="kw">)</span> <span class="cf">else</span> <span class="ex">REPO_ROOT</span> / <span class="st">".mamba"</span> / <span class="st">"env"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="installing-micromamba" class="level2">
 <h2 class="anchored" data-anchor-id="installing-micromamba">Installing micromamba</h2>
 <p>micromamba can be installed from the <a href="https://github.com/mamba-org/micromamba-releases">github repository</a>.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="st">"</span><span class="va">${SHELL}</span><span class="st">"</span> <span class="op">&lt;(</span><span class="ex">curl</span> <span class="at">-L</span> https://micro.mamba.pm/install.sh<span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="st">"</span><span class="va">${SHELL}</span><span class="st">"</span> <span class="op">&lt;(</span><span class="ex">curl</span> <span class="at">-L</span> https://micro.mamba.pm/install.sh<span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="create-the-workflow-environment" class="level2">
 <h2 class="anchored" data-anchor-id="create-the-workflow-environment">Create the workflow environment</h2>
 <p>From the repo root:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">micromamba</span> create <span class="at">-y</span> <span class="at">-p</span> ~/miniconda3/envs/update_genomes <span class="at">-f</span> env/environment.yml</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">micromamba</span> create <span class="at">-y</span> <span class="at">-p</span> ~/miniconda3/envs/update_genomes <span class="at">-f</span> env/environment.yml</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>If your micromamba root prefix is already <code>~/miniconda3</code>, the equivalent named-environment command is:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">micromamba</span> create <span class="at">-y</span> <span class="at">-n</span> update_genomes <span class="at">-f</span> env/environment.yml</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">micromamba</span> create <span class="at">-y</span> <span class="at">-n</span> update_genomes <span class="at">-f</span> env/environment.yml</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The <a href="env/environment.yml">environment file</a> states the tools needed to create this environment. We can find there besides the python packages aslo the various tool we need for the mapping and quantifications as well as file conversions.</p>
 </section>
 <section id="run-commands-without-activating-the-environment" class="level2">
 <h2 class="anchored" data-anchor-id="run-commands-without-activating-the-environment">Run commands without activating the environment</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">micromamba</span> run <span class="at">-p</span> ~/miniconda3/envs/update_genomes snakemake <span class="at">--version</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">micromamba</span> run <span class="at">-p</span> ~/miniconda3/envs/update_genomes STAR <span class="at">--version</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>For whatever reason we might need, it is also possible to run the tool without activating the environment.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">micromamba</span> run <span class="at">-p</span> ~/miniconda3/envs/update_genomes snakemake <span class="at">--version</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">micromamba</span> run <span class="at">-p</span> ~/miniconda3/envs/update_genomes STAR <span class="at">--version</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="update-the-environment" class="level2">
 <h2 class="anchored" data-anchor-id="update-the-environment">Update the environment</h2>
 <p>If <code>env/environment.yml</code> changes:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">micromamba</span> update <span class="at">-y</span> <span class="at">-p</span> ~/miniconda3/envs/update_genomes <span class="at">-f</span> env/environment.yml</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env check</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">micromamba</span> update <span class="at">-y</span> <span class="at">-p</span> ~/miniconda3/envs/update_genomes <span class="at">-f</span> env/environment.yml</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env check</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="health-checks" class="level2">
 <h2 class="anchored" data-anchor-id="health-checks">Health checks</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env check</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env check</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Example output:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"snakemake"</span><span class="fu">:</span> <span class="st">"8.30.0"</span><span class="fu">,</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"STAR"</span><span class="fu">:</span> <span class="st">"2.7.11b"</span><span class="fu">,</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"bwa"</span><span class="fu">:</span> <span class="st">""</span><span class="fu">,</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"bowtie2"</span><span class="fu">:</span> <span class="st">"/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes/bin/bowtie2-build-s version 2.5.5"</span><span class="fu">,</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"samtools"</span><span class="fu">:</span> <span class="st">"samtools 1.23"</span></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"snakemake"</span><span class="fu">:</span> <span class="st">"8.30.0"</span><span class="fu">,</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"STAR"</span><span class="fu">:</span> <span class="st">"2.7.11b"</span><span class="fu">,</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"bwa"</span><span class="fu">:</span> <span class="st">"0.7.19-r1273"</span><span class="fu">,</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"bowtie2"</span><span class="fu">:</span> <span class="st">"2.5.5"</span><span class="fu">,</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"samtools"</span><span class="fu">:</span> <span class="st">"1.23.1"</span><span class="fu">,</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"bamCoverage"</span><span class="fu">:</span> <span class="st">"3.5.6"</span> <span class="er">#</span> <span class="er">deeptools</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="troubleshooting-missing-tools" class="level2">
 <h2 class="anchored" data-anchor-id="troubleshooting-missing-tools">Troubleshooting missing tools</h2>
@@ -298,60 +302,68 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <ol type="1">
 <li>Update the environment:</li>
 </ol>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env update</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env check</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env update</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env check</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ol start="2" type="1">
-<li>If you use a non-default location, pass it explicitly:</li>
+<li>If you’re using a non-default location for your enviroonment, pass it explicitly:</li>
 </ol>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--env-prefix</span> /path/to/your/env env update</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--env-prefix</span> /path/to/your/env env check</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--env-prefix</span> /path/to/your/env env update</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--env-prefix</span> /path/to/your/env env check</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ol start="3" type="1">
 <li>Verify the package is installed in the expected environment:</li>
 </ol>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">micromamba</span> list <span class="at">-p</span> ~/miniconda3/envs/update_genomes <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-Ei</span> <span class="st">'snakemake|star|bwa|bowtie2|samtools|rseqc'</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="ex">micromamba</span> run <span class="at">-p</span> ~/miniconda3/envs/update_genomes snakemake <span class="at">--version</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">micromamba</span> list <span class="at">-p</span> ~/miniconda3/envs/update_genomes <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-Ei</span> <span class="st">'snakemake|star|bwa|bowtie2|samtools|rseqc'</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="ex">micromamba</span> run <span class="at">-p</span> ~/miniconda3/envs/update_genomes snakemake <span class="at">--version</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <ol start="4" type="1">
 <li>If needed, recreate the environment:</li>
 </ol>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span> <span class="at">-rf</span> ~/miniconda3/envs/update_genomes</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env create</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env check</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span> <span class="at">-rf</span> ~/miniconda3/envs/update_genomes</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env create</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env check</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="how-to-common-scenarios" class="level2">
-<h2 class="anchored" data-anchor-id="how-to-common-scenarios">How-to (common scenarios)</h2>
-<section id="first-time-setup" class="level3">
-<h3 class="anchored" data-anchor-id="first-time-setup">First-time setup</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env create</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env check</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="how-to-common-scenarios" class="level1">
+<h1>How-to (common scenarios)</h1>
+<section id="first-time-setup" class="level2">
+<h2 class="anchored" data-anchor-id="first-time-setup">First-time setup</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env create</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env check</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="run-a-one-off-command-without-activating" class="level3">
-<h3 class="anchored" data-anchor-id="run-a-one-off-command-without-activating">Run a one-off command without activating</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ex">micromamba</span> run <span class="at">-p</span> ~/miniconda3/envs/update_genomes snakemake <span class="at">--help</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="ex">micromamba</span> run <span class="at">-p</span> ~/miniconda3/envs/update_genomes STAR <span class="at">--version</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-<section id="keep-tools-up-to-date" class="level3">
-<h3 class="anchored" data-anchor-id="keep-tools-up-to-date">Keep tools up to date</h3>
+<section id="keep-tools-up-to-date" class="level2">
+<h2 class="anchored" data-anchor-id="keep-tools-up-to-date">Keep tools up to date</h2>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env update</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> env check</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Optional lockfile:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> env/locks</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="ex">micromamba</span> list <span class="at">-p</span> ~/miniconda3/envs/update_genomes <span class="at">--explicit</span> <span class="op">&gt;</span> env/locks/explicit-YYYY-MM-DD.txt</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="use-hpc-modules-for-vendor-tools" class="level3">
-<h3 class="anchored" data-anchor-id="use-hpc-modules-for-vendor-tools">Use HPC modules for vendor tools</h3>
-<p>You can keep <code>python</code> and <code>snakemake</code> in micromamba while loading aligners from modules:</p>
+<section id="use-hpc-modules-for-vendor-tools" class="level2">
+<h2 class="anchored" data-anchor-id="use-hpc-modules-for-vendor-tools">Use HPC modules for vendor tools</h2>
+<p>With <code>--profile modules</code>, the wrapper now resolves tools explicitly instead of relying on whichever binary happens to win on <code>PATH</code>.</p>
+<ul>
+<li><code>python</code>, <code>snakemake</code>, and <code>curl</code> stay in micromamba</li>
+<li><code>STAR</code>, <code>bwa</code>, and <code>bowtie2</code> are taken from reused or auto-loaded modules</li>
+<li><code>samtools</code> and <code>bamCoverage</code> are reused from a preloaded module if one is already active; otherwise they stay in micromamba</li>
+<li>every top-level modules-profile command prints a resolved tool/version report to <code>stderr</code></li>
+<li><code>env check</code> still keeps its JSON output on <code>stdout</code></li>
+</ul>
+<p>Typical usage:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load bclconvert/4.3.13 star bowtie2 bwa</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--profile</span> modules env check</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--profile</span> modules genomes plan</span>
 <span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--profile</span> modules genomes build <span class="at">--cores</span> 20</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
+<p>If you preload an older mapper module, the wrapper will reuse it and require you to select the matching versioned index explicitly in mapping:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load star/2.7.10b</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> <span class="at">--profile</span> modules mapping plan <span class="dt">\</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--mapper</span> star <span class="dt">\</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--star-index-version</span> 2.7.10b</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <section id="demultiplexing-with-bcl-convert" class="level3">
 <h3 class="anchored" data-anchor-id="demultiplexing-with-bcl-convert">Demultiplexing with <code>bcl-convert</code></h3>
 <p>This repo does not automate demultiplexing yet. Typical usage on the cluster is:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load bclconvert/4.3.13</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="ex">bcl-convert</span> <span class="at">--help</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="ex">module</span> load bclconvert/4.3.13</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="ex">bcl-convert</span> <span class="at">--help</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 
 
+</section>
 </section>
 </section>
 
@@ -443,6 +455,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           if (link.dataset.originalHref !== undefined) {
             link.href = link.dataset.originalHref;
           }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
         }
       }
     function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
@@ -757,18 +774,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   });
   </script>
 </div> <!-- /content -->
-<script>
-  (function () {
-    var href = "https://bsky.app/profile/assayeroslaviz.bsky.social";
-    var links = document.querySelectorAll('a.nav-link[href="' + href + '"]');
-    links.forEach(function (a) {
-      a.setAttribute("aria-label", "Bluesky");
-      a.innerHTML = '<i class="fa-brands fa-bluesky fa-lg" aria-hidden="true"></i>';
-    });
-  })();
-</script>
 
 
 
 
+<script src="site_libs/quarto-html/zenscroll-min.js"></script>
 </body></html>
