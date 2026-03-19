@@ -8,7 +8,7 @@ This part is still work in progress.
 
 This repository uses `snakemake` for:
 
-1. **Genome download + indexing** (STAR, bwa, bowtie2) using *versioned* index directories and stable symlinks.
+1. **Genome download + indexing** (STAR, bwa, bowtie2) using *versioned* index directories, stable symlinks, and per-organism `index-manifest.json` reports.
 2. **Mapping** (currently STAR) using per-project run settings.
 
 For non-experts, prefer the single wrapper command `./scripts/bcfngs` (runs checks, then snakemake).
@@ -92,19 +92,24 @@ The workflow configuration is split into two files:
 ./scripts/bcfngs env check
 ```
 
-2. Update `configs/genomes.yaml`:
-
-- set `index_versions.star`, `index_versions.bwa`, `index_versions.bowtie2` (these strings are used in output folder names)
-
-3. Rebuild:
+2. Rebuild with the actual tool version or pin the version label explicitly:
 
 ```bash
 ./scripts/bcfngs genomes build --cores 20
 ```
 
+Examples:
+
+```bash
+./scripts/bcfngs genomes build --cores 20 --star-index-version 2.7.11b
+./scripts/bcfngs genomes build --cores 20 --star-index-version 2.7.10b --organism Homo_sapiens
+```
+
+The wrapper now requires explicit version labels to match the resolved binary version for that tool.
+
 ### Use HPC modules for aligners (fallback)
 
-This still uses the micromamba env for python/snakemake, but loads vendor tools via modules:
+This still uses the micromamba env for `python`, `snakemake`, and `curl`, but resolves aligners from modules:
 
 ```bash
 module load bclconvert/4.3.13 star bowtie2 bwa
@@ -112,6 +117,8 @@ module load bclconvert/4.3.13 star bowtie2 bwa
 ./scripts/bcfngs --profile modules genomes plan
 ./scripts/bcfngs --profile modules genomes build --cores 20
 ```
+
+If you preload an older module version, the wrapper reuses it and prints the resolved tool/version report to `stderr`. Mapping then requires the matching explicit index version flag, for example `--star-index-version 2.7.10b`.
 
 ## Genome download + indexing
 

@@ -142,13 +142,30 @@ micromamba list -p ~/miniconda3/envs/update_genomes --explicit > env/locks/expli
 
 ### Use HPC modules for vendor tools
 
-You can keep `python` and `snakemake` in micromamba while loading aligners from modules:
+With `--profile modules`, the wrapper now resolves tools explicitly instead of relying on whichever binary happens to win on `PATH`.
+
+- `python`, `snakemake`, and `curl` stay in micromamba
+- `STAR`, `bwa`, and `bowtie2` are taken from reused or auto-loaded modules
+- `samtools` and `bamCoverage` are reused from a preloaded module if one is already active; otherwise they stay in micromamba
+- every top-level modules-profile command prints a resolved tool/version report to `stderr`
+- `env check` still keeps its JSON output on `stdout`
+
+Typical usage:
 
 ```bash
 module load bclconvert/4.3.13 star bowtie2 bwa
 ./scripts/bcfngs --profile modules env check
 ./scripts/bcfngs --profile modules genomes plan
 ./scripts/bcfngs --profile modules genomes build --cores 20
+```
+
+If you preload an older mapper module, the wrapper will reuse it and require you to select the matching versioned index explicitly in mapping:
+
+```bash
+module load star/2.7.10b
+./scripts/bcfngs --profile modules mapping plan \
+  --mapper star \
+  --star-index-version 2.7.10b
 ```
 
 ### Demultiplexing with `bcl-convert`

@@ -101,10 +101,6 @@ def versioned_index_dir(tool: str, wc):
     return os.path.join(GENOMES_ROOT, wc, f"{tool}Index-{ver}")
 
 
-def current_index_link(tool: str, wc):
-    return os.path.join(GENOMES_ROOT, wc, f"{tool}Index")
-
-
 def bwa_index_algorithm(wc):
     return str(ORGANISMS[wc.org].get("bwa_index_algorithm", BWA_INDEX_DEFAULT_ALGO))
 
@@ -163,7 +159,6 @@ rule star_index:
         outdir=lambda wc: versioned_index_dir("star", wc.org),
         sa_index=lambda wc: ORGANISMS[wc.org]["sa_index"],
         ram=lambda wc: DEFAULT_RAM,
-        link=lambda wc: current_index_link("star", wc.org),
     shell:
         r"""
         mkdir -p "{params.outdir}" "$(dirname "{log}")"
@@ -177,12 +172,6 @@ rule star_index:
             --genomeFastaFiles "{input.fasta}" \
             --sjdbGTFfile "{input.gtf}" \
             --sjdbOverhang 100
-
-          # Atomic-ish symlink update: create temp link then move into place.
-          mkdir -p "$(dirname "{params.link}")"
-          tmp_link="{params.link}.tmp.$$"
-          ln -s "{params.outdir}" "$tmp_link"
-          mv -Tf "$tmp_link" "{params.link}"
         }} >> "{log}" 2>&1
         """
 
@@ -203,18 +192,12 @@ rule bwa_index:
         outdir=lambda wc: versioned_index_dir("bwa", wc.org),
         prefix=lambda wc: os.path.join(versioned_index_dir("bwa", wc.org), wc.org),
         algo=bwa_index_algorithm,
-        link=lambda wc: current_index_link("bwa", wc.org),
     shell:
         r"""
         mkdir -p "{params.outdir}" "$(dirname "{log}")"
         : > "{log}"
         {{
           bwa index -a "{params.algo}" -p "{params.prefix}" "{input.fasta}"
-
-          mkdir -p "$(dirname "{params.link}")"
-          tmp_link="{params.link}.tmp.$$"
-          ln -s "{params.outdir}" "$tmp_link"
-          mv -Tf "$tmp_link" "{params.link}"
         }} >> "{log}" 2>&1
         """
 
@@ -232,18 +215,12 @@ rule bowtie2_index:
     params:
         outdir=lambda wc: versioned_index_dir("bowtie2", wc.org),
         prefix=lambda wc: os.path.join(versioned_index_dir("bowtie2", wc.org), wc.org),
-        link=lambda wc: current_index_link("bowtie2", wc.org),
     shell:
         r"""
         mkdir -p "{params.outdir}" "$(dirname "{log}")"
         : > "{log}"
         {{
           bowtie2-build --threads {threads} "{input.fasta}" "{params.prefix}"
-
-          mkdir -p "$(dirname "{params.link}")"
-          tmp_link="{params.link}.tmp.$$"
-          ln -s "{params.outdir}" "$tmp_link"
-          mv -Tf "$tmp_link" "{params.link}"
         }} >> "{log}" 2>&1
         """
 

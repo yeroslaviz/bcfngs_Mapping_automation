@@ -2,21 +2,32 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import os
 import re
 import shlex
 import shutil
 import subprocess
+import sys
 import tempfile
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Mapping
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CLUSTER_ENV_PREFIX = Path("/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes")
 DEFAULT_ENV_PREFIX = CLUSTER_ENV_PREFIX if CLUSTER_ENV_PREFIX.exists() else REPO_ROOT / ".mamba" / "env"
 ALLOWED_MAPPERS = {"star", "bwa", "bowtie2"}
+INDEXED_TOOLS = ("star", "bwa", "bowtie2")
+GENOMES_REPORT_TOOLS = ("python", "snakemake", "curl", "star", "bwa", "bowtie2", "samtools")
+ENV_CHECK_REPORT_TOOLS = ("python", "snakemake", "curl", "star", "bwa", "bowtie2", "samtools", "bamCoverage")
+MAPPING_BASE_REPORT_TOOLS = ("python", "snakemake", "samtools", "bamCoverage")
+ALWAYS_MAMBA_TOOLS = {"python", "snakemake", "curl"}
+OPTIONAL_MODULE_TOOLS = {"samtools", "bamCoverage"}
+MANIFEST_FILE_NAME = "index-manifest.json"
 
 DEFAULT_SLURM_PARTITION = "p.hpcl93"
 DEFAULT_SLURM_MAIL_USER = "yeroslaviz@biochem.mpg.de"
@@ -30,6 +41,41 @@ DEFAULT_SLURM_MEM_MB = 409600
 class RunContext:
     profile: str
     env_prefix: Path
+
+
+@dataclass(frozen=True)
+class ToolSpec:
+    key: str
+    display_name: str
+    executables: tuple[str, ...]
+    version_cmd: tuple[str, ...]
+    module_aliases: tuple[str, ...] = ()
+    module_default: str | None = None
+
+
+@dataclass(frozen=True)
+class ResolvedTool:
+    key: str
+    display_name: str
+    source: str
+    version: str
+    module_name: str | None
+    executables: dict[str, str]
+
+    def executable(self, name: str | None = None) -> str | None:
+        if not self.executables:
+            return None
+        if name and name in self.executables:
+            return self.executables[name]
+        return next(iter(self.executables.values()))
+
+
+@dataclass(frozen=True)
+class RuntimeEnvironment:
+    env: dict[str, str]
+    tools: dict[str, ResolvedTool]
+    preloaded_modules: tuple[str, ...]
+    auto_loaded_modules: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -49,6 +95,74 @@ class MappingSettings:
     keep_intermediary_files: bool
     bw_bin_size: int
     bw_normalization: str
+    index_versions: dict[str, str]
+    index_paths: dict[str, Path]
+
+
+TOOL_SPECS: dict[str, ToolSpec] = {
+    "python": ToolSpec(
+        key="python",
+        display_name="python",
+        executables=("python",),
+        version_cmd=("python", "--version"),
+    ),
+    "snakemake": ToolSpec(
+        key="snakemake",
+        display_name="snakemake",
+        executables=("snakemake",),
+        version_cmd=("snakemake", "--version"),
+    ),
+    "curl": ToolSpec(
+        key="curl",
+        display_name="curl",
+        executables=("curl",),
+        version_cmd=("curl", "--version"),
+    ),
+    "star": ToolSpec(
+        key="star",
+        display_name="STAR",
+        executables=("STAR",),
+        version_cmd=("STAR", "--version"),
+        module_aliases=("star",),
+        module_default="star",
+    ),
+    "bwa": ToolSpec(
+        key="bwa",
+        display_name="bwa",
+        executables=("bwa",),
+        version_cmd=("bwa",),
+        module_aliases=("bwa",),
+        module_default="bwa",
+    ),
+    "bowtie2": ToolSpec(
+        key="bowtie2",
+        display_name="bowtie2",
+        executables=("bowtie2", "bowtie2-build"),
+        version_cmd=("bowtie2-build", "--version"),
+        module_aliases=("bowtie2",),
+        module_default="bowtie2",
+    ),
+    "samtools": ToolSpec(
+        key="samtools",
+        display_name="samtools",
+        executables=("samtools",),
+        version_cmd=("samtools", "--version"),
+        module_aliases=("samtools",),
+    ),
+    "bamCoverage": ToolSpec(
+        key="bamCoverage",
+        display_name="bamCoverage",
+        executables=("bamCoverage",),
+        version_cmd=("bamCoverage", "--version"),
+        module_aliases=("deeptools", "bamcoverage"),
+    ),
+}
+EXECUTABLE_TO_TOOL = {
+    executable: spec.key
+    for spec in TOOL_SPECS.values()
+    for executable in spec.executables
+}
+RUNTIME_CACHE: dict[tuple[str, str, str, str, str], RuntimeEnvironment] = {}
 
 
 def _run(
@@ -76,72 +190,8 @@ def _micromamba() -> str:
     return exe
 
 
-def _mm_run(ctx: RunContext, tool_cmd: list[str]) -> list[str]:
-    mm = _micromamba()
-    return [mm, "run", "-p", str(ctx.env_prefix), *tool_cmd]
-
-
 def _ensure_dir(p: Path) -> None:
     p.mkdir(parents=True, exist_ok=True)
-
-
-def cmd_env_create(ctx: RunContext, args: argparse.Namespace) -> None:
-    mm = _micromamba()
-    env_yml = REPO_ROOT / "env" / "environment.yml"
-    _ensure_dir(ctx.env_prefix.parent)
-    _run([mm, "create", "-y", "-p", str(ctx.env_prefix), "-f", str(env_yml)])
-
-
-def cmd_env_update(ctx: RunContext, args: argparse.Namespace) -> None:
-    mm = _micromamba()
-    env_yml = REPO_ROOT / "env" / "environment.yml"
-    _run([mm, "update", "-y", "-p", str(ctx.env_prefix), "-f", str(env_yml)])
-
-
-def _module_load_snippet() -> str:
-    return "module load bclconvert/4.3.13 star bowtie2 bwa"
-
-
-def _run_tool(
-    ctx: RunContext,
-    tool_cmd: list[str],
-    *,
-    check: bool = True,
-    capture: bool = False,
-) -> subprocess.CompletedProcess:
-    """
-    Run a command either directly via micromamba (profile=micromamba) or
-    with `module load ...` prepended (profile=modules).
-    """
-    if ctx.profile == "micromamba":
-        return _run(_mm_run(ctx, tool_cmd), check=check, capture=capture)
-
-    if ctx.profile == "modules":
-        mm = _micromamba()
-        quoted = " ".join(shlex.quote(x) for x in [mm, "run", "-p", str(ctx.env_prefix), *tool_cmd])
-        script = f"{_module_load_snippet()} && {quoted}"
-        if capture:
-            return subprocess.run(
-                ["bash", "-lc", script],
-                check=check,
-                text=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )  # noqa: S603,S607
-        return subprocess.run(["bash", "-lc", script], check=check, text=True)  # noqa: S603,S607
-
-    raise SystemExit(f"Unknown profile: {ctx.profile}")
-
-
-def _require_tools(ctx: RunContext, tools: Iterable[str]) -> None:
-    missing: list[str] = []
-    for t in tools:
-        try:
-            _run_tool(ctx, ["bash", "-lc", f"command -v {t} >/dev/null 2>&1"])
-        except subprocess.CalledProcessError:
-            missing.append(t)
-    if missing:
-        raise SystemExit(f"Missing tools in environment: {', '.join(missing)}")
 
 
 def _first_nonempty_line(text: str) -> str:
@@ -173,10 +223,10 @@ def _extract_bwa_version(out: subprocess.CompletedProcess) -> str:
 def _extract_bowtie2_version(out: subprocess.CompletedProcess) -> str:
     combined = f"{out.stdout or ''}\n{out.stderr or ''}"
     for line in combined.splitlines():
-        line = line.strip()
-        if not line:
+        stripped = line.strip()
+        if not stripped:
             continue
-        match = re.search(r"\bversion\s+([^\s]+)", line, flags=re.IGNORECASE)
+        match = re.search(r"\bversion\s+([^\s]+)", stripped, flags=re.IGNORECASE)
         if match:
             token = _extract_version_token(match.group(1))
             if token:
@@ -196,34 +246,373 @@ def _extract_plain_version(text: str) -> str:
     return text.strip()
 
 
-def _detect_genomes_index_versions(ctx: RunContext) -> dict[str, str]:
-    _require_tools(ctx, ["STAR", "bwa", "bowtie2-build"])
-    star_out = _run_tool(ctx, ["STAR", "--version"], check=False, capture=True)
-    bwa_out = _run_tool(ctx, ["bwa"], check=False, capture=True)
-    bowtie2_out = _run_tool(ctx, ["bowtie2-build", "--version"], check=False, capture=True)
-    versions = {
-        "star": _extract_star_version(star_out),
-        "bwa": _extract_bwa_version(bwa_out),
-        "bowtie2": _extract_bowtie2_version(bowtie2_out),
+def _extract_tool_version(tool_key: str, out: subprocess.CompletedProcess) -> str:
+    combined = f"{out.stdout or ''}\n{out.stderr or ''}"
+    if tool_key == "star":
+        return _extract_star_version(out)
+    if tool_key == "bwa":
+        return _extract_bwa_version(out)
+    if tool_key == "bowtie2":
+        return _extract_bowtie2_version(out)
+    if tool_key == "samtools":
+        return _extract_plain_version((out.stdout.splitlines() or [""])[0].strip())
+    if tool_key == "bamCoverage":
+        return _extract_plain_version(_first_nonempty_line(combined))
+    if tool_key == "curl":
+        first = (out.stdout.splitlines() or [""])[0]
+        match = re.search(r"\bcurl\s+([^\s]+)", first)
+        if match:
+            return _extract_plain_version(match.group(1))
+        return _extract_plain_version(first)
+    return _extract_plain_version(_first_nonempty_line(combined))
+
+
+def _env_bin(ctx: RunContext, executable: str) -> str | None:
+    candidate = ctx.env_prefix / "bin" / executable
+    if candidate.exists():
+        return str(candidate)
+    return None
+
+
+def _is_within_env_prefix(ctx: RunContext, path: str | None) -> bool:
+    if not path:
+        return False
+    try:
+        return Path(path).resolve().is_relative_to(ctx.env_prefix.resolve())
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def _loaded_modules_from_env(env: Mapping[str, str]) -> tuple[str, ...]:
+    raw = env.get("LOADEDMODULES", "")
+    return tuple(item for item in raw.split(":") if item)
+
+
+def _find_loaded_module(modules: Iterable[str], aliases: Iterable[str]) -> str | None:
+    lowered_aliases = {alias.lower() for alias in aliases}
+    for module_name in modules:
+        lowered = module_name.lower()
+        base = lowered.split("/", 1)[0]
+        if base in lowered_aliases:
+            return module_name
+    return None
+
+
+def _parse_env_blob(blob: str) -> dict[str, str]:
+    env: dict[str, str] = {}
+    for entry in blob.split("\0"):
+        if not entry:
+            continue
+        key, _, value = entry.partition("=")
+        env[key] = value
+    return env
+
+
+def _module_runtime_env(ctx: RunContext) -> tuple[dict[str, str], tuple[str, ...], tuple[str, ...]]:
+    inherited_modules = _loaded_modules_from_env(os.environ)
+    missing_defaults: list[str] = []
+    for tool_key in INDEXED_TOOLS:
+        spec = TOOL_SPECS[tool_key]
+        if spec.module_default and not _find_loaded_module(inherited_modules, spec.module_aliases):
+            missing_defaults.append(spec.module_default)
+
+    script_lines = ["set -euo pipefail"]
+    if missing_defaults:
+        quoted_modules = " ".join(shlex.quote(item) for item in missing_defaults)
+        script_lines.append('type module >/dev/null 2>&1 || { echo "module command not found in shell startup" >&2; exit 127; }')
+        script_lines.append(f"module load {quoted_modules} >/dev/null 2>&1")
+    script_lines.append("env -0")
+    cp = subprocess.run(  # noqa: S603,S607
+        ["bash", "-lc", "\n".join(script_lines)],
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        env=os.environ.copy(),
+    )
+    if cp.returncode != 0:
+        details = (cp.stderr or cp.stdout or "").strip()
+        msg = "Failed to initialize modules profile environment."
+        if details:
+            msg += f"\n{details}"
+        raise SystemExit(msg)
+    resolved_env = _parse_env_blob(cp.stdout)
+    final_modules = _loaded_modules_from_env(resolved_env)
+    auto_loaded = tuple(item for item in final_modules if item not in inherited_modules)
+    return resolved_env, inherited_modules, auto_loaded
+
+
+def _version_cmd_for_tool(spec: ToolSpec, executable_paths: dict[str, str]) -> list[str]:
+    first = spec.version_cmd[0]
+    return [executable_paths[first], *spec.version_cmd[1:]]
+
+
+def _detect_resolved_tool_version(spec: ToolSpec, executable_paths: dict[str, str], env: Mapping[str, str]) -> str:
+    cp = _run(_version_cmd_for_tool(spec, executable_paths), check=False, capture=True, env=dict(env))
+    return _extract_tool_version(spec.key, cp)
+
+
+def _resolve_tool(
+    ctx: RunContext,
+    spec: ToolSpec,
+    *,
+    base_env: Mapping[str, str],
+    preloaded_modules: tuple[str, ...],
+    final_modules: tuple[str, ...],
+) -> ResolvedTool:
+    env_paths = {exe: _env_bin(ctx, exe) for exe in spec.executables}
+    env_ready = all(env_paths.values())
+
+    module_paths_raw = {
+        exe: shutil.which(exe, path=base_env.get("PATH", ""))
+        for exe in spec.executables
     }
-    missing = [tool for tool, ver in versions.items() if not ver]
-    if missing:
-        raise SystemExit(
-            "Failed to detect genomes index versions from environment for: "
-            f"{', '.join(missing)}. Run './scripts/bcfngs env check' and ensure these tools are installed."
+    module_paths = {
+        exe: path
+        for exe, path in module_paths_raw.items()
+        if path and not _is_within_env_prefix(ctx, path)
+    }
+    module_name = _find_loaded_module(final_modules, spec.module_aliases)
+    module_ready = bool(module_name) and all(module_paths.get(exe) for exe in spec.executables)
+    preloaded_module_name = _find_loaded_module(preloaded_modules, spec.module_aliases)
+
+    chosen_source = "missing"
+    chosen_module_name: str | None = None
+    chosen_paths: dict[str, str] = {}
+
+    if ctx.profile == "micromamba" or spec.key in ALWAYS_MAMBA_TOOLS:
+        if env_ready:
+            chosen_source = "micromamba"
+            chosen_paths = {exe: path for exe, path in env_paths.items() if path}
+    elif spec.key in OPTIONAL_MODULE_TOOLS:
+        if preloaded_module_name and module_ready:
+            chosen_source = "module"
+            chosen_module_name = module_name
+            chosen_paths = {exe: path for exe, path in module_paths.items() if path}
+        elif env_ready:
+            chosen_source = "micromamba"
+            chosen_paths = {exe: path for exe, path in env_paths.items() if path}
+        elif module_ready:
+            chosen_source = "module"
+            chosen_module_name = module_name
+            chosen_paths = {exe: path for exe, path in module_paths.items() if path}
+    else:
+        if module_ready:
+            chosen_source = "module"
+            chosen_module_name = module_name
+            chosen_paths = {exe: path for exe, path in module_paths.items() if path}
+        elif env_ready:
+            chosen_source = "micromamba"
+            chosen_paths = {exe: path for exe, path in env_paths.items() if path}
+
+    version = ""
+    if chosen_paths:
+        version = _detect_resolved_tool_version(spec, chosen_paths, base_env)
+    return ResolvedTool(
+        key=spec.key,
+        display_name=spec.display_name,
+        source=chosen_source,
+        version=version,
+        module_name=chosen_module_name,
+        executables=chosen_paths,
+    )
+
+
+def _runtime_cache_key(ctx: RunContext) -> tuple[str, str, str, str, str]:
+    return (
+        ctx.profile,
+        str(ctx.env_prefix),
+        os.environ.get("LOADEDMODULES", ""),
+        os.environ.get("PATH", ""),
+        os.environ.get("LD_LIBRARY_PATH", ""),
+    )
+
+
+def _build_shim_dir(ctx: RunContext, tools: Mapping[str, ResolvedTool], base_env: Mapping[str, str]) -> Path:
+    _ensure_dir(REPO_ROOT / ".snakemake" / "bcfngs_shims")
+    digest = hashlib.sha256(
+        json.dumps(
+            {
+                "profile": ctx.profile,
+                "env_prefix": str(ctx.env_prefix),
+                "loaded_modules": _loaded_modules_from_env(base_env),
+                "tools": {
+                    tool_key: {
+                        "source": tool.source,
+                        "module": tool.module_name,
+                        "executables": tool.executables,
+                    }
+                    for tool_key, tool in sorted(tools.items())
+                },
+            },
+            sort_keys=True,
+        ).encode("utf-8")
+    ).hexdigest()[:16]
+    shim_dir = REPO_ROOT / ".snakemake" / "bcfngs_shims" / digest
+    _ensure_dir(shim_dir)
+    for spec in TOOL_SPECS.values():
+        tool = tools[spec.key]
+        for executable in spec.executables:
+            target = tool.executables.get(executable)
+            link_path = shim_dir / executable
+            if link_path.exists() or link_path.is_symlink():
+                link_path.unlink()
+            if target:
+                link_path.symlink_to(target)
+    return shim_dir
+
+
+def _build_runtime(ctx: RunContext) -> RuntimeEnvironment:
+    if ctx.profile == "micromamba":
+        base_env = os.environ.copy()
+        preloaded_modules: tuple[str, ...] = ()
+        auto_loaded_modules: tuple[str, ...] = ()
+    elif ctx.profile == "modules":
+        base_env, preloaded_modules, auto_loaded_modules = _module_runtime_env(ctx)
+    else:
+        raise SystemExit(f"Unknown profile: {ctx.profile}")
+
+    final_modules = _loaded_modules_from_env(base_env)
+    tools = {
+        tool_key: _resolve_tool(
+            ctx,
+            spec,
+            base_env=base_env,
+            preloaded_modules=preloaded_modules,
+            final_modules=final_modules,
         )
-    return versions
+        for tool_key, spec in TOOL_SPECS.items()
+    }
+    shim_dir = _build_shim_dir(ctx, tools, base_env)
+    runtime_env = dict(base_env)
+    runtime_env["PATH"] = f"{shim_dir}:{base_env.get('PATH', '')}"
+    runtime_env["CONDA_PREFIX"] = str(ctx.env_prefix)
+    return RuntimeEnvironment(
+        env=runtime_env,
+        tools=tools,
+        preloaded_modules=preloaded_modules,
+        auto_loaded_modules=auto_loaded_modules,
+    )
 
 
-def _resolve_genomes_index_versions(ctx: RunContext, genomes_cfg_path: Path) -> dict:
-    cfg = _load_yaml(ctx, genomes_cfg_path)
-    cfg["index_versions"] = _detect_genomes_index_versions(ctx)
-    return cfg
+def _runtime(ctx: RunContext) -> RuntimeEnvironment:
+    key = _runtime_cache_key(ctx)
+    cached = RUNTIME_CACHE.get(key)
+    if cached is None:
+        cached = _build_runtime(ctx)
+        RUNTIME_CACHE[key] = cached
+    return cached
+
+
+def _resolved_tool(ctx: RunContext, tool_key: str) -> ResolvedTool:
+    return _runtime(ctx).tools[tool_key]
+
+
+def _run_tool(
+    ctx: RunContext,
+    tool_cmd: list[str],
+    *,
+    check: bool = True,
+    capture: bool = False,
+) -> subprocess.CompletedProcess:
+    runtime = _runtime(ctx)
+    cmd = list(tool_cmd)
+    if cmd:
+        executable_name = Path(cmd[0]).name
+        tool_key = EXECUTABLE_TO_TOOL.get(executable_name)
+        if tool_key:
+            resolved = runtime.tools[tool_key].executables.get(executable_name)
+            if not resolved:
+                stderr = f"{executable_name} not found in the selected environment/profile."
+                if check:
+                    raise SystemExit(stderr)
+                return subprocess.CompletedProcess(cmd, 127, "", stderr)
+            cmd[0] = resolved
+    return _run(cmd, check=check, capture=capture, env=runtime.env)
+
+
+def _require_tools(ctx: RunContext, tools: Iterable[str]) -> None:
+    runtime = _runtime(ctx)
+    missing: list[str] = []
+    for tool_name in tools:
+        tool_key = EXECUTABLE_TO_TOOL.get(tool_name)
+        if tool_key:
+            resolved = runtime.tools[tool_key]
+            if not resolved.executables.get(tool_name):
+                missing.append(tool_name)
+            continue
+        if not shutil.which(tool_name, path=runtime.env.get("PATH", "")):
+            missing.append(tool_name)
+    if missing:
+        raise SystemExit(f"Missing tools in environment: {', '.join(missing)}")
+
+
+def _tool_report_line(tool: ResolvedTool) -> str:
+    if tool.source == "module":
+        source = tool.module_name or "module"
+    else:
+        source = tool.source
+    executable = tool.executable()
+    version = tool.version or "unknown"
+    if executable:
+        return f"{tool.display_name}: {source} {version} ({executable})"
+    return f"{tool.display_name}: missing"
+
+
+def _print_tool_report(ctx: RunContext, tool_keys: Iterable[str]) -> None:
+    runtime = _runtime(ctx)
+    ordered_keys = []
+    for tool_key in tool_keys:
+        if tool_key not in ordered_keys:
+            ordered_keys.append(tool_key)
+    print("Resolved tool versions:", file=sys.stderr)
+    for tool_key in ordered_keys:
+        print(f"  - {_tool_report_line(runtime.tools[tool_key])}", file=sys.stderr)
+
+
+def _tool_version_or_fail(ctx: RunContext, tool_key: str) -> str:
+    tool = _resolved_tool(ctx, tool_key)
+    if not tool.version:
+        raise SystemExit(f"Failed to detect version for {tool.display_name}. Run './scripts/bcfngs env check'.")
+    return tool.version
+
+
+def _requested_index_versions_from_args(args: argparse.Namespace) -> dict[str, str | None]:
+    return {
+        "star": getattr(args, "star_index_version", None),
+        "bwa": getattr(args, "bwa_index_version", None),
+        "bowtie2": getattr(args, "bowtie2_index_version", None),
+    }
+
+
+def _select_index_versions(ctx: RunContext, args: argparse.Namespace) -> tuple[dict[str, str], dict[str, str]]:
+    actual_versions = {tool: _tool_version_or_fail(ctx, tool) for tool in INDEXED_TOOLS}
+    selected_versions: dict[str, str] = {}
+    for tool_key, requested in _requested_index_versions_from_args(args).items():
+        actual = actual_versions[tool_key]
+        if requested and requested != actual:
+            raise SystemExit(
+                f"--{tool_key}-index-version {requested!r} does not match the resolved {TOOL_SPECS[tool_key].display_name} "
+                f"binary version {actual!r}."
+            )
+        selected_versions[tool_key] = requested or actual
+    return actual_versions, selected_versions
+
+
+def cmd_env_create(ctx: RunContext, args: argparse.Namespace) -> None:
+    mm = _micromamba()
+    env_yml = REPO_ROOT / "env" / "environment.yml"
+    _ensure_dir(ctx.env_prefix.parent)
+    _run([mm, "create", "-y", "-p", str(ctx.env_prefix), "-f", str(env_yml)])
+
+
+def cmd_env_update(ctx: RunContext, args: argparse.Namespace) -> None:
+    mm = _micromamba()
+    env_yml = REPO_ROOT / "env" / "environment.yml"
+    _run([mm, "update", "-y", "-p", str(ctx.env_prefix), "-f", str(env_yml)])
 
 
 def _write_temp_config_json(data: dict) -> Path:
-    # Use a shared path (repo/.snakemake) instead of system /tmp so
-    # nested Snakemake invocations on SLURM nodes can read the config.
     tmp_dir = REPO_ROOT / ".snakemake" / "bcfngs_tmp"
     _ensure_dir(tmp_dir)
     fh = tempfile.NamedTemporaryFile(
@@ -239,6 +628,7 @@ def _write_temp_config_json(data: dict) -> Path:
 
 
 def cmd_env_check(ctx: RunContext, args: argparse.Namespace) -> None:
+    _print_tool_report(ctx, ENV_CHECK_REPORT_TOOLS)
     _require_tools(ctx, ["python", "snakemake", "STAR", "bwa", "bowtie2-build", "samtools", "curl", "bamCoverage"])
     bwa_out = _run_tool(ctx, ["bwa"], check=False, capture=True)
     star_out = _run_tool(ctx, ["STAR", "--version"], check=False, capture=True)
@@ -247,7 +637,7 @@ def cmd_env_check(ctx: RunContext, args: argparse.Namespace) -> None:
     bamcoverage_out = _run_tool(ctx, ["bamCoverage", "--version"], check=False, capture=True)
     bamcoverage_line = _first_nonempty_line(f"{bamcoverage_out.stdout or ''}\n{bamcoverage_out.stderr or ''}")
     versions = {
-        "snakemake": _run_tool(ctx, ["snakemake", "--version"], capture=True).stdout.strip(),
+        "snakemake": _resolved_tool(ctx, "snakemake").version,
         "STAR": _extract_star_version(star_out),
         "bwa": _extract_bwa_version(bwa_out),
         "bowtie2": _extract_bowtie2_version(bowtie2_out),
@@ -290,6 +680,7 @@ def _check_urls(ctx: RunContext, urls: Iterable[tuple[str, str, str]]) -> None:
 
 
 def cmd_genomes_check_updates(ctx: RunContext, args: argparse.Namespace) -> None:
+    _print_tool_report(ctx, ("python", "curl"))
     genomes_cfg = REPO_ROOT / "configs" / "genomes.yaml"
     cfg = _load_yaml(ctx, genomes_cfg)
 
@@ -310,27 +701,68 @@ def cmd_genomes_check_updates(ctx: RunContext, args: argparse.Namespace) -> None
             print(f"Suggested bump: set releases.ensembl to {latest} in configs/genomes.yaml")
 
 
-def _genomes_urls_from_cfg(cfg: dict) -> list[tuple[str, str, str]]:
-    def species_prefix(species: str) -> str:
-        parts = species.split("_")
-        if not parts:
-            return species
-        return "_".join([parts[0].capitalize(), *parts[1:]])
+def _species_prefix(species: str) -> str:
+    parts = species.split("_")
+    if not parts:
+        return species
+    return "_".join([parts[0].capitalize(), *parts[1:]])
 
+
+def _release_for_org(cfg: dict, org_key: str) -> str:
+    org = cfg["organisms"][org_key]
+    if org.get("source") == "ensemblgenomes":
+        division = org.get("division")
+        return str(cfg["releases"]["ensemblgenomes"][division])
+    return str(cfg["releases"]["ensembl"])
+
+
+def _source_root_for_org(cfg: dict, org_key: str) -> str:
+    org = cfg["organisms"][org_key]
+    if org.get("source") == "ensemblgenomes":
+        division = org["division"]
+        rel = _release_for_org(cfg, org_key)
+        return f"https://ftp.ensemblgenomes.ebi.ac.uk/pub/{division}/release-{rel}"
+    rel = _release_for_org(cfg, org_key)
+    return f"https://ftp.ensembl.org/pub/release-{rel}"
+
+
+def _normalize_ensemblgenomes_url(url: str) -> str:
+    return url.replace(
+        "https://ftp.ensemblgenomes.org/",
+        "https://ftp.ensemblgenomes.ebi.ac.uk/",
+        1,
+    )
+
+
+def _fasta_url_for_org(cfg: dict, org_key: str) -> str:
+    org = cfg["organisms"][org_key]
+    if "fasta_url" in org:
+        return _normalize_ensemblgenomes_url(org["fasta_url"])
+    root = _source_root_for_org(cfg, org_key)
+    species = org["species"]
+    assembly = org["assembly"]
+    fasta_kind = org.get("fasta_kind", "dna.toplevel")
+    prefix = _species_prefix(species)
+    return f"{root}/fasta/{species}/dna/{prefix}.{assembly}.{fasta_kind}.fa.gz"
+
+
+def _gtf_url_for_org(cfg: dict, org_key: str) -> str:
+    org = cfg["organisms"][org_key]
+    if "gtf_url" in org:
+        return _normalize_ensemblgenomes_url(org["gtf_url"])
+    root = _source_root_for_org(cfg, org_key)
+    species = org["species"]
+    assembly = org["assembly"]
+    rel = _release_for_org(cfg, org_key)
+    prefix = _species_prefix(species)
+    return f"{root}/gtf/{species}/{prefix}.{assembly}.{rel}.gtf.gz"
+
+
+def _genomes_urls_from_cfg(cfg: dict) -> list[tuple[str, str, str]]:
     urls: list[tuple[str, str, str]] = []
-    for org_key, org in cfg["organisms"].items():
-        if org.get("source") == "ensemblgenomes":
-            urls.append((org_key, "FASTA", org["fasta_url"]))
-            urls.append((org_key, "GTF", org["gtf_url"]))
-            continue
-        rel = int(cfg["releases"]["ensembl"])
-        root = f"https://ftp.ensembl.org/pub/release-{rel}"
-        species = org["species"]
-        cap = species_prefix(species)
-        assembly = org["assembly"]
-        fasta_kind = org.get("fasta_kind", "dna.toplevel")
-        urls.append((org_key, "FASTA", f"{root}/fasta/{species}/dna/{cap}.{assembly}.{fasta_kind}.fa.gz"))
-        urls.append((org_key, "GTF", f"{root}/gtf/{species}/{cap}.{assembly}.{rel}.gtf.gz"))
+    for org_key in cfg["organisms"]:
+        urls.append((org_key, "FASTA", _fasta_url_for_org(cfg, org_key)))
+        urls.append((org_key, "GTF", _gtf_url_for_org(cfg, org_key)))
     return urls
 
 
@@ -369,9 +801,35 @@ def _require_snakemake_slurm_executor(ctx: RunContext) -> None:
     )
 
 
-def cmd_genomes_plan(ctx: RunContext, args: argparse.Namespace) -> None:
+def _selected_orgs(cfg: dict, organism_arg: str | None) -> list[str]:
+    all_orgs = list(cfg["organisms"])
+    if not organism_arg:
+        return all_orgs
+    requested = [item.strip() for item in organism_arg.split(",") if item.strip()]
+    missing = sorted(set(requested) - set(all_orgs))
+    if missing:
+        raise SystemExit(f"Unknown organism(s): {', '.join(missing)}")
+    return requested
+
+
+def _prepare_genomes_config(
+    ctx: RunContext,
+    args: argparse.Namespace,
+) -> tuple[dict, dict[str, str], dict[str, str], list[str]]:
     genomes_cfg_path = REPO_ROOT / "configs" / "genomes.yaml"
     cfg = _load_yaml(ctx, genomes_cfg_path)
+    actual_versions, selected_versions = _select_index_versions(ctx, args)
+    cfg["index_versions"] = selected_versions
+    orgs = _selected_orgs(cfg, getattr(args, "organism", None))
+    if orgs and len(orgs) != len(cfg["organisms"]):
+        cfg["org_subset"] = ",".join(orgs)
+    return cfg, actual_versions, selected_versions, orgs
+
+
+def cmd_genomes_plan(ctx: RunContext, args: argparse.Namespace) -> None:
+    _print_tool_report(ctx, GENOMES_REPORT_TOOLS)
+    cfg, actual_versions, selected_versions, _orgs = _prepare_genomes_config(ctx, args)
+    genomes_cfg_path = REPO_ROOT / "configs" / "genomes.yaml"
     print(f"Config file is OK: {genomes_cfg_path}")
 
     releases = cfg.get("releases", {})
@@ -380,19 +838,12 @@ def cmd_genomes_plan(ctx: RunContext, args: argparse.Namespace) -> None:
     for division, rel in sorted(releases.get("ensemblgenomes", {}).items()):
         print(f"Genome build release: EnsemblGenomes {division} {rel}")
 
-    index_versions = _detect_genomes_index_versions(ctx)
-    print(
-        "Tool versions: "
-        f"STAR {index_versions.get('star', 'unknown')}, "
-        f"bwa {index_versions.get('bwa', 'unknown')}, "
-        f"bowtie2 {index_versions.get('bowtie2', 'unknown')}"
-    )
+    print("Resolved tool versions:", json.dumps(actual_versions, indent=2))
+    print("Target index version labels:", json.dumps(selected_versions, indent=2))
 
     genomes_root = Path(cfg["genomes_root"])
     _check_write_permission(genomes_root)
-
-    urls = _genomes_urls_from_cfg(cfg)
-    _check_urls(ctx, urls)
+    _check_urls(ctx, _genomes_urls_from_cfg(cfg))
 
     smk = REPO_ROOT / "workflow" / "genomes.smk"
     lint_cp = _run_tool(ctx, ["snakemake", "--lint", "-s", str(smk)], check=False, capture=True)
@@ -404,36 +855,226 @@ def cmd_genomes_plan(ctx: RunContext, args: argparse.Namespace) -> None:
             print(lint_out)
         if lint_err:
             print(lint_err)
-    _run_tool(
-        ctx,
-        [
-            "snakemake",
-            "--dry-run",
-            "--printshellcmds",
-            "-s",
-            str(smk),
-            "--configfile",
-            str(genomes_cfg_path),
-        ],
-    )
+
+    tmp_cfg_path = _write_temp_config_json(cfg)
+    try:
+        _run_tool(
+            ctx,
+            [
+                "snakemake",
+                "--dry-run",
+                "--printshellcmds",
+                "-s",
+                str(smk),
+                "--configfile",
+                str(tmp_cfg_path),
+            ],
+        )
+    finally:
+        tmp_cfg_path.unlink(missing_ok=True)
+
+
+def _tool_index_dirname(tool_key: str) -> str:
+    return {
+        "star": "starIndex",
+        "bwa": "bwaIndex",
+        "bowtie2": "bowtie2Index",
+    }[tool_key]
+
+
+def _tool_versioned_dir(genomes_root: Path, organism: str, tool_key: str, version: str) -> Path:
+    return genomes_root / organism / f"{_tool_index_dirname(tool_key)}-{version}"
+
+
+def _tool_stable_link(genomes_root: Path, organism: str, tool_key: str) -> Path:
+    return genomes_root / organism / _tool_index_dirname(tool_key)
+
+
+def _tool_expected_index_path(genomes_root: Path, organism: str, tool_key: str, version: str | None = None) -> Path:
+    if version:
+        base = _tool_versioned_dir(genomes_root, organism, tool_key, version)
+    else:
+        base = _tool_stable_link(genomes_root, organism, tool_key)
+    if tool_key == "star":
+        return base / "SA"
+    if tool_key == "bwa":
+        return base / f"{organism}.bwt"
+    return base / f"{organism}.1.bt2"
+
+
+def _version_from_index_dirname(tool_key: str, path: Path) -> str | None:
+    prefix = f"{_tool_index_dirname(tool_key)}-"
+    if path.name.startswith(prefix):
+        return path.name[len(prefix) :]
+    return None
+
+
+def _stable_link_version(link_path: Path, tool_key: str) -> str | None:
+    if not link_path.exists() or not link_path.is_symlink():
+        return None
+    try:
+        target = link_path.resolve()
+    except OSError:
+        return None
+    return _version_from_index_dirname(tool_key, target)
+
+
+def _version_key(version: str) -> tuple[tuple[int, object], ...]:
+    parts = re.findall(r"\d+|[A-Za-z]+|[^A-Za-z\d]+", version.lower())
+    key: list[tuple[int, object]] = []
+    for part in parts:
+        if part.isdigit():
+            key.append((0, int(part)))
+        else:
+            key.append((1, part))
+    return tuple(key)
+
+
+def _update_symlink(link_path: Path, target: Path) -> None:
+    _ensure_dir(link_path.parent)
+    tmp_link = link_path.with_name(f"{link_path.name}.tmp.{os.getpid()}")
+    if tmp_link.exists() or tmp_link.is_symlink():
+        tmp_link.unlink()
+    tmp_link.symlink_to(target)
+    os.replace(tmp_link, link_path)
+
+
+def _scan_index_versions(genomes_root: Path, organism: str, tool_key: str) -> dict[str, Path]:
+    organism_dir = genomes_root / organism
+    prefix = f"{_tool_index_dirname(tool_key)}-"
+    found: dict[str, Path] = {}
+    if not organism_dir.exists():
+        return found
+    for candidate in organism_dir.iterdir():
+        if not candidate.is_dir():
+            continue
+        version = _version_from_index_dirname(tool_key, candidate)
+        if version is None:
+            continue
+        expected = _tool_expected_index_path(genomes_root, organism, tool_key, version)
+        if expected.exists():
+            found[version] = candidate
+    return found
+
+
+def _tool_manifest_snapshot(tool: ResolvedTool) -> dict:
+    return {
+        "source": tool.source,
+        "module_name": tool.module_name,
+        "version": tool.version or None,
+        "executable": tool.executable(),
+    }
+
+
+def _load_existing_manifest(manifest_path: Path) -> dict:
+    if not manifest_path.exists():
+        return {}
+    try:
+        return json.loads(manifest_path.read_text())
+    except Exception:  # noqa: BLE001
+        return {}
+
+
+def _write_index_manifest(
+    cfg: dict,
+    genomes_root: Path,
+    organism: str,
+    *,
+    runtime: RuntimeEnvironment,
+    build_versions: Mapping[str, str],
+    build_timestamp: str,
+) -> None:
+    organism_dir = genomes_root / organism
+    manifest_path = organism_dir / MANIFEST_FILE_NAME
+    existing = _load_existing_manifest(manifest_path)
+    org_cfg = cfg["organisms"][organism]
+
+    stable_targets: dict[str, dict[str, str | None]] = {}
+    index_builds: dict[str, dict[str, dict]] = {}
+    existing_builds = existing.get("index_builds", {})
+
+    for tool_key in INDEXED_TOOLS:
+        scanned = _scan_index_versions(genomes_root, organism, tool_key)
+        stable_version = _stable_link_version(_tool_stable_link(genomes_root, organism, tool_key), tool_key)
+        stable_targets[tool_key] = {
+            "version": stable_version,
+            "path": str(_tool_stable_link(genomes_root, organism, tool_key).resolve()) if stable_version else None,
+        }
+        tool_entries: dict[str, dict] = {}
+        previous_entries = existing_builds.get(tool_key, {})
+        for version, path in sorted(scanned.items(), key=lambda item: _version_key(item[0])):
+            previous = previous_entries.get(version, {})
+            built_at = previous.get("built_at")
+            if build_versions.get(tool_key) == version:
+                built_at = build_timestamp
+            tool_entries[version] = {
+                "version": version,
+                "path": str(path),
+                "built_at": built_at,
+                "is_stable_target": version == stable_version,
+            }
+        index_builds[tool_key] = tool_entries
+
+    manifest = {
+        "organism": organism,
+        "assembly": org_cfg["assembly"],
+        "source": {
+            "provider": org_cfg.get("source", "ensembl"),
+            "division": org_cfg.get("division"),
+            "ensembl_release": _release_for_org(cfg, organism) if org_cfg.get("source") != "ensemblgenomes" else None,
+            "ensemblgenomes_release": _release_for_org(cfg, organism) if org_cfg.get("source") == "ensemblgenomes" else None,
+            "fasta_url": _fasta_url_for_org(cfg, organism),
+            "gtf_url": _gtf_url_for_org(cfg, organism),
+        },
+        "stable_targets": stable_targets,
+        "tool_versions_used_for_build": {
+            TOOL_SPECS[tool_key].display_name: _tool_manifest_snapshot(runtime.tools[tool_key])
+            for tool_key in GENOMES_REPORT_TOOLS
+        },
+        "updated_at": build_timestamp,
+        "index_builds": index_builds,
+    }
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+
+
+def _postprocess_genomes_build(
+    cfg: dict,
+    organisms: Iterable[str],
+    *,
+    runtime: RuntimeEnvironment,
+    build_versions: Mapping[str, str],
+) -> None:
+    genomes_root = Path(cfg["genomes_root"]).expanduser()
+    build_timestamp = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+    for organism in organisms:
+        for tool_key in INDEXED_TOOLS:
+            versions = _scan_index_versions(genomes_root, organism, tool_key)
+            if not versions:
+                continue
+            latest_version = max(versions, key=_version_key)
+            _update_symlink(_tool_stable_link(genomes_root, organism, tool_key), versions[latest_version])
+        _write_index_manifest(
+            cfg,
+            genomes_root,
+            organism,
+            runtime=runtime,
+            build_versions=build_versions,
+            build_timestamp=build_timestamp,
+        )
 
 
 def cmd_genomes_build(ctx: RunContext, args: argparse.Namespace) -> None:
     if args.no_skip_plan:
         cmd_genomes_plan(ctx, args)
     else:
+        _print_tool_report(ctx, GENOMES_REPORT_TOOLS)
         print("Skipping genomes plan checks by default; running build directly.")
-    genomes_cfg_path = REPO_ROOT / "configs" / "genomes.yaml"
-    genomes_cfg = _resolve_genomes_index_versions(ctx, genomes_cfg_path)
-    versions = genomes_cfg["index_versions"]
-    print("Using tool versions from environment:", json.dumps(versions, indent=2))
+
+    genomes_cfg, actual_versions, selected_versions, orgs = _prepare_genomes_config(ctx, args)
+    print("Resolved tool versions:", json.dumps(actual_versions, indent=2))
+    print("Using index version labels:", json.dumps(selected_versions, indent=2))
     tmp_genomes_cfg_path = _write_temp_config_json(genomes_cfg)
     smk = REPO_ROOT / "workflow" / "genomes.smk"
-
-    extra: list[str] = []
-    if args.organism:
-        orgs = [o.strip() for o in args.organism.split(",") if o.strip()]
-        extra += ["--config", f"org_subset={','.join(orgs)}"]
 
     snakemake_cmd: list[str] = ["snakemake", "--printshellcmds"]
     if args.executor == "slurm":
@@ -496,9 +1137,15 @@ def cmd_genomes_build(ctx: RunContext, args: argparse.Namespace) -> None:
     else:
         snakemake_cmd += ["--cores", str(args.cores)]
 
-    snakemake_cmd += ["-s", str(smk), "--configfile", str(tmp_genomes_cfg_path), *extra]
+    snakemake_cmd += ["-s", str(smk), "--configfile", str(tmp_genomes_cfg_path)]
     try:
         _run_tool(ctx, snakemake_cmd)
+        _postprocess_genomes_build(
+            genomes_cfg,
+            orgs,
+            runtime=_runtime(ctx),
+            build_versions=selected_versions,
+        )
     finally:
         tmp_genomes_cfg_path.unlink(missing_ok=True)
 
@@ -544,6 +1191,64 @@ def _slurm_time_to_minutes(s: str) -> int:
     h, mins, secs = map(int, m.groups())
     total = (h * 3600) + (mins * 60) + secs
     return max(1, total // 60)
+
+
+def _mapping_report_tools(mappers: Iterable[str]) -> list[str]:
+    tool_keys = list(MAPPING_BASE_REPORT_TOOLS)
+    for mapper in mappers:
+        if mapper not in tool_keys:
+            tool_keys.append(mapper)
+    return tool_keys
+
+
+def _resolve_mapping_index_paths(
+    ctx: RunContext,
+    genomes_root: Path,
+    organism: str,
+    mappers: list[str],
+    args: argparse.Namespace,
+) -> tuple[dict[str, str], dict[str, Path]]:
+    requested_versions = _requested_index_versions_from_args(args)
+    for tool_key, version in requested_versions.items():
+        if version and tool_key not in mappers:
+            raise SystemExit(f"--{tool_key}-index-version may only be used when --mapper includes {tool_key}.")
+
+    selected_versions: dict[str, str] = {}
+    selected_paths: dict[str, Path] = {}
+    for tool_key in mappers:
+        actual_version = _tool_version_or_fail(ctx, tool_key)
+        requested_version = requested_versions[tool_key]
+        if requested_version:
+            if requested_version != actual_version:
+                raise SystemExit(
+                    f"--{tool_key}-index-version {requested_version!r} does not match the resolved "
+                    f"{TOOL_SPECS[tool_key].display_name} binary version {actual_version!r}."
+                )
+            selected_versions[tool_key] = requested_version
+            selected_paths[tool_key] = _tool_versioned_dir(genomes_root, organism, tool_key, requested_version)
+        else:
+            stable_link = _tool_stable_link(genomes_root, organism, tool_key)
+            stable_version = _stable_link_version(stable_link, tool_key)
+            if stable_version is None:
+                raise SystemExit(
+                    f"Could not determine the version behind {stable_link}. "
+                    f"Use --{tool_key}-index-version to select a matching versioned index explicitly."
+                )
+            if stable_version != actual_version:
+                raise SystemExit(
+                    f"Resolved {TOOL_SPECS[tool_key].display_name} binary version {actual_version!r} does not match "
+                    f"the stable {_tool_index_dirname(tool_key)} target version {stable_version!r}. "
+                    f"Use --{tool_key}-index-version {actual_version}."
+                )
+            selected_versions[tool_key] = stable_version
+            selected_paths[tool_key] = stable_link
+
+        expected = _tool_expected_index_path(genomes_root, organism, tool_key, selected_versions[tool_key] if requested_version else None)
+        if not expected.exists():
+            raise SystemExit(
+                f"Missing required {TOOL_SPECS[tool_key].display_name} index resource: {expected}"
+            )
+    return selected_versions, selected_paths
 
 
 def _resolve_mapping_settings(ctx: RunContext, args: argparse.Namespace) -> MappingSettings:
@@ -595,13 +1300,15 @@ def _resolve_mapping_settings(ctx: RunContext, args: argparse.Namespace) -> Mapp
     if not genomes_root.exists():
         raise SystemExit(f"Configured genomes_root does not exist: {genomes_root}")
 
+    index_versions, index_paths = _resolve_mapping_index_paths(ctx, genomes_root, organism, mappers, args)
+
     missing_indices: list[str] = []
-    if "star" in mappers and not (genomes_root / organism / "starIndex" / "SA").exists():
-        missing_indices.append(str(genomes_root / organism / "starIndex" / "SA"))
-    if "bwa" in mappers and not (genomes_root / organism / "bwaIndex" / f"{organism}.bwt").exists():
-        missing_indices.append(str(genomes_root / organism / "bwaIndex" / f"{organism}.bwt"))
-    if "bowtie2" in mappers and not (genomes_root / organism / "bowtie2Index" / f"{organism}.1.bt2").exists():
-        missing_indices.append(str(genomes_root / organism / "bowtie2Index" / f"{organism}.1.bt2"))
+    if "star" in mappers and not (index_paths["star"] / "SA").exists():
+        missing_indices.append(str(index_paths["star"] / "SA"))
+    if "bwa" in mappers and not (index_paths["bwa"] / f"{organism}.bwt").exists():
+        missing_indices.append(str(index_paths["bwa"] / f"{organism}.bwt"))
+    if "bowtie2" in mappers and not (index_paths["bowtie2"] / f"{organism}.1.bt2").exists():
+        missing_indices.append(str(index_paths["bowtie2"] / f"{organism}.1.bt2"))
     if not (genomes_root / f"{organism}.chromSize").exists():
         missing_indices.append(str(genomes_root / f"{organism}.chromSize"))
     if missing_indices:
@@ -624,11 +1331,13 @@ def _resolve_mapping_settings(ctx: RunContext, args: argparse.Namespace) -> Mapp
         keep_intermediary_files=bool(args.keep_intermediary_files),
         bw_bin_size=bw_bin_size,
         bw_normalization=bw_normalization,
+        index_versions=index_versions,
+        index_paths=index_paths,
     )
 
 
 def _mapping_config_kv(settings: MappingSettings) -> list[str]:
-    return [
+    config_kv = [
         f"project={settings.project}",
         f"organism={settings.organism}",
         f"fastq_dir={settings.fastq_dir}",
@@ -642,6 +1351,13 @@ def _mapping_config_kv(settings: MappingSettings) -> list[str]:
         f"bw_bin_size={settings.bw_bin_size}",
         f"bw_normalization={settings.bw_normalization}",
     ]
+    if "star" in settings.index_paths:
+        config_kv.append(f"star_index_dir={settings.index_paths['star']}")
+    if "bwa" in settings.index_paths:
+        config_kv.append(f"bwa_index_prefix={settings.index_paths['bwa'] / settings.organism}")
+    if "bowtie2" in settings.index_paths:
+        config_kv.append(f"bowtie2_index_prefix={settings.index_paths['bowtie2'] / settings.organism}")
+    return config_kv
 
 
 def _mapping_snakemake_cmd(settings: MappingSettings, args: argparse.Namespace, *, dry_run: bool) -> list[str]:
@@ -745,6 +1461,8 @@ def _print_mapping_summary(settings: MappingSettings, args: argparse.Namespace) 
                 "keep_intermediary_files": settings.keep_intermediary_files,
                 "bw_bin_size": settings.bw_bin_size,
                 "bw_normalization": settings.bw_normalization,
+                "index_versions": settings.index_versions,
+                "index_paths": {tool: str(path) for tool, path in settings.index_paths.items()},
             },
             indent=2,
         ),
@@ -752,6 +1470,8 @@ def _print_mapping_summary(settings: MappingSettings, args: argparse.Namespace) 
 
 
 def cmd_mapping_plan(ctx: RunContext, args: argparse.Namespace) -> None:
+    mappers = _parse_mappers(args.mapper)
+    _print_tool_report(ctx, _mapping_report_tools(mappers))
     settings = _resolve_mapping_settings(ctx, args)
     _print_mapping_summary(settings, args)
     _run_mapping_lint(ctx, settings)
@@ -759,9 +1479,17 @@ def cmd_mapping_plan(ctx: RunContext, args: argparse.Namespace) -> None:
 
 
 def cmd_mapping_run(ctx: RunContext, args: argparse.Namespace) -> None:
+    mappers = _parse_mappers(args.mapper)
+    _print_tool_report(ctx, _mapping_report_tools(mappers))
     settings = _resolve_mapping_settings(ctx, args)
     _print_mapping_summary(settings, args)
     _run_tool(ctx, _mapping_snakemake_cmd(settings, args, dry_run=False))
+
+
+def _add_index_version_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--star-index-version", help="Require/use this STAR index version label.")
+    parser.add_argument("--bwa-index-version", help="Require/use this bwa index version label.")
+    parser.add_argument("--bowtie2-index-version", help="Require/use this bowtie2 index version label.")
 
 
 def _add_mapping_args(parser: argparse.ArgumentParser) -> None:
@@ -781,6 +1509,7 @@ def _add_mapping_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--outdir", help="Override configs/run.yaml outdir for this run.")
     parser.add_argument("--threads", type=int, help="Override mapping threads from configs/run.yaml.")
     parser.add_argument("--ram-bytes", type=int, help="Override STAR --limitBAMsortRAM value.")
+    _add_index_version_args(parser)
     parser.add_argument(
         "--keep-intermediary-files",
         action="store_true",
@@ -830,7 +1559,9 @@ def main() -> None:
     genomes_p = sub.add_parser("genomes")
     genomes_sub = genomes_p.add_subparsers(dest="genomes_cmd", required=True)
     genomes_sub.add_parser("check-updates")
-    genomes_sub.add_parser("plan")
+    plan_p = genomes_sub.add_parser("plan")
+    plan_p.add_argument("--organism", help="Comma-separated subset of organism keys (e.g. Homo_sapiens,Mus_musculus)")
+    _add_index_version_args(plan_p)
     build_p = genomes_sub.add_parser("build")
     build_p.add_argument(
         "--executor",
@@ -886,6 +1617,7 @@ def main() -> None:
         help="Request exclusive node allocation per submitted SLURM job.",
     )
     build_p.add_argument("--organism", help="Comma-separated subset of organism keys (e.g. Homo_sapiens,Mus_musculus)")
+    _add_index_version_args(build_p)
     build_p.add_argument(
         "-no-skip-plan",
         "--no-skip-plan",

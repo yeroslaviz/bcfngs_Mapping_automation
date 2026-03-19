@@ -43,10 +43,21 @@ optional arguments:
 ```
 
 ```text
-usage: bcfngs genomes plan [-h]
+usage: bcfngs genomes plan [-h] [--organism ORGANISM]
+                           [--star-index-version STAR_INDEX_VERSION]
+                           [--bwa-index-version BWA_INDEX_VERSION]
+                           [--bowtie2-index-version BOWTIE2_INDEX_VERSION]
 
 optional arguments:
-  -h, --help  show this help message and exit
+  -h, --help            show this help message and exit
+  --organism ORGANISM   Comma-separated subset of organism keys (e.g.
+                        Homo_sapiens,Mus_musculus)
+  --star-index-version STAR_INDEX_VERSION
+                        Require/use this STAR index version label.
+  --bwa-index-version BWA_INDEX_VERSION
+                        Require/use this bwa index version label.
+  --bowtie2-index-version BOWTIE2_INDEX_VERSION
+                        Require/use this bowtie2 index version label.
 ```
 
 ```bash
@@ -54,13 +65,29 @@ optional arguments:
 ```
 
 ```text
-usage: bcfngs genomes build [-h] [--cores CORES] [--organism ORGANISM]
+usage: bcfngs genomes build [-h] [--executor {local,slurm}] [--cores CORES]
+                            [--jobs JOBS] [--organism ORGANISM]
+                            [--star-index-version STAR_INDEX_VERSION]
+                            [--bwa-index-version BWA_INDEX_VERSION]
+                            [--bowtie2-index-version BOWTIE2_INDEX_VERSION]
+                            [-no-skip-plan]
 
 optional arguments:
-  -h, --help           show this help message and exit
+  -h, --help            show this help message and exit
+  --executor {local,slurm}
   --cores CORES
-  --organism ORGANISM  Comma-separated subset of organism keys (e.g.
-                       Homo_sapiens,Mus_musculus)
+  --jobs JOBS
+  --organism ORGANISM   Comma-separated subset of organism keys (e.g.
+                        Homo_sapiens,Mus_musculus)
+  --star-index-version STAR_INDEX_VERSION
+                        Require/use this STAR index version label.
+  --bwa-index-version BWA_INDEX_VERSION
+                        Require/use this bwa index version label.
+  --bowtie2-index-version BOWTIE2_INDEX_VERSION
+                        Require/use this bowtie2 index version label.
+  -no-skip-plan, --no-skip-plan
+                        Run plan preflight checks before build (config
+                        validation, URL checks, lint, dry-run).
 ```
 
 ```bash
@@ -78,6 +105,7 @@ That means:
 
 - use `--cores` to control total workflow parallelism
 - use `--organism` for a comma-separated subset of organism keys
+- use `--star-index-version`, `--bwa-index-version`, and `--bowtie2-index-version` when the resolved tool version should target a matching versioned index explicitly
 - use direct `snakemake` for advanced cases such as scheduler memory flags or building only one index type
 
 ## Shared wrapper parameters
@@ -86,7 +114,7 @@ These apply to all three genomes subcommands and are cross-referenced from the c
 
 | Parameter | Current default | Applies to | Notes |
 |---|---|---|---|
-| `--profile` | `micromamba` | `check-updates`, `plan`, `build` | `modules` prepends `module load bclconvert/4.3.13 star bowtie2 bwa`, but still runs `python` and `snakemake` through micromamba. |
+| `--profile` | `micromamba` | `check-updates`, `plan`, `build` | `modules` now resolves `STAR`, `bwa`, and `bowtie2` from modules while keeping `python`, `snakemake`, and `curl` in micromamba. |
 | `--env-prefix` | `./.mamba/env` | `check-updates`, `plan`, `build` | This is the current default in [`scripts/bcfngs`](scripts/bcfngs). Override it if your environment lives elsewhere. |
 | `configs/genomes.yaml` | required | `check-updates`, `plan`, `build` | Release pins, organisms, output root, thread defaults, RAM defaults, and index version strings all come from this file. |
 
@@ -96,7 +124,7 @@ These are the main `configs/genomes.yaml` fields referenced by the three command
 
 | Config field | Current value | Used by | Notes |
 |---|---|---|---|
-| `genomes_root` | `/fs/pool/pool-bcfngs/genomes` | `plan`, `build` | `plan` checks write access here. `build` writes sources, indices, and symlinks here. |
+| `genomes_root` | `/fs/pool/pool-bcfngs/genomes` | `plan`, `build` | `plan` checks write access here. `build` writes sources, indices, stable symlinks, and per-organism manifests here. |
 | `releases.ensembl` | `116` | `check-updates`, `plan`, `build` | Main Ensembl release pin. `check-updates` compares this to `ftp.ensembl.org`. |
 | `releases.ensemblgenomes.metazoa` | `61` | `plan`, `build` | Used for `ensemblgenomes` organisms such as `Drosophila_pseudoobscura`. |
 | `default_threads` | `16` | `build` | Used by `STAR` genome generation and `bowtie2-build`. |
@@ -163,7 +191,7 @@ If you are updating an EnsemblGenomes organism such as `Drosophila_pseudoobscura
 | Item | Current default / value | Where set | Notes |
 |---|---|---|---|
 | Shared wrapper parameters | see [Shared wrapper parameters](#shared-wrapper-parameters) | CLI | `--profile` and `--env-prefix` apply here. |
-| Command-specific flags | none | CLI | The wrapper exposes no extra `plan` flags. |
+| Command-specific flags | `--organism`, `--star-index-version`, `--bwa-index-version`, `--bowtie2-index-version` | CLI | Use these to dry-run a subset or validate an explicit tool/index version pairing. |
 | Organism scope | all configured organisms | wrapper behavior | The wrapper plans the full configured set. Use direct `snakemake` with `--config org_subset=...` if you want a subset dry-run. |
 | `genomes_root` | `/fs/pool/pool-bcfngs/genomes` | [`configs/genomes.yaml`](configs/genomes.yaml) | `plan` checks that this location is writable. |
 | Release pins and URLs | see [Common config fields](#common-config-fields) | config | `plan` resolves all FASTA/GTF URLs from the current release pins and organism blocks, then tests them with `curl -fsSI`. |
@@ -194,7 +222,7 @@ module load bclconvert/4.3.13 star bowtie2 bwa
 ./scripts/bcfngs --profile modules genomes plan
 ```
 
-The `modules` profile still uses the micromamba environment for `python` and `snakemake`; it only changes how tool discovery happens for the aligners.
+The `modules` profile now resolves mapper binaries explicitly. `python`, `snakemake`, and `curl` stay in micromamba, while `STAR`, `bwa`, and `bowtie2` are reused or loaded from modules. Each top-level command prints the resolved tool/version report to `stderr`.
 
 ### Direct Snakemake subset dry-run
 
@@ -237,11 +265,13 @@ snakemake -npr \
 | Shared wrapper parameters | see [Shared wrapper parameters](#shared-wrapper-parameters) | CLI | `--profile` and `--env-prefix` apply here too. |
 | `--cores` | `16` | CLI | Total Snakemake core budget for `./scripts/bcfngs genomes build`. |
 | `--organism` | all configured organisms | CLI | Optional comma-separated subset such as `Homo_sapiens,Mus_musculus`. |
+| `--star-index-version`, `--bwa-index-version`, `--bowtie2-index-version` | resolved binary version | CLI | If set, each flag must match the actual resolved binary version for that tool. |
 | `default_threads` | `16` | [`configs/genomes.yaml`](configs/genomes.yaml) | Used by `STAR` genome generation and `bowtie2-build`. This is separate from `--cores`. |
 | `default_ram_bytes` | `168632718037` | [`configs/genomes.yaml`](configs/genomes.yaml) | Passed to `STAR --limitGenomeGenerateRAM`. |
-| `index_versions.*` | `unknown` for all three tools | [`configs/genomes.yaml`](configs/genomes.yaml) | Controls output directory names and symlink targets. |
+| `index_versions.*` | resolved at runtime | wrapper behavior | Controls versioned output paths such as `starIndex-<version>`. |
 | `organisms.*.sa_index` | organism-specific | [`configs/genomes.yaml`](configs/genomes.yaml) | Controls STAR suffix-array sizing. |
-| Stable symlink outputs | `starIndex`, `bwaIndex`, `bowtie2Index` | workflow behavior | Updated after successful index creation. |
+| Stable symlink outputs | `starIndex`, `bwaIndex`, `bowtie2Index` | wrapper behavior | Repointed after build to the highest built version available for that organism and tool. |
+| Per-organism manifest | `index-manifest.json` | wrapper behavior | Written under each organism directory with assembly, source release, tool versions, stable targets, and discovered versioned builds. |
 | Advanced scheduler knobs | direct `snakemake` only | CLI at Snakemake level | Use these for SLURM executor settings, `mem_mb`, or `mem_mb_per_cpu`. |
 
 ### Local run with micromamba / conda-style environment
@@ -401,10 +431,18 @@ Then rerun:
 ./scripts/bcfngs genomes build --cores 20
 ```
 
-Successful builds update the stable symlinks automatically:
+Successful builds update the stable symlinks automatically to the highest built version detected on disk:
 
 - `/fs/pool/pool-bcfngs/genomes/<Organism>/starIndex`
 - `/fs/pool/pool-bcfngs/genomes/<Organism>/bwaIndex`
 - `/fs/pool/pool-bcfngs/genomes/<Organism>/bowtie2Index`
 
 These stable names point to versioned directories such as `starIndex-2.7.11b`.
+
+Each organism directory also gets an `index-manifest.json` file recording:
+
+- the assembly and source URLs
+- the Ensembl or EnsemblGenomes release used for indexing
+- the resolved tool versions used during the last build command
+- the current stable symlink targets
+- the discovered versioned index directories for STAR, bwa, and bowtie2
