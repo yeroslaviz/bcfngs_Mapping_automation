@@ -151,8 +151,9 @@ With `--profile modules`, the wrapper now resolves tools explicitly instead of r
 - `python`, `snakemake`, and `curl` stay in micromamba
 - `STAR`, `bwa`, and `bowtie2` are taken from reused or auto-loaded modules
 - `samtools` and `bamCoverage` are reused from a preloaded module if one is already active; otherwise they stay in micromamba
-- every top-level modules-profile command prints a resolved tool/version report to `stderr`
-- `env check` still keeps its JSON output on `stdout`
+- modules-profile commands still print the resolved tool/version report to `stderr`
+- plain `./scripts/bcfngs env check` stays JSON-only
+- `./scripts/bcfngs --profile modules env check` prints only the tools actually resolved from modules, while keeping the JSON output on `stdout`
 
 Typical usage:
 
