@@ -23,7 +23,8 @@ Following steps will be cover in this documentation
 
 # Analysis steps
 
-This tool is straightforward to use
+This tool is straightforward to use.
+
 First, one must first install the conda environment. Instruction for this step can be found in the [environment file](environment.qmd).
 
 Updating the genomic indices should be done once, only when a new genome build is published. Ourwirkflow is using the Ensembl genomes fro various organisms. More can be added as needed. 
