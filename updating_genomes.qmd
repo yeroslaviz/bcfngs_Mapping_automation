@@ -3,12 +3,12 @@ title: "Updating genomes and indices"
 author: "AY"
 ---
 
-This page is the operator guide for `./scripts/bcfngs genomes`.
+This page contains the instruction for `./scripts/bcfngs genomes`.
 It covers:
 
-- checking whether the pinned genome release is outdated
-- planning and building genome sources plus indices
-- rebuilding only selected organisms
+- checking whether the pinned genome release is outdated (`check-updates`)
+- planning and building genome sources plus indices (`plan`)
+- rebuilding only selected organisms (`build`)
 - updating genome configuration and versioned index directories
 - advanced direct `snakemake` usage when the wrapper does not expose a knob
 
@@ -20,7 +20,7 @@ Environment setup is documented elsewhere. This page assumes `./scripts/bcfngs` 
 
 - `check-updates`: compare the pinned Ensembl release in [`configs/genomes.yaml`](configs/genomes.yaml) with the latest Ensembl release visible on `ftp.ensembl.org`
 - `plan`: run preflight checks, `snakemake --lint`, and a dry-run
-- `build`: run `plan`, then execute the workflow for real
+- `build`: xecute the workflow for real; unless stated otherwise (`-no-skip-plan`), thus will try to build the indices without first running `plan`. 
 
 Inspect the wrapper help first. Current output from the script:
 
@@ -37,6 +37,8 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
 ```
+
+### Planning genome indexing
 
 ```bash
 ./scripts/bcfngs genomes plan --help
@@ -60,25 +62,49 @@ optional arguments:
                         Require/use this bowtie2 index version label.
 ```
 
+### Building the genomic indicies
+
+This step can be either done locally or using the slurm scheduler of our HPC.
+
 ```bash
 ./scripts/bcfngs genomes build --help
 ```
 
 ```text
-usage: bcfngs genomes build [-h] [--executor {local,slurm}] [--cores CORES]
-                            [--jobs JOBS] [--organism ORGANISM]
-                            [--star-index-version STAR_INDEX_VERSION]
-                            [--bwa-index-version BWA_INDEX_VERSION]
-                            [--bowtie2-index-version BOWTIE2_INDEX_VERSION]
-                            [-no-skip-plan]
+usage: bcfngs genomes build [-h] [--executor {local,slurm}] [--cores CORES] [--jobs JOBS] [--slurm-partition SLURM_PARTITION]
+                            [--slurm-account SLURM_ACCOUNT] [--slurm-qos SLURM_QOS] [--slurm-mail-user SLURM_MAIL_USER]
+                            [--slurm-mail-type SLURM_MAIL_TYPE] [--slurm-time SLURM_TIME] [--slurm-cpus-per-task SLURM_CPUS_PER_TASK]
+                            [--slurm-mem-per-cpu SLURM_MEM_PER_CPU] [--slurm-mem SLURM_MEM] [--slurm-exclusive] [--organism ORGANISM]
+                            [--star-index-version STAR_INDEX_VERSION] [--bwa-index-version BWA_INDEX_VERSION]
+                            [--bowtie2-index-version BOWTIE2_INDEX_VERSION] [-no-skip-plan]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   --executor {local,slurm}
+                        Execution backend: local (default) or slurm.
   --cores CORES
-  --jobs JOBS
-  --organism ORGANISM   Comma-separated subset of organism keys (e.g.
-                        Homo_sapiens,Mus_musculus)
+  --jobs JOBS           Max concurrent jobs for --executor slurm.
+  --slurm-partition SLURM_PARTITION
+                        SLURM partition name (for --executor slurm).
+  --slurm-account SLURM_ACCOUNT
+                        SLURM account name (for --executor slurm).
+  --slurm-qos SLURM_QOS
+                        SLURM QoS name (for --executor slurm).
+  --slurm-mail-user SLURM_MAIL_USER
+                        SLURM mail user for --executor slurm.
+  --slurm-mail-type SLURM_MAIL_TYPE
+                        SLURM mail type for --executor slurm (e.g. ALL or END,FAIL).
+  --slurm-time SLURM_TIME
+                        SLURM walltime HH:MM:SS (default: 04:00:00).
+  --slurm-cpus-per-task SLURM_CPUS_PER_TASK
+                        SLURM cpus-per-task for heavy index rules (default: 20).
+  --slurm-mem-per-cpu SLURM_MEM_PER_CPU
+                        SLURM mem-per-cpu in MB for --executor slurm (optional). If set, this overrides --slurm-mem.
+  --slurm-mem SLURM_MEM
+                        SLURM total memory (--mem) in MB for heavy index rules (default: 409600 ~= 400G). Ignored when --slurm-mem-per-
+                        cpu is set.
+  --slurm-exclusive     Request exclusive node allocation per submitted SLURM job.
+  --organism ORGANISM   Comma-separated subset of organism keys (e.g. Homo_sapiens,Mus_musculus)
   --star-index-version STAR_INDEX_VERSION
                         Require/use this STAR index version label.
   --bwa-index-version BWA_INDEX_VERSION
@@ -86,9 +112,10 @@ optional arguments:
   --bowtie2-index-version BOWTIE2_INDEX_VERSION
                         Require/use this bowtie2 index version label.
   -no-skip-plan, --no-skip-plan
-                        Run plan preflight checks before build (config
-                        validation, URL checks, lint, dry-run).
+                        Run plan preflight checks before build (config validation, URL checks, lint, dry-run).
 ```
+
+### Checking for updates
 
 ```bash
 ./scripts/bcfngs genomes check-updates --help

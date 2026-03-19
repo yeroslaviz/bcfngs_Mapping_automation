@@ -136,9 +136,9 @@ Using the `--profile modules` will enbale the analysis using the modules install
 ```bash
 $ ./scripts/bcfngs --profile modules env check
 Resolved tool versions:
-  - STAR: star/2.7.11b 2.7.11b (/fs/pool/pool-cox-modules-software/STAR/2.7.11b/STAR)
-  - bwa: bwa/0.7.17 0.7.17-r1198-dirty (/fs/pool/pool-cox-modules-software/bwa/bwa)
-  - bowtie2: bowtie2/2.5.4 2.5.4 (/fs/pool/pool-cox-modules-software/bowtie2/2.5.4/bowtie2)
+  - STAR: star/2.7.11b 2.7.11b         (...software/STAR/2.7.11b/STAR)
+  - bwa: bwa/0.7.17 0.7.17-r1198-dirty (...software/bwa/bwa)
+  - bowtie2: bowtie2/2.5.4 2.5.4       (...software/bowtie2/2.5.4/bowtie2)
 1{
   "snakemake": "8.30.0",
   "STAR": "2.7.11b",
@@ -155,9 +155,9 @@ If we preload a specific module beforehand, this one will be taken automatically
 $ module load star/2.7.10b
 $ ./scripts/bcfngs --profile modules env check
 Resolved tool versions:
-  - STAR: star/2.7.10b 2.7.10b (/fs/pool/pool-cox-modules-software/STAR/2.7.10b/STAR)
-  - bwa: bwa/0.7.17 0.7.17-r1198-dirty (/fs/pool/pool-cox-modules-software/bwa/bwa)
-  - bowtie2: bowtie2/2.5.4 2.5.4 (/fs/pool/pool-cox-modules-software/bowtie2/2.5.4/bowtie2)
+  - STAR: star/2.7.10b 2.7.10b         (...software/STAR/2.7.10b/STAR)
+  - bwa: bwa/0.7.17 0.7.17-r1198-dirty (...software/bwa/bwa)
+  - bowtie2: bowtie2/2.5.4 2.5.4       (...software/bowtie2/2.5.4/bowtie2)
 {
   "snakemake": "8.30.0",
   "STAR": "2.7.10b",
@@ -182,12 +182,12 @@ If the needed genome index for this version is not available, it will resultsin 
 ```bash
 $ ./scripts/bcfngs --profile modules mapping plan   --mapper star   --star-index-version 2.7.10b
 Resolved tool versions:
-  - python: micromamba 3.12.13 (/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes/bin/python)
-  - snakemake: micromamba 8.30.0 (/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes/bin/snakemake)
-  - samtools: micromamba 1.23.1 (/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes/bin/samtools)
-  - bamCoverage: micromamba 3.5.6 (/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes/bin/bamCoverage)
-  - STAR: star/2.7.10b 2.7.10b (/fs/pool/pool-cox-modules-software/STAR/2.7.10b/STAR)
-Missing required STAR index resource: /fs/pool/pool-bcfngs/genomes/Caenorhabditis_elegans/starIndex-2.7.10b/SA
+  - python: micromamba 3.12.13    (.../miniconda3/envs/update_genomes/bin/python)
+  - snakemake: micromamba 8.30.0  (.../miniconda3/envs/update_genomes/bin/snakemake)
+  - samtools: micromamba 1.23.1   (.../miniconda3/envs/update_genomes/bin/samtools)
+  - bamCoverage: micromamba 3.5.6 (.../miniconda3/envs/update_genomes/bin/bamCoverage)
+  - STAR: star/2.7.10b 2.7.10b    (...software/STAR/2.7.10b/STAR)
+Missing required STAR index resource: .../genomes/Caenorhabditis_elegans/starIndex-2.7.10b/SA
 ```
 
 ### Demultiplexing with `bcl-convert`
