@@ -5,7 +5,7 @@
 project: "P000"
 
 # Input FASTQ directory.
-path: "/fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/"
+path: "/fs/pool/pool-bcfngs/fastq_files/P000/conc.fastq/"
 
 # Output root directory.
 outdir: "/fs/pool/pool-bcfngs/mapping"

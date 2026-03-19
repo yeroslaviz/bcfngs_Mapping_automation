@@ -570,6 +570,15 @@ def _print_tool_report(ctx: RunContext, tool_keys: Iterable[str]) -> None:
         print(f"  - {_tool_report_line(runtime.tools[tool_key])}", file=sys.stderr)
 
 
+def _module_report_keys(ctx: RunContext, tool_keys: Iterable[str]) -> list[str]:
+    runtime = _runtime(ctx)
+    out: list[str] = []
+    for tool_key in tool_keys:
+        if runtime.tools[tool_key].source == "module" and tool_key not in out:
+            out.append(tool_key)
+    return out
+
+
 def _tool_version_or_fail(ctx: RunContext, tool_key: str) -> str:
     tool = _resolved_tool(ctx, tool_key)
     if not tool.version:
@@ -628,7 +637,10 @@ def _write_temp_config_json(data: dict) -> Path:
 
 
 def cmd_env_check(ctx: RunContext, args: argparse.Namespace) -> None:
-    _print_tool_report(ctx, ENV_CHECK_REPORT_TOOLS)
+    if ctx.profile == "modules":
+        module_keys = _module_report_keys(ctx, ENV_CHECK_REPORT_TOOLS)
+        if module_keys:
+            _print_tool_report(ctx, module_keys)
     _require_tools(ctx, ["python", "snakemake", "STAR", "bwa", "bowtie2-build", "samtools", "curl", "bamCoverage"])
     bwa_out = _run_tool(ctx, ["bwa"], check=False, capture=True)
     star_out = _run_tool(ctx, ["STAR", "--version"], check=False, capture=True)
