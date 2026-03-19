@@ -88,39 +88,6 @@ Example output:
 }
 ```
 
-## Troubleshooting missing tools
-
-If `./scripts/bcfngs env check` reports a missing tool:
-
-1. Update the environment:
-
-```bash
-./scripts/bcfngs env update
-./scripts/bcfngs env check
-```
-
-2. If you're using a non-default location for your enviroonment, pass it explicitly:
-
-```bash
-./scripts/bcfngs --env-prefix /path/to/your/env env update
-./scripts/bcfngs --env-prefix /path/to/your/env env check
-```
-
-3. Verify the package is installed in the expected environment:
-
-```bash
-micromamba list -p ~/miniconda3/envs/update_genomes | grep -Ei 'snakemake|star|bwa|bowtie2|samtools|rseqc'
-micromamba run -p ~/miniconda3/envs/update_genomes snakemake --version
-```
-
-4. If needed, recreate the environment:
-
-```bash
-rm -rf ~/miniconda3/envs/update_genomes
-./scripts/bcfngs env create
-./scripts/bcfngs env check
-```
-
 # How-to (common scenarios)
 
 ## First-time setup
@@ -164,7 +131,44 @@ module load bclconvert/4.3.13 star bowtie2 bwa
 ./scripts/bcfngs --profile modules genomes build --cores 20
 ```
 
-If you preload an older mapper module, the wrapper will reuse it and require you to select the matching versioned index explicitly in mapping:
+Using the `--profile modules` will enbale the analysis using the modules installed via the HPC system. To see the version of modules installed we can test the tool versions:
+
+```bash
+$ ./scripts/bcfngs --profile modules env check
+Resolved tool versions:
+  - STAR: star/2.7.11b 2.7.11b (/fs/pool/pool-cox-modules-software/STAR/2.7.11b/STAR)
+  - bwa: bwa/0.7.17 0.7.17-r1198-dirty (/fs/pool/pool-cox-modules-software/bwa/bwa)
+  - bowtie2: bowtie2/2.5.4 2.5.4 (/fs/pool/pool-cox-modules-software/bowtie2/2.5.4/bowtie2)
+1{
+  "snakemake": "8.30.0",
+  "STAR": "2.7.11b",
+  "bwa": "0.7.17-r1198-dirty",
+  "bowtie2": "2.5.4",
+  "samtools": "1.23.1",
+  "bamCoverage": "3.5.6"
+}
+```
+
+If we preload a specific module beforehand, this one will be taken automatically into account. 
+
+```bash
+$ module load star/2.7.10b
+$ ./scripts/bcfngs --profile modules env check
+Resolved tool versions:
+  - STAR: star/2.7.10b 2.7.10b (/fs/pool/pool-cox-modules-software/STAR/2.7.10b/STAR)
+  - bwa: bwa/0.7.17 0.7.17-r1198-dirty (/fs/pool/pool-cox-modules-software/bwa/bwa)
+  - bowtie2: bowtie2/2.5.4 2.5.4 (/fs/pool/pool-cox-modules-software/bowtie2/2.5.4/bowtie2)
+{
+  "snakemake": "8.30.0",
+  "STAR": "2.7.10b",
+  "bwa": "0.7.17-r1198-dirty",
+  "bowtie2": "2.5.4",
+  "samtools": "1.23.1",
+  "bamCoverage": "3.5.6"
+}
+```
+
+If you preload an older mapper module, the wrapper will reuse it and require you to **select the matching versioned index** explicitly in mapping:
 
 ```bash
 module load star/2.7.10b
@@ -180,4 +184,39 @@ This repo does not automate demultiplexing yet. Typical usage on the cluster is:
 ```bash
 module load bclconvert/4.3.13
 bcl-convert --help
+```
+
+# Troubleshooting
+
+## Missing tools
+
+If `./scripts/bcfngs env check` reports a missing tool:
+
+1. Update the environment:
+
+```bash
+./scripts/bcfngs env update
+./scripts/bcfngs env check
+```
+
+2. If you're using a non-default location for your enviroonment, pass it explicitly:
+
+```bash
+./scripts/bcfngs --env-prefix /path/to/your/env env update
+./scripts/bcfngs --env-prefix /path/to/your/env env check
+```
+
+3. Verify the package is installed in the expected environment:
+
+```bash
+micromamba list -p ~/miniconda3/envs/update_genomes | grep -Ei 'snakemake|star|bwa|bowtie2|samtools|rseqc'
+micromamba run -p ~/miniconda3/envs/update_genomes snakemake --version
+```
+
+4. If needed, recreate the environment:
+
+```bash
+rm -rf ~/miniconda3/envs/update_genomes
+./scripts/bcfngs env create
+./scripts/bcfngs env check
 ```
