@@ -241,11 +241,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>This page is the operator guide for <code>./scripts/bcfngs genomes</code>. It covers:</p>
+<p>This page contains the instruction for <code>./scripts/bcfngs genomes</code>. It covers:</p>
 <ul>
-<li>checking whether the pinned genome release is outdated</li>
-<li>planning and building genome sources plus indices</li>
-<li>rebuilding only selected organisms</li>
+<li>checking whether the pinned genome release is outdated (<code>check-updates</code>)</li>
+<li>planning and building genome sources plus indices (<code>plan</code>)</li>
+<li>rebuilding only selected organisms (<code>build</code>)</li>
 <li>updating genome configuration and versioned index directories</li>
 <li>advanced direct <code>snakemake</code> usage when the wrapper does not expose a knob</li>
 </ul>
@@ -256,7 +256,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <ul>
 <li><code>check-updates</code>: compare the pinned Ensembl release in <a href="configs/genomes.yaml"><code>configs/genomes.yaml</code></a> with the latest Ensembl release visible on <code>ftp.ensembl.org</code></li>
 <li><code>plan</code>: run preflight checks, <code>snakemake --lint</code>, and a dry-run</li>
-<li><code>build</code>: run <code>plan</code>, then execute the workflow for real</li>
+<li><code>build</code>: xecute the workflow for real; unless stated otherwise (<code>-no-skip-plan</code>), thus will try to build the indices without first running <code>plan</code>.</li>
 </ul>
 <p>Inspect the wrapper help first. Current output from the script:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes <span class="at">--help</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -267,6 +267,8 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit</code></pre>
+<section id="planning-genome-indexing" class="level3">
+<h3 class="anchored" data-anchor-id="planning-genome-indexing">Planning genome indexing</h3>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes plan <span class="at">--help</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <pre class="text"><code>usage: bcfngs genomes plan [-h] [--organism ORGANISM]
                            [--star-index-version STAR_INDEX_VERSION]
@@ -283,21 +285,45 @@ optional arguments:
                         Require/use this bwa index version label.
   --bowtie2-index-version BOWTIE2_INDEX_VERSION
                         Require/use this bowtie2 index version label.</code></pre>
+</section>
+<section id="building-the-genomic-indicies" class="level3">
+<h3 class="anchored" data-anchor-id="building-the-genomic-indicies">Building the genomic indicies</h3>
+<p>This step can be either done locally or using the slurm scheduler of our HPC.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes build <span class="at">--help</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<pre class="text"><code>usage: bcfngs genomes build [-h] [--executor {local,slurm}] [--cores CORES]
-                            [--jobs JOBS] [--organism ORGANISM]
-                            [--star-index-version STAR_INDEX_VERSION]
-                            [--bwa-index-version BWA_INDEX_VERSION]
-                            [--bowtie2-index-version BOWTIE2_INDEX_VERSION]
-                            [-no-skip-plan]
+<pre class="text"><code>usage: bcfngs genomes build [-h] [--executor {local,slurm}] [--cores CORES] [--jobs JOBS] [--slurm-partition SLURM_PARTITION]
+                            [--slurm-account SLURM_ACCOUNT] [--slurm-qos SLURM_QOS] [--slurm-mail-user SLURM_MAIL_USER]
+                            [--slurm-mail-type SLURM_MAIL_TYPE] [--slurm-time SLURM_TIME] [--slurm-cpus-per-task SLURM_CPUS_PER_TASK]
+                            [--slurm-mem-per-cpu SLURM_MEM_PER_CPU] [--slurm-mem SLURM_MEM] [--slurm-exclusive] [--organism ORGANISM]
+                            [--star-index-version STAR_INDEX_VERSION] [--bwa-index-version BWA_INDEX_VERSION]
+                            [--bowtie2-index-version BOWTIE2_INDEX_VERSION] [-no-skip-plan]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   --executor {local,slurm}
+                        Execution backend: local (default) or slurm.
   --cores CORES
-  --jobs JOBS
-  --organism ORGANISM   Comma-separated subset of organism keys (e.g.
-                        Homo_sapiens,Mus_musculus)
+  --jobs JOBS           Max concurrent jobs for --executor slurm.
+  --slurm-partition SLURM_PARTITION
+                        SLURM partition name (for --executor slurm).
+  --slurm-account SLURM_ACCOUNT
+                        SLURM account name (for --executor slurm).
+  --slurm-qos SLURM_QOS
+                        SLURM QoS name (for --executor slurm).
+  --slurm-mail-user SLURM_MAIL_USER
+                        SLURM mail user for --executor slurm.
+  --slurm-mail-type SLURM_MAIL_TYPE
+                        SLURM mail type for --executor slurm (e.g. ALL or END,FAIL).
+  --slurm-time SLURM_TIME
+                        SLURM walltime HH:MM:SS (default: 04:00:00).
+  --slurm-cpus-per-task SLURM_CPUS_PER_TASK
+                        SLURM cpus-per-task for heavy index rules (default: 20).
+  --slurm-mem-per-cpu SLURM_MEM_PER_CPU
+                        SLURM mem-per-cpu in MB for --executor slurm (optional). If set, this overrides --slurm-mem.
+  --slurm-mem SLURM_MEM
+                        SLURM total memory (--mem) in MB for heavy index rules (default: 409600 ~= 400G). Ignored when --slurm-mem-per-
+                        cpu is set.
+  --slurm-exclusive     Request exclusive node allocation per submitted SLURM job.
+  --organism ORGANISM   Comma-separated subset of organism keys (e.g. Homo_sapiens,Mus_musculus)
   --star-index-version STAR_INDEX_VERSION
                         Require/use this STAR index version label.
   --bwa-index-version BWA_INDEX_VERSION
@@ -305,8 +331,10 @@ optional arguments:
   --bowtie2-index-version BOWTIE2_INDEX_VERSION
                         Require/use this bowtie2 index version label.
   -no-skip-plan, --no-skip-plan
-                        Run plan preflight checks before build (config
-                        validation, URL checks, lint, dry-run).</code></pre>
+                        Run plan preflight checks before build (config validation, URL checks, lint, dry-run).</code></pre>
+</section>
+<section id="checking-for-updates" class="level3">
+<h3 class="anchored" data-anchor-id="checking-for-updates">Checking for updates</h3>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/bcfngs</span> genomes check-updates <span class="at">--help</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <pre class="text"><code>usage: bcfngs genomes check-updates [-h]
 
@@ -319,6 +347,7 @@ optional arguments:
 <li>use <code>--star-index-version</code>, <code>--bwa-index-version</code>, and <code>--bowtie2-index-version</code> when the resolved tool version should target a matching versioned index explicitly</li>
 <li>use direct <code>snakemake</code> for advanced cases such as scheduler memory flags or building only one index type</li>
 </ul>
+</section>
 </section>
 <section id="shared-wrapper-parameters" class="level2">
 <h2 class="anchored" data-anchor-id="shared-wrapper-parameters">Shared wrapper parameters</h2>
