@@ -162,6 +162,16 @@ as well as which mappers we need
 
 # CHANGES
 
+### 19.03.2026
+
+- Reworked the `modules` profile in [`scripts/bcfngs`](scripts/bcfngs) so that `python`, `snakemake`, and `curl` stay in micromamba while `STAR`, `bwa`, and `bowtie2` are resolved from reused or auto-loaded modules.
+- Added per-tool versioned index selection for both genomes and mapping via `--star-index-version`, `--bwa-index-version`, and `--bowtie2-index-version`.
+- Added stricter mapper/index compatibility checks so mapping stops early when the resolved tool version does not match the selected or stable index version.
+- Changed genome post-processing so stable symlinks (`starIndex`, `bwaIndex`, `bowtie2Index`) are repointed to the highest built version available for each organism.
+- Added per-organism `index-manifest.json` reports with assembly, Ensembl source/release details, resolved tool versions, stable symlink targets, and discovered versioned builds.
+- Reduced `env check` noise so the default micromamba profile stays JSON-only, while `--profile modules env check` reports only tools that are actually resolved from modules.
+- Updated the operator documentation pages to describe the new modules-profile behavior, explicit version flags, stable-symlink policy, and index manifests.
+
 ### 06.03.2026
 
 - Continued the Quarto migration and switched the remaining main pages from `.Rmd` to `.qmd`.
