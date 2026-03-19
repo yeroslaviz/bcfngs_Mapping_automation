@@ -1,4 +1,4 @@
-name: bcfngs-mapping
+name: update_genomes
 channels:
   - conda-forge
   - bioconda

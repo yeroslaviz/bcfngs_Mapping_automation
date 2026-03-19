@@ -21,6 +21,12 @@ On the HPC cluster this expands to:
 
 The wrapper `./scripts/bcfngs` uses the same path by default. If you keep the environment somewhere else, add `--env-prefix /path/to/env`.
 
+```bash
+REPO_ROOT = Path(__file__).resolve().parents[1]
+CLUSTER_ENV_PREFIX = Path("/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes")
+DEFAULT_ENV_PREFIX = CLUSTER_ENV_PREFIX if CLUSTER_ENV_PREFIX.exists() else REPO_ROOT / ".mamba" / "env"
+```
+
 ## Installing micromamba
 
 micromamba can be installed from the [github repository](https://github.com/mamba-org/micromamba-releases).
@@ -43,7 +49,11 @@ If your micromamba root prefix is already `~/miniconda3`, the equivalent named-e
 micromamba create -y -n update_genomes -f env/environment.yml
 ```
 
+The [environment file](env/environment.yml) states the tools needed to create this environment. We can find there besides the python  packages aslo the various tool we need for the mapping and quantifications as well as file conversions.
+
 ## Run commands without activating the environment
+
+For whatever reason we might need, it is also possible to run the tool without activating the environment. 
 
 ```bash
 micromamba run -p ~/miniconda3/envs/update_genomes snakemake --version
@@ -71,9 +81,10 @@ Example output:
 {
   "snakemake": "8.30.0",
   "STAR": "2.7.11b",
-  "bwa": "",
-  "bowtie2": "/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes/bin/bowtie2-build-s version 2.5.5",
-  "samtools": "samtools 1.23"
+  "bwa": "0.7.19-r1273",
+  "bowtie2": "2.5.5",
+  "samtools": "1.23.1",
+  "bamCoverage": "3.5.6" # deeptools
 }
 ```
 
@@ -88,7 +99,7 @@ If `./scripts/bcfngs env check` reports a missing tool:
 ./scripts/bcfngs env check
 ```
 
-2. If you use a non-default location, pass it explicitly:
+2. If you're using a non-default location for your enviroonment, pass it explicitly:
 
 ```bash
 ./scripts/bcfngs --env-prefix /path/to/your/env env update
@@ -110,23 +121,16 @@ rm -rf ~/miniconda3/envs/update_genomes
 ./scripts/bcfngs env check
 ```
 
-## How-to (common scenarios)
+# How-to (common scenarios)
 
-### First-time setup
+## First-time setup
 
 ```bash
 ./scripts/bcfngs env create
 ./scripts/bcfngs env check
 ```
 
-### Run a one-off command without activating
-
-```bash
-micromamba run -p ~/miniconda3/envs/update_genomes snakemake --help
-micromamba run -p ~/miniconda3/envs/update_genomes STAR --version
-```
-
-### Keep tools up to date
+## Keep tools up to date
 
 ```bash
 ./scripts/bcfngs env update
@@ -140,7 +144,7 @@ mkdir -p env/locks
 micromamba list -p ~/miniconda3/envs/update_genomes --explicit > env/locks/explicit-YYYY-MM-DD.txt
 ```
 
-### Use HPC modules for vendor tools
+## Use HPC modules for vendor tools
 
 With `--profile modules`, the wrapper now resolves tools explicitly instead of relying on whichever binary happens to win on `PATH`.
 

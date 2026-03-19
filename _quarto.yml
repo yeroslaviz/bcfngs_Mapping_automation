@@ -15,26 +15,19 @@ format:
   html:
     theme: flatly
     highlight-style: textmate
+    grid:
+      body-width: 1425px
+      margin-width: 290px
+      gutter-width: 2rem
+    css: styles.css
     toc: true
-    toc-depth: 4
-    toc-expand: false
-    number-sections: false
-    number-depth: 4
-    include-in-header:
-      - text: |
-          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css" />
-    include-after-body:
-      - text: |
-          <script>
-            (function () {
-              var href = "https://bsky.app/profile/assayeroslaviz.bsky.social";
-              var links = document.querySelectorAll('a.nav-link[href="' + href + '"]');
-              links.forEach(function (a) {
-                a.setAttribute("aria-label", "Bluesky");
-                a.innerHTML = '<i class="fa-brands fa-bluesky fa-lg" aria-hidden="true"></i>';
-              });
-            })();
-          </script>
+    toc-title: Content
+    toc-depth: 2
+    toc-expand: 2
+    code-copy: true
+    code-overflow: wrap
+    smooth-scroll: true
+    link-external-newwindow: true
 
 website:
   title: "Bioinformatics Core Facility MPI Biochemistry"
@@ -55,15 +48,12 @@ website:
       - text: "Mapping"
         href: mapping.html
     right:
-      - icon: envelope
-        href: "mailto:yeroslaviz@biochem.mpg.de"
-        aria-label: Email
       - icon: github
         href: https://github.com/yeroslaviz
-        aria-label: GitHub
-      - text: "Bluesky"
-        href: https://bsky.app/profile/assayeroslaviz.bsky.social
-        aria-label: Bluesky
+      - icon: bluesky
+        href: https://bsky.app/profile/frymor
+      - icon: globe
+        href: https://www.biochem.mpg.de/en
       - icon: linkedin
         href: https://www.linkedin.com/in/ayeroslaviz/
         aria-label: LinkedIn

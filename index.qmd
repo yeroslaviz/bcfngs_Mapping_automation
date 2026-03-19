@@ -1,81 +1,163 @@
 ---
-title: "index"
+title: "Genome update and mapping workflow"
 author: "Assa Yeroslaviz"
 ---
 
-The repository contains a conda-snakemake workflow for the mapping of the concatenated fastq file created at the BCF of the MPIB.
+# Overview 
+
+This project contains a conda-snakemake workflow for the mapping of the concatenated fastq file sequenced at the NGS facility of the MPIB.
+
+The following documentation was meant for the sequencing center to help them run a preliminary analysis on the sequenced samples.
+
+Following steps will be cover in this documentation
+
+1. Instruction on how to create the conda environment with the needed tools for the mapping and genomic indices updates
+2. The snakemake workflow for updating the genomic indices needed for the mapping
+3. Automation of themapping procedure using different mapping tools (Some _tools_ are not yet incorporated in the workflow):
+  - [STAR](https://github.com/alexdobin/STAR)
+  - [bowtie2](https://github.com/BenLangmead/bowtie2)
+  - [bwa](https://github.com/lh3/BWA)
+  - [_kallisto_](https://kallisto.readthedocs.io/en/latest/)
+  - [_salmon_](https://combine-lab.github.io/salmon/)
+  - [_cellranger_](https://www.10xgenomics.com/support/software/cell-ranger/latest)
+
+# Analysis steps
+
+This tool is straightforward to use
+First, one must first install the conda environment. Instruction for this step can be found in the [environment file](environment.qmd).
+
+Updating the genomic indices should be done once, only when a new genome build is published. Ourwirkflow is using the Ensembl genomes fro various organisms. More can be added as needed. 
+The list of genomes included in this project can be found in the [genomes config file](configs/genomes.yaml). At the top of this file one can also see the actulal version of the [public repository](https://ftp.ensembl.org/pub/?C=M;O=D). 
+
+We prepared a script called [`bcfngs`](scripts/bcfngs). This script can take three global paraemters for each of the three steps assigned in this project
+
+```bash
+$ ./scripts/bcfngs --help
+usage: bcfngs [-h] [--profile {micromamba,modules}] [--env-prefix ENV_PREFIX] {env,genomes,mapping} ...
+
+positional arguments:
+  {env,genomes,mapping}
+
+options:
+  -h, --help            show this help message and exit
+  --profile {micromamba,modules}
+  --env-prefix ENV_PREFIX
+                        Micromamba environment prefix (default: cluster env if present, else .mamba/env).
+```
+
+The first parameter, `bcfngs env` take care of creating and maintaining the environent. 
+
+```bash
+$ ./scripts/bcfngs env  --help
+usage: bcfngs env [-h] {create,update,check} ...
+
+positional arguments:
+  {create,update,check}
+
+options:
+  -h, --help            show this help message and exit
+```
 
 
-This README file for the sequencing center to help them run a preliminary analysis on the sequenced samples
+## Preparing the genomeic indicies
 
-The file will contains instruction on how to create a conda environment with the needed tools for the mapping and will also include snakemake for the automation of the scripts.
+For the genomic indices we need the chromosome sequences as fastA file as well as the genomic features in a gtf format. The `bcfngs genomes` script can download the genomes list in the aforementioned file and create the indicies for the tool listed above. 
 
-## steps to do
+A more elaborate instruction on how to run this step can be found in the [Updating genomes](updating_genomes.qmd) files. 
 
-**Preparing the genomes for mapping**
+```bash
+$ ./scripts/bcfngs genomes --help
+usage: bcfngs genomes [-h] {check-updates,plan,build} ...
 
-1. Download the genomes and the annotations from the FTP server (Ensembl genome builds are used here.)
-2. For each genome, an index for the `star` aligner is created.
+positional arguments:
+  {check-updates,plan,build}
 
-This two steps should be done only once, when the workflow was set up. It only needs to be re-run, when a new organism is being added, or when newer genome build of exiting organisms or a newer version of the STAR mapping tool are needed.
+options:
+  -h, --help            show this help message and exit
+```
 
-**Mapping step**
+## Mapping step
 
-3. Map the samples with the needed parameter.
-4. Index the fastA file to create a `chromSize` file for the `bigwig` conversion.
-5. Convert the `bam` files to `wig` and then to `bigwig`.
+After we nesured, that our needed genomic indices are available for the tool we would like to use, we can as easily run the mapping step for the proper tool using the sam `bcfngs mapping` command
 
-points to consider:
-If this is only a preliminary analysis -
+```bash
+$ ./scripts/bcfngs mapping --help
+usage: bcfngs mapping [-h] {plan,run} ...
 
-1. Would it make more sense to take only 50% of the fastq file for a faster analysis / visualization
-2. Do they need the bam files also - deleting them would save a lot of storage space
+positional arguments:
+  {plan,run}
 
-The examples in this document are based on fictive data as well as a fictional project named *Project0815*. When a new project is done, this term must be changed with the proper name of the project, wherever it is mentioned.
+options:
+  -h, --help  show this help message and exit
+```
 
-## folder structure
+More elaborate instructions as to how to use this script for mapping the genomes with your favorite tool can be found in the [mapping](mapping.qmd) file.
 
-The workflow works from within the folder of the concatenated `fastq` files created after running the `bcl2fastq` script from the project management website (in the core facility here, this folder is called `conc.fastq`).
+## Folder structure
 
-* A `config` file is saved under `/fs/pool/pool-bcfngs/scripts/config.yaml`, where all the mapping and genome parameters are saved.
-* The genome indexing step will run only once and creates a folder named `genomes/` on the `/fs/pool/pool-bcfngs/`. Within this folder all the `fastA` and the `gtf` files are saved as well as a folder for each organism, containing the `star`-indexed files.
-* The mapping step expect to find within the working directory the files with the pattern *.conc.R1.fastq.gz*, as this is the current pattern given by the sequencing facility. (**If, in the future, this will be changed, the search pattern must be changed as well**).
+To set the path were the genomes can be downloaded to use the genome config file. In our project we're taking advantage of the pool-folders structire of our institute and store all genomic indices in the pool folder of the ngs core facility (`pool-bcfngs`). 
 
-There are two separate files for single-ended and paired-ended data sets. The single-ended one expects to find only  *.conc.R1.fastq.gz*, while the paired-end data set must also contain *.conc.R2.fastq.gz* files.
+```bash
+genomes_root: /fs/pool/pool-bcfngs/genomes
+```
 
-## Workflow
-
-The workflow uses a **micromamba** environment with the `snakemake` tool (based on python). The advantage of micromamba is that it creates an isolated environment, separated from the rest of the tools installed on the system. This gives better control over the tool versions used in the workflow, with fewer conflicts from older system installations. To learn more about micromamba, take a look at the [mamba documentation](https://mamba.readthedocs.io/en/latest/).
-
-`snakemake` offers a lot of advantages as well. It allows better controls over different steps of the analysis, easier automation of the workflow and reduce running time through parallelization of the steps, just to mention some of them. to learn more about `snakemake` take a look at [the snakemake doc site](https://snakemake.readthedocs.io/en/stable/index.html).
-
-- [environment](environment.html)
-- [snakemake](snakemake.html)
-
-### wigToBigwig
-
-First the `bam` files are converted into `wig` files. This is done using the `bam2wig.py` script from the `rseqc`-software package.
-In order for the automatic conversion of `wig` to `bigwig` files to work, one must have the tool `wigToBigwig` from the UCSC repository installed and **in the path**.
-As we are working with `micromamba`, the easiest place to put it is the path of the environment. In this case the path would be under `~/miniconda3/envs/ENVNAME/bin/`.
-So far I have copied the file manually to the folder, but I have now added it to the `environment.yaml` file, which is ran during the environment creation step. This was not tested yet!.
+Downloading the genomes creates a specific directory per organism, as can be seen below. The folder is split into the separate tools, also keeping the version of the tool that was used. To assertain reproducibility, we can keep previous version of genomics indices, using a softlink to point to the latest version of the indices. 
 
 
-TO DO
+```bash
+$ tree -L 3 Mus_musculus/
+Mus_musculus/
+├── bowtie2Index -> .../Mus_musculus/bowtie2Index-2.5.4
+├── bowtie2Index-2.5.4
+│   ├── Mus_musculus.1.bt2
+│   ├── Mus_musculus.2.bt2
+...
+│   └── Mus_musculus.rev.2.bt2
+├── bwaIndex -> .../genomes/Mus_musculus/bwaIndex-0.7.18
+├── bwaIndex-0.7.18
+│   ├── Mus_musculus.amb
+...
+│   └── Mus_musculus.sa
+├── starIndex -> .../genomes/Mus_musculus/starIndex-2.7.11b
+└── starIndex-2.7.11b
+    ├── chrLength.txt
+    ├── chrNameLength.txt
+...
+    ├── sjdbList.out.tab
+    └── transcriptInfo.tab
+```
 
-In this case it would probably be better if the indexed genomes would already be saved on the server for various organisms, as it doesn't make sense to download one each time. We sort of know which organisms are needed in most cases.
+# The Workflow
 
-1. human
-2. mouse
-3. zebra fish
-4. fruit fly
-5. yeast
-6. worm (C. elegans)
+The workflow uses a **micromamba** environment with the `snakemake` tool (based on python). The advantage of micromamba is having an isolated environment, separated from the rest of the tools installed on the system. This gives better control over the tool versions used in the workflow, with fewer conflicts from older system installations. To learn more about micromamba, take a look at the [mamba documentation](https://mamba.readthedocs.io/en/latest/).
+
+`snakemake` offers a lot of advantages as well. It allows better controls over different steps of the analysis, easier automation of the workflow and reduced running time through parallelization of the steps, just to mention some of them. to learn more about `snakemake` take a look at [the snakemake doc site](https://snakemake.readthedocs.io/en/stable/index.html).
+
+- [environment](environment.qmd)
+- [snakemake](snakemake.qmd)
+
+# TO DO
+
+Below we list both the organisms and the tools used in this workflow
+
+1. ~~human~~
+2. ~~mouse~~
+3. ~~zebra fish~~
+4. ~~fruit fly~~
+5. ~~yeast~~
+6. ~~worm (C. elegans)~~
+7. ~~Chicken~~
+8.
 
 as well as which mappers we need
 
-1. star
-2. bwa
-3. bowtie2
+1. ~~star~~
+2. ~~bwa~~
+3. ~~bowtie2~~
+4. kallisto
+5. salmon
+6. cellranger
+7. hisat2
 
 # CHANGES
 

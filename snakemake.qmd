@@ -15,7 +15,7 @@ For non-experts, prefer the single wrapper command `./scripts/bcfngs` (runs chec
 
 By default, `./scripts/bcfngs` uses the micromamba environment at `~/miniconda3/envs/update_genomes`. If your environment is elsewhere, add `--env-prefix /path/to/env`.
 
-## Quickstart
+# Quickstart
 
 ```bash
 # 1) create/update env (only once, then as needed)
@@ -38,16 +38,11 @@ The workflow configuration is split into two files:
 
 1. Genome and indexing configuration: [`configs/genomes.yaml`](configs/genomes.yaml){target="_blank"}
    - Organism identifiers are **scientific names** (e.g. `Homo_sapiens`, `Mus_musculus`).
-   - Genome sources are pinned to a specific Ensembl release (default: 116).
-   - Index output directories are versioned via `index_versions`.
+   - Genome sources are pinned to a specific Ensembl release (at the moment: 115).
+   - Index output directories are versioned via `index_versions`. These versions are called via the bcfngs script and are not hard-coded here anymore. 
 
 2. Per-project run configuration (mapping): [`configs/run.yaml`](configs/run.yaml){target="_blank"}
    - Project ID, input `path`, organism, threads, etc.
-
-### Notes
-
-- Genome indexing uses `workflow/genomes.smk` (not the legacy `getGenome_IndexGenome.Snakefile`).
-- Mapping uses the STAR mapping Snakefiles and expects `/fs/pool/pool-bcfngs/genomes/<Organism>/starIndex` to exist (symlink to the versioned index).
 
 ## How-to (cookbook)
 
@@ -58,13 +53,13 @@ The workflow configuration is split into two files:
 ./scripts/bcfngs genomes build --cores 20
 ```
 
-### Build only a subset (faster)
+### Build only specific genomes
 
 ```bash
 ./scripts/bcfngs genomes build --cores 20 --organism Homo_sapiens,Mus_musculus
 ```
 
-### Ensembl has a newer release (bump pinned release)
+### Ensembl has a newer release
 
 1. Check:
 
@@ -93,6 +88,13 @@ The workflow configuration is split into two files:
 ```
 
 2. Rebuild with the actual tool version or pin the version label explicitly:
+2. Update `configs/genomes.yaml`:
+
+- ~~set `index_versions.star`, `index_versions.bwa`, `index_versions.bowtie2` (these strings are used in output folder names)~~
+
+Index version are now recognized automatically via the `bcfngs` script.
+
+3. Rebuild:
 
 ```bash
 ./scripts/bcfngs genomes build --cores 20
