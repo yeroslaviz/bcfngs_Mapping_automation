@@ -29,7 +29,7 @@ Per-run settings are passed on the command line:
 - `--threads`: mapping threads per job. Default: `32`
 - `--ram-bytes`: STAR BAM sort memory limit. Default: `168632718037`
 
-If `--organism` is omitted, the wrapper prints the configured organism list (same as `--list-org`) and exits so you can choose one.
+If `--organism` is omitted, the wrapper prints the configured organism list (same as `--list-org`) and exits.
 
 Common optional flags include:
 
@@ -57,7 +57,7 @@ If the resolved mapper binary version does not match the stable symlink target, 
 
 ## FASTQ pattern auto-detection
 
-The workflow detects the input pattern directly from the FASTQ directory. Both compressed `.fastq.gz` and uncompressed `.fastq` inputs are supported. The supported R1 patterns are:
+The workflow detects the input pattern directly from the FASTQ directory. It can work with both compressed `.fastq.gz` and uncompressed `.fastq` inputs are supported. The supported R1 patterns are:
 
 1. `*_R1.fastq` or `*_R1.fastq.gz`
 2. `*_R1_001.fastq` or `*_R1_001.fastq.gz`
@@ -94,15 +94,9 @@ For each selected mapper, the workflow creates:
 <outdir>/<project>/<organism>/logs/
 ```
 
-## wigToBigwig
+## Visualization tracks with `BigWig`
 
-changed to deeptools
-
-First the `bam` files are converted into `wig` files. This is done using the `bam2wig.py` script from the `rseqc`-software package.
-In order for the automatic conversion of `wig` to `bigwig` files to work, one must have the tool `wigToBigwig` from the UCSC repository installed and **in the path**.
-As we are working with `micromamba`, the easiest place to put it is the path of the environment. In this case the path would be under `~/miniconda3/envs/ENVNAME/bin/`.
-So far I have copied the file manually to the folder, but I have now added it to the `environment.yaml` file, which is ran during the environment creation step. This was not tested yet!.
-
+BigWig files are generated with the `BamCoverage` subcommand from the [deeptools](https://deeptools.readthedocs.io/en/latest/) suite.
 
 ## Basic usage
 
@@ -122,6 +116,14 @@ Use `plan` first. This validates config and inputs, runs Snakemake lint, and per
 
 Example with an explicitly selected older STAR index:
 
+We first must make sure that the older version of the tool as a module is preloaded.
+
+```bash
+module load star/2.7.10b
+```
+
+Then, we can execute this command:
+
 ```bash
 ./scripts/bcfngs --profile modules mapping plan \
   --mapper star \
@@ -132,6 +134,19 @@ Example with an explicitly selected older STAR index:
   --input /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq \
   --output /fs/pool/pool-bcfngs/mapping
 ```
+
+First the tool check for the loaded versions of the needed tools:
+
+```
+Resolved tool versions:
+  - python: micromamba 3.12.13 (/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes/bin/python)
+  - snakemake: micromamba 8.30.0 (/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes/bin/snakemake)
+  - samtools: micromamba 1.23.1 (/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes/bin/samtools)
+  - bamCoverage: micromamba 3.5.6 (/fs/gpfs41/lv07/fileset07/home/b_cox/yeroslaviz/miniconda3/envs/update_genomes/bin/bamCoverage)
+  - STAR: star/2.7.10b 2.7.10b (/fs/pool/pool-cox-modules-software/STAR/2.7.10b/STAR)
+```
+
+We can see that here, the STAR version is taken from the module, 2.7.10b.
 
 ### Local run
 
