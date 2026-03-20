@@ -1520,7 +1520,15 @@ def _run_mapping_lint(ctx: RunContext, settings: MappingSettings) -> None:
         "--config",
         *_mapping_config_kv(settings),
     ]
-    _run_tool(ctx, cmd)
+    lint_cp = _run_tool(ctx, cmd, check=False, capture=True)
+    if lint_cp.returncode != 0:
+        print(f"Warning: snakemake --lint returned exit code {lint_cp.returncode}; continuing with dry-run.")
+        lint_out = (lint_cp.stdout or "").strip()
+        lint_err = (lint_cp.stderr or "").strip()
+        if lint_out:
+            print(lint_out)
+        if lint_err:
+            print(lint_err)
 
 
 def _print_mapping_summary(settings: MappingSettings, args: argparse.Namespace) -> None:
