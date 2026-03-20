@@ -93,7 +93,6 @@ class MappingSettings:
     read_mode: str
     threads: int
     ram_bytes: int
-    keep_intermediary_files: bool
     bw_bin_size: int
     bw_normalization: str
     index_versions: dict[str, str]
@@ -1410,7 +1409,6 @@ def _resolve_mapping_settings(ctx: RunContext, args: argparse.Namespace) -> Mapp
         read_mode=read_mode,
         threads=threads,
         ram_bytes=ram_bytes,
-        keep_intermediary_files=bool(args.keep_intermediary_files),
         bw_bin_size=bw_bin_size,
         bw_normalization=bw_normalization,
         index_versions=index_versions,
@@ -1429,7 +1427,6 @@ def _mapping_config_kv(settings: MappingSettings) -> list[str]:
         f"read_mode={settings.read_mode}",
         f"threads={settings.threads}",
         f"ram_bytes={settings.ram_bytes}",
-        f"keep_intermediary_files={'true' if settings.keep_intermediary_files else 'false'}",
         f"bw_bin_size={settings.bw_bin_size}",
         f"bw_normalization={settings.bw_normalization}",
     ]
@@ -1545,7 +1542,6 @@ def _print_mapping_summary(settings: MappingSettings, args: argparse.Namespace) 
                 "threads": settings.threads,
                 "ram_bytes": settings.ram_bytes,
                 "executor": args.executor,
-                "keep_intermediary_files": settings.keep_intermediary_files,
                 "bw_bin_size": settings.bw_bin_size,
                 "bw_normalization": settings.bw_normalization,
                 "index_versions": settings.index_versions,
@@ -1634,7 +1630,7 @@ def _add_mapping_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--keep-intermediary-files",
         action="store_true",
-        help="Keep mapper intermediary files (default: delete intermediaries).",
+        help="Deprecated. STAR outputs and STAR log files are kept by default.",
     )
     parser.add_argument("--bw-bin-size", type=int, default=10, help="bamCoverage --binSize (default: 10).")
     parser.add_argument(

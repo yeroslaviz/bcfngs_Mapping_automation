@@ -207,7 +207,7 @@ snakemake \
 - Unknown mapper names are rejected.
 - Duplicate mapper names are removed automatically.
 - The default read mode is paired-end. Use `--single-end` explicitly for single-end data.
-- STAR intermediary files are removed unless `--keep-intermediary-files` is set.
+- STAR keeps the full STAR output bundle, including the STAR-generated `.out` files and STAR log files.
 - bigWig files are produced directly with `bamCoverage`. The old wig conversion step is no longer part of this workflow.
 - Run `./scripts/bcfngs env check` first if you want to verify that `snakemake`, `STAR`, `bwa`, `bowtie2-build`, `samtools`, and `bamCoverage` are available in the configured environment. With `--profile modules`, the wrapper also prints the resolved tool source/version report to `stderr`.
 

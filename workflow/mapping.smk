@@ -46,7 +46,6 @@ for item in [x.strip().lower() for x in MAPPERS_RAW.split(",") if x.strip()]:
 if not MAPPERS:
     raise ValueError("No mapper selected.")
 
-KEEP_INTERMEDIARY_FILES = str(config.get("keep_intermediary_files", "false")).lower() in {"1", "true", "yes", "on"}
 BW_BIN_SIZE = int(config.get("bw_bin_size", 10))
 if BW_BIN_SIZE < 1:
     raise ValueError("bw_bin_size must be >= 1")
@@ -223,13 +222,14 @@ rule map_star:
         prefix=os.path.join(STAR_DIR, "{sample}.star."),
         index=str(STAR_INDEX),
         ram=RAM_BYTES,
-        keep=KEEP_INTERMEDIARY_FILES,
         read_cmd=FASTQ_PATTERN["read_cmd"],
     shell:
         r"""
         mkdir -p "{params.outdir}" "$(dirname "{log}")"
         : > "{log}"
         {{
+          rm -f "{params.prefix}"* "{output.bam}" "{output.counts}" "{output.sj}"
+
           STAR --runThreadN {threads} \
             --genomeDir "{params.index}" \
             --outFileNamePrefix "{params.prefix}" \
@@ -240,13 +240,9 @@ rule map_star:
             --quantMode GeneCounts \
             --outReadsUnmapped Fastx
 
-          mv "{params.prefix}Aligned.sortedByCoord.out.bam" "{output.bam}"
-          mv "{params.prefix}ReadsPerGene.out.tab" "{output.counts}"
-          mv "{params.prefix}SJ.out.tab" "{output.sj}"
-
-          if [ "{params.keep}" != "True" ]; then
-            rm -f "{params.prefix}"*
-          fi
+          ln "{params.prefix}Aligned.sortedByCoord.out.bam" "{output.bam}"
+          ln "{params.prefix}ReadsPerGene.out.tab" "{output.counts}"
+          ln "{params.prefix}SJ.out.tab" "{output.sj}"
         }} >> "{log}" 2>&1
         """
 
