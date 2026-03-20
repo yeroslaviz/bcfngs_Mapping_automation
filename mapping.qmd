@@ -3,7 +3,7 @@ title: "Mapping Workflow"
 author: "AY"
 ---
 
-This page documents the current mapping workflow in this repository.
+This page documents the current mapping workflow in this project.
 
 ## Overview
 
@@ -20,12 +20,12 @@ If `star` is selected, the workflow also writes:
 
 ## Required CLI settings
 
-The mapping wrapper no longer uses a `configs/run.yaml` file. Per-run settings are passed on the command line:
+Per-run settings are passed on the command line:
 
 - `--project`: project identifier used in the output layout. Default: `P000`
 - `--input`: FASTQ input directory. Default: current working directory
 - `--output`: output root directory. Default: current working directory
-- `--organism`: one organism key from [`configs/genomes.yaml`](/Users/yeroslaviz/Documents/Github/bcfngs_Mapping_automation/configs/genomes.yaml). This is required.
+- `--organism`: one organism key from [`configs/genomes.yaml`](/Users/yeroslaviz/Documents/Github/bcfngs_Mapping_automation/configs/genomes.yaml). **This is required.**
 - `--threads`: mapping threads per job. Default: `32`
 - `--ram-bytes`: STAR BAM sort memory limit. Default: `168632718037`
 
