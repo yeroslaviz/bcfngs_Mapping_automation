@@ -22,7 +22,7 @@ format:
     css: styles.css
     toc: true
     toc-title: Content
-    toc-depth: 2
+    toc-depth: 3
     toc-expand: 2
     code-copy: true
     code-overflow: wrap

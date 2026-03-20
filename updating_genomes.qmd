@@ -20,7 +20,7 @@ Environment setup is documented elsewhere. This page assumes `./scripts/bcfngs` 
 
 - `check-updates`: compare the pinned Ensembl release in [`configs/genomes.yaml`](configs/genomes.yaml) with the latest Ensembl release visible on `ftp.ensembl.org`
 - `plan`: run preflight checks, `snakemake --lint`, and a dry-run
-- `build`: xecute the workflow for real; unless stated otherwise (`-no-skip-plan`), thus will try to build the indices without first running `plan`. 
+- `build`: xecute the workflow for real; unless stated otherwise (`-no-skip-plan`), thus will try to build the indices without first running `plan`.
 
 Inspect the wrapper help first. Current output from the script:
 
@@ -130,10 +130,10 @@ optional arguments:
 
 That means:
 
-- use `--cores` to control total workflow parallelism
+- use `--cores`  under `local` executor to control total workflow parallelism
 - use `--organism` for a comma-separated subset of organism keys
 - use `--star-index-version`, `--bwa-index-version`, and `--bowtie2-index-version` when the resolved tool version should target a matching versioned index explicitly
-- use direct `snakemake` for advanced cases such as scheduler memory flags or building only one index type
+- using [`snakemake`](updating_genomes.qmd#direct-snakemake-subset-dry-run) directly for advanced cases such as scheduler memory flags or building only one index type is also possible.
 
 ## Shared wrapper parameters
 
@@ -142,7 +142,7 @@ These apply to all three genomes subcommands and are cross-referenced from the c
 | Parameter | Current default | Applies to | Notes |
 |---|---|---|---|
 | `--profile` | `micromamba` | `check-updates`, `plan`, `build` | `modules` now resolves `STAR`, `bwa`, and `bowtie2` from modules while keeping `python`, `snakemake`, and `curl` in micromamba. |
-| `--env-prefix` | `./.mamba/env` | `check-updates`, `plan`, `build` | This is the current default in [`scripts/bcfngs`](scripts/bcfngs). Override it if your environment lives elsewhere. |
+| `--env-prefix` | `~/miniconda/env` | `check-updates`, `plan`, `build` | This is the current default in [`scripts/bcfngs`](scripts/bcfngs). Override it if your environment lives elsewhere. |
 | `configs/genomes.yaml` | required | `check-updates`, `plan`, `build` | Release pins, organisms, output root, thread defaults, RAM defaults, and index version strings all come from this file. |
 
 ## Common config fields
@@ -152,13 +152,13 @@ These are the main `configs/genomes.yaml` fields referenced by the three command
 | Config field | Current value | Used by | Notes |
 |---|---|---|---|
 | `genomes_root` | `/fs/pool/pool-bcfngs/genomes` | `plan`, `build` | `plan` checks write access here. `build` writes sources, indices, stable symlinks, and per-organism manifests here. |
-| `releases.ensembl` | `116` | `check-updates`, `plan`, `build` | Main Ensembl release pin. `check-updates` compares this to `ftp.ensembl.org`. |
-| `releases.ensemblgenomes.metazoa` | `61` | `plan`, `build` | Used for `ensemblgenomes` organisms such as `Drosophila_pseudoobscura`. |
+| `releases.ensembl` | `115` | `check-updates`, `plan`, `build` | Main Ensembl release pin. `check-updates` compares this to `ftp.ensembl.org`. |
+| `releases.ensemblgenomes.metazoa` | `62` | `plan`, `build` | Used for `ensemblgenomes` organisms such as `Drosophila_pseudoobscura`. |
 | `default_threads` | `16` | `build` | Used by `STAR` genome generation and `bowtie2-build`. |
 | `default_ram_bytes` | `168632718037` | `build` | Passed to `STAR --limitGenomeGenerateRAM`. |
-| `index_versions.star` | `"unknown"` | `build` | Controls versioned output paths such as `starIndex-<version>`. |
-| `index_versions.bwa` | `"unknown"` | `build` | Controls versioned output paths such as `bwaIndex-<version>`. |
-| `index_versions.bowtie2` | `"unknown"` | `build` | Controls versioned output paths such as `bowtie2Index-<version>`. |
+| `index_versions.star` | `""` | `build` | Controls versioned output paths such as `starIndex-<version>`. |
+| `index_versions.bwa` | `""` | `build` | Controls versioned output paths such as `bwaIndex-<version>`. |
+| `index_versions.bowtie2` | `""` | `build` | Controls versioned output paths such as `bowtie2Index-<version>`. |
 | `organisms.*` | all configured organisms | `plan`, `build` | Scientific-name keys such as `Homo_sapiens`, `Mus_musculus`, `Drosophila_melanogaster`. |
 | `organisms.*.sa_index` | organism-specific | `build` | Passed to `STAR --genomeSAindexNbases`. |
 | `organisms.*.fasta_url` / `gtf_url` | optional explicit URLs | `plan`, `build` | Used for organisms that do not fit the generated Ensembl filename pattern. |
@@ -171,7 +171,7 @@ These are the main `configs/genomes.yaml` fields referenced by the three command
 |---|---|---|---|
 | Shared wrapper parameters | see [Shared wrapper parameters](#shared-wrapper-parameters) | CLI | `--profile` and `--env-prefix` still apply here. |
 | Command-specific flags | none | CLI | This subcommand has no extra runtime flags beyond `-h/--help`. |
-| Compared release pin | `releases.ensembl: 116` | [`configs/genomes.yaml`](configs/genomes.yaml) | This is the pinned release compared to the latest Ensembl release found on `https://ftp.ensembl.org/pub/`. |
+| Compared release pin | `releases.ensembl: 115` | [`configs/genomes.yaml`](configs/genomes.yaml) | This is the pinned release compared to the latest Ensembl release found on `https://ftp.ensembl.org/pub/`. |
 | Network target | `https://ftp.ensembl.org/pub/` | internal behavior | If it is unreachable, the command reports the current pin but cannot confirm the latest release. |
 | Writes to disk | none | internal behavior | Report only. No files are edited. |
 | Not checked automatically | `releases.ensemblgenomes.*`, explicit `fasta_url`, explicit `gtf_url` | config | Review these manually when working with EnsemblGenomes or custom URLs. |
@@ -322,7 +322,7 @@ More local examples:
 ### Local run with modules
 
 ```bash
-module load bclconvert/4.3.13 star bowtie2 bwa
+module load star bowtie2 bwa
 ./scripts/bcfngs --profile modules genomes build --cores 20
 ```
 
