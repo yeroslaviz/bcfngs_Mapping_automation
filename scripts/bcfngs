@@ -35,6 +35,9 @@ DEFAULT_SLURM_MAIL_TYPE = "ALL"
 DEFAULT_SLURM_TIME = "04:00:00"
 DEFAULT_SLURM_MEM_PER_CPU_MB = 20480
 DEFAULT_SLURM_MEM_MB = 409600
+DEFAULT_MAPPING_PROJECT = "P000"
+DEFAULT_MAPPING_THREADS = 32
+DEFAULT_MAPPING_RAM_BYTES = 168632718037
 
 
 @dataclass(frozen=True)
@@ -80,8 +83,6 @@ class RuntimeEnvironment:
 
 @dataclass(frozen=True)
 class MappingSettings:
-    run_cfg_path: Path
-    genomes_cfg_path: Path
     workflow_path: Path
     project: str
     organism: str
@@ -1290,6 +1291,17 @@ def _mapping_report_tools(mappers: Iterable[str]) -> list[str]:
     return tool_keys
 
 
+def _mapping_organism_or_exit(ctx: RunContext, args: argparse.Namespace) -> str:
+    organism = str(args.organism).strip()
+    if not organism:
+        print("Missing required --organism. Showing configured organism keys so you can choose one.")
+        cmd_list_org(ctx.env_prefix)
+        raise SystemExit("Choose one of the listed organism keys and rerun with --organism.")
+    if "," in organism:
+        raise SystemExit("Mapping supports exactly one organism per run. Do not pass a comma-separated list.")
+    return organism
+
+
 def _resolve_mapping_index_paths(
     ctx: RunContext,
     genomes_root: Path,
@@ -1341,45 +1353,28 @@ def _resolve_mapping_index_paths(
 
 
 def _resolve_mapping_settings(ctx: RunContext, args: argparse.Namespace) -> MappingSettings:
-    run_cfg_path = REPO_ROOT / "configs" / "run.yaml"
     genomes_cfg_path = REPO_ROOT / "configs" / "genomes.yaml"
     workflow_path = REPO_ROOT / "workflow" / "mapping.smk"
 
-    run_cfg = _load_yaml(ctx, run_cfg_path)
     genomes_cfg = _load_yaml(ctx, genomes_cfg_path)
 
-    project = (args.project or run_cfg.get("project") or "").strip()
-    if not project:
-        raise SystemExit("Missing mapping project. Set configs/run.yaml:project or pass --project.")
+    project = str(args.project).strip() or DEFAULT_MAPPING_PROJECT
 
-    organism = (args.organism or run_cfg.get("organism") or run_cfg.get("org") or "").strip()
-    if not organism:
-        raise SystemExit("Missing mapping organism. Set configs/run.yaml:organism or pass --organism.")
-    if "," in organism:
-        raise SystemExit("Mapping supports exactly one organism per run. Do not pass a comma-separated list.")
-
-    fastq_dir_raw = (args.fastq_dir or run_cfg.get("path") or "").strip()
-    if not fastq_dir_raw:
-        raise SystemExit("Missing FASTQ input path. Set configs/run.yaml:path or pass --fastq-dir.")
+    organism = _mapping_organism_or_exit(ctx, args)
+    fastq_dir_raw = str(args.fastq_dir).strip() or str(Path.cwd())
     fastq_dir = Path(fastq_dir_raw).expanduser()
     if not fastq_dir.exists() or not fastq_dir.is_dir():
         raise SystemExit(f"FASTQ directory not found or not a directory: {fastq_dir}")
 
-    outdir_raw = (args.outdir or run_cfg.get("outdir") or "").strip()
-    if not outdir_raw:
-        raise SystemExit("Missing output root. Set configs/run.yaml:outdir or pass --outdir.")
+    outdir_raw = str(args.outdir).strip() or str(Path.cwd())
     outdir = Path(outdir_raw).expanduser()
     _check_write_permission(outdir)
 
     mappers = _parse_mappers(args.mapper)
     read_mode = "paired" if args.paired_end else "single"
 
-    threads = _as_int(args.threads if args.threads is not None else run_cfg.get("threads", 16), field="threads", minimum=1)
-    ram_bytes = _as_int(
-        args.ram_bytes if args.ram_bytes is not None else run_cfg.get("ram_bytes", run_cfg.get("RAM", 168632718037)),
-        field="ram_bytes",
-        minimum=1,
-    )
+    threads = _as_int(args.threads, field="threads", minimum=1)
+    ram_bytes = _as_int(args.ram_bytes, field="ram_bytes", minimum=1)
     bw_bin_size = _as_int(args.bw_bin_size, field="bw_bin_size", minimum=1)
     bw_normalization = str(args.bw_normalization).strip()
     if not bw_normalization:
@@ -1405,8 +1400,6 @@ def _resolve_mapping_settings(ctx: RunContext, args: argparse.Namespace) -> Mapp
         raise SystemExit(f"Missing required genome resource(s):{pretty}")
 
     return MappingSettings(
-        run_cfg_path=run_cfg_path,
-        genomes_cfg_path=genomes_cfg_path,
         workflow_path=workflow_path,
         project=project,
         organism=organism,
@@ -1455,8 +1448,6 @@ def _mapping_snakemake_cmd(settings: MappingSettings, args: argparse.Namespace, 
         "--printshellcmds",
         "-s",
         str(settings.workflow_path),
-        "--configfile",
-        str(settings.run_cfg_path),
         "--config",
         *_mapping_config_kv(settings),
         "--latency-wait",
@@ -1526,8 +1517,6 @@ def _run_mapping_lint(ctx: RunContext, settings: MappingSettings) -> None:
         "--lint",
         "-s",
         str(settings.workflow_path),
-        "--configfile",
-        str(settings.run_cfg_path),
         "--config",
         *_mapping_config_kv(settings),
     ]
@@ -1546,6 +1535,7 @@ def _print_mapping_summary(settings: MappingSettings, args: argparse.Namespace) 
                 "mappers": settings.mappers,
                 "read_mode": settings.read_mode,
                 "threads": settings.threads,
+                "ram_bytes": settings.ram_bytes,
                 "executor": args.executor,
                 "keep_intermediary_files": settings.keep_intermediary_files,
                 "bw_bin_size": settings.bw_bin_size,
@@ -1559,6 +1549,7 @@ def _print_mapping_summary(settings: MappingSettings, args: argparse.Namespace) 
 
 
 def cmd_mapping_plan(ctx: RunContext, args: argparse.Namespace) -> None:
+    _mapping_organism_or_exit(ctx, args)
     mappers = _parse_mappers(args.mapper)
     _print_tool_report(ctx, _mapping_report_tools(mappers))
     settings = _resolve_mapping_settings(ctx, args)
@@ -1568,6 +1559,7 @@ def cmd_mapping_plan(ctx: RunContext, args: argparse.Namespace) -> None:
 
 
 def cmd_mapping_run(ctx: RunContext, args: argparse.Namespace) -> None:
+    _mapping_organism_or_exit(ctx, args)
     mappers = _parse_mappers(args.mapper)
     _print_tool_report(ctx, _mapping_report_tools(mappers))
     settings = _resolve_mapping_settings(ctx, args)
@@ -1592,12 +1584,44 @@ def _add_mapping_args(parser: argparse.ArgumentParser) -> None:
     mode.add_argument("--single-end", dest="paired_end", action="store_false", help="Use single-end FASTQ input.")
     parser.set_defaults(paired_end=True)
 
-    parser.add_argument("--organism", help="Override configs/run.yaml organism for this run.")
-    parser.add_argument("--fastq-dir", help="Override configs/run.yaml path for this run.")
-    parser.add_argument("--project", help="Override configs/run.yaml project for this run.")
-    parser.add_argument("--outdir", help="Override configs/run.yaml outdir for this run.")
-    parser.add_argument("--threads", type=int, help="Override mapping threads from configs/run.yaml.")
-    parser.add_argument("--ram-bytes", type=int, help="Override STAR --limitBAMsortRAM value.")
+    parser.add_argument(
+        "--project",
+        default=DEFAULT_MAPPING_PROJECT,
+        help=f"Project identifier used in the output layout (default: {DEFAULT_MAPPING_PROJECT}).",
+    )
+    parser.add_argument(
+        "--input",
+        "--fastq-dir",
+        dest="fastq_dir",
+        default=str(Path.cwd()),
+        help="FASTQ input directory (default: current working directory).",
+    )
+    parser.add_argument(
+        "--output",
+        "--outdir",
+        dest="outdir",
+        default=str(Path.cwd()),
+        help="Output root directory (default: current working directory).",
+    )
+    parser.add_argument(
+        "--organism",
+        default="",
+        help="Organism key from configs/genomes.yaml. Required for mapping; use --list-org to see choices.",
+    )
+    parser.add_argument(
+        "--threads",
+        type=int,
+        default=DEFAULT_MAPPING_THREADS,
+        help=f"Mapping threads per job (default: {DEFAULT_MAPPING_THREADS}).",
+    )
+    parser.add_argument(
+        "--ram-bytes",
+        "--ram_bytes",
+        dest="ram_bytes",
+        type=int,
+        default=DEFAULT_MAPPING_RAM_BYTES,
+        help=f"STAR --limitBAMsortRAM value in bytes (default: {DEFAULT_MAPPING_RAM_BYTES}).",
+    )
     _add_index_version_args(parser)
     parser.add_argument(
         "--keep-intermediary-files",

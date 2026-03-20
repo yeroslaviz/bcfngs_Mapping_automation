@@ -18,35 +18,21 @@ If `star` is selected, the workflow also writes:
 - `<sample>.counts.tab`
 - `<sample>.SJ.out.tab`
 
-## Required configuration
+## Required CLI settings
 
-Base project settings are stored in [`configs/run.yaml`](/Users/yeroslaviz/Documents/Github/bcfngs_Mapping_automation/configs/run.yaml):
+The mapping wrapper no longer uses a `configs/run.yaml` file. Per-run settings are passed on the command line:
 
-```yaml
-project: "P000"
-path: "/fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/"
-outdir: "/fs/pool/pool-bcfngs/mapping"
-organism: "Caenorhabditis_elegans"
-threads: 16
-ram_bytes: 168632718037
-```
+- `--project`: project identifier used in the output layout. Default: `P000`
+- `--input`: FASTQ input directory. Default: current working directory
+- `--output`: output root directory. Default: current working directory
+- `--organism`: one organism key from [`configs/genomes.yaml`](/Users/yeroslaviz/Documents/Github/bcfngs_Mapping_automation/configs/genomes.yaml). This is required.
+- `--threads`: mapping threads per job. Default: `32`
+- `--ram-bytes`: STAR BAM sort memory limit. Default: `168632718037`
 
-Important fields:
+If `--organism` is omitted, the wrapper prints the configured organism list (same as `--list-org`) and exits so you can choose one.
 
-- `project`: used in the output layout
-- `path`: FASTQ input directory
-- `outdir`: output root directory
-- `organism`: one organism key from [`configs/genomes.yaml`](/Users/yeroslaviz/Documents/Github/bcfngs_Mapping_automation/configs/genomes.yaml)
-- `threads`: mapping threads per job
-- `ram_bytes`: STAR BAM sort memory limit
+Common optional flags include:
 
-The wrapper also allows runtime overrides such as:
-
-- `--project`
-- `--organism`
-- `--fastq-dir`
-- `--outdir`
-- `--threads`
 - `--mapper`
 - `--star-index-version`
 - `--bwa-index-version`
@@ -130,8 +116,8 @@ Use `plan` first. This validates config and inputs, runs Snakemake lint, and per
   --paired-end \
   --project P000 \
   --organism Caenorhabditis_elegans \
-  --fastq-dir /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq \
-  --outdir /fs/pool/pool-bcfngs/mapping
+  --input /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq \
+  --output /fs/pool/pool-bcfngs/mapping
 ```
 
 Example with an explicitly selected older STAR index:
@@ -143,8 +129,8 @@ Example with an explicitly selected older STAR index:
   --paired-end \
   --project P000 \
   --organism Caenorhabditis_elegans \
-  --fastq-dir /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq \
-  --outdir /fs/pool/pool-bcfngs/mapping
+  --input /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq \
+  --output /fs/pool/pool-bcfngs/mapping
 ```
 
 ### Local run
@@ -155,8 +141,8 @@ Example with an explicitly selected older STAR index:
   --paired-end \
   --project P000 \
   --organism Caenorhabditis_elegans \
-  --fastq-dir /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq \
-  --outdir /fs/pool/pool-bcfngs/mapping \
+  --input /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq \
+  --output /fs/pool/pool-bcfngs/mapping \
   --executor local \
   --jobs 20
 ```
@@ -169,8 +155,8 @@ Example with an explicitly selected older STAR index:
   --paired-end \
   --project P000 \
   --organism Caenorhabditis_elegans \
-  --fastq-dir /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq \
-  --outdir /fs/pool/pool-bcfngs/mapping \
+  --input /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq \
+  --output /fs/pool/pool-bcfngs/mapping \
   --executor slurm \
   --jobs 20 \
   --slurm-partition p.hpcl93 \
@@ -187,7 +173,6 @@ snakemake \
   --printshellcmds \
   --dry-run \
   -s workflow/mapping.smk \
-  --configfile configs/run.yaml \
   --config \
     project=P000 \
     organism=Caenorhabditis_elegans \
@@ -215,8 +200,9 @@ snakemake \
 
 - `--mapper`: comma-separated mapper list such as `star,bwa,bowtie2`
 - `--star-index-version`, `--bwa-index-version`, `--bowtie2-index-version`: require matching versioned indices instead of the stable symlinks
-- `--threads`: override mapping threads from `configs/run.yaml`
-- `--ram-bytes`: override STAR `--limitBAMsortRAM`
+- `--input`, `--output`: FASTQ input directory and output root directory
+- `--threads`: mapping threads per job, default `32`
+- `--ram-bytes`: STAR `--limitBAMsortRAM`, default `168632718037`
 - `--bw-bin-size`: set `bamCoverage --binSize`
 - `--bw-normalization`: set `bamCoverage --normalizeUsing`
 - `--jobs`: maximum concurrent jobs

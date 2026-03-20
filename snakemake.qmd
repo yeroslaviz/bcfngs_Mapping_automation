@@ -32,17 +32,15 @@ By default, `./scripts/bcfngs` uses the micromamba environment at `~/miniconda3/
 ./scripts/bcfngs genomes build --cores 20
 ```
 
-## Configuration files
+## Configuration
 
-The workflow configuration is split into two files:
+The persistent workflow configuration lives in [`configs/genomes.yaml`](configs/genomes.yaml){target="_blank"}:
 
-1. Genome and indexing configuration: [`configs/genomes.yaml`](configs/genomes.yaml){target="_blank"}
-   - Organism identifiers are **scientific names** (e.g. `Homo_sapiens`, `Mus_musculus`).
-   - Genome sources are pinned to a specific Ensembl release (at the moment: 115).
-   - Index output directories are versioned via `index_versions`. These versions are called via the bcfngs script and are not hard-coded here anymore. 
+- Organism identifiers are **scientific names** (e.g. `Homo_sapiens`, `Mus_musculus`).
+- Genome sources are pinned to a specific Ensembl release (at the moment: 115).
+- Index output directories are versioned via `index_versions`. These versions are called via the bcfngs script and are not hard-coded here anymore.
 
-2. Per-project run configuration (mapping): [`configs/run.yaml`](configs/run.yaml){target="_blank"}
-   - Project ID, input `path`, organism, threads, etc.
+Mapping no longer uses a dedicated `configs/run.yaml` file. Pass the project settings on the CLI instead, for example with `./scripts/bcfngs mapping plan --project ... --input ... --output ... --organism ...`.
 
 ## How-to (cookbook)
 
@@ -140,13 +138,14 @@ After the environment was created **and activated**, one must change to the dire
 cd /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq/
 ```
 
-To run mapping, update `configs/run.yaml` in the repo, then run one of these Snakefiles.
+To run mapping with the current wrapper, pass the project settings directly on the CLI.
 
 ```bash
-# for single-end samples
-snakemake -nps /path/to/repo/Star.MappingQuant.SingleEndFastq.Snakefile -j 50
-# for paired-end samples
-snakemake -nps /path/to/repo/Star.MappingQuant.PairedEndFastq.Snakefile -j 50
+./scripts/bcfngs mapping plan \
+  --project P000 \
+  --input /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq \
+  --output /fs/pool/pool-bcfngs/mapping \
+  --organism Caenorhabditis_elegans
 ```
 
 * `-n` - dry-run. This parameter will only output the command, but execute them. This should be used to test the parameters, but must be removed for the analysis to be done.

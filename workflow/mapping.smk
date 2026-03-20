@@ -4,7 +4,7 @@ from pathlib import Path
 
 ALLOWED_MAPPERS = {"star", "bwa", "bowtie2"}
 
-PROJECT = str(config.get("project", "")).strip()
+PROJECT = str(config.get("project", "P000")).strip()
 if not PROJECT:
     raise ValueError("Missing config key: project")
 
@@ -14,13 +14,13 @@ if not ORGANISM:
 if "," in ORGANISM:
     raise ValueError("Only one organism is supported per mapping run.")
 
-FASTQ_DIR = Path(str(config.get("fastq_dir", config.get("path", "")))).expanduser()
+FASTQ_DIR = Path(str(config.get("fastq_dir", config.get("path", ".")))).expanduser()
 if not FASTQ_DIR.exists() or not FASTQ_DIR.is_dir():
     raise ValueError(f"FASTQ directory not found or not a directory: {FASTQ_DIR}")
 
-OUTDIR_RAW = str(config.get("outdir", "")).strip()
+OUTDIR_RAW = str(config.get("outdir", ".")).strip()
 if not OUTDIR_RAW:
-    raise ValueError("Missing output root; set config key outdir.")
+    OUTDIR_RAW = "."
 OUTDIR = Path(OUTDIR_RAW).expanduser()
 
 GENOMES_ROOT = Path(str(config.get("genomes_root", "/fs/pool/pool-bcfngs/genomes"))).expanduser()
@@ -28,7 +28,7 @@ READ_MODE = str(config.get("read_mode", "paired")).strip().lower()
 if READ_MODE not in {"paired", "single"}:
     raise ValueError(f"Invalid read_mode={READ_MODE!r}; expected paired or single.")
 
-THREADS = int(config.get("threads", 16))
+THREADS = int(config.get("threads", 32))
 if THREADS < 1:
     raise ValueError("threads must be >= 1")
 
