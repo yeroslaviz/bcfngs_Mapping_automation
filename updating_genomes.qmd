@@ -354,7 +354,54 @@ Use this when:
 
 ### SLURM-oriented build example
 
-The wrapper does not expose `--executor`, `--mem`, or `--mem-per-cpu`. Keep the direct `snakemake` form for cluster-scheduled runs:
+We can use the wrapper to run jobs on the lcuster using the `--executor` parameter. This will use the slurm scheduler to control the job management and increase efficiency. The wrapper offers [multiple parameters](updating_genomes.qmd#building-the-genomic-indicies) to control resources when running a slurm job here.
+
+```bash
+./scripts/bcfngs genomes build --executor slurm \
+	--organism Caenorhabditis_elegans,Saccharomyces_cerevisiae \
+	--slurm-partition PARTITION \
+	--slurm-mem 102400 \
+```
+
+The command above will execute the index building of two organisms only. It will use a specific partition onour cluster and provide each jonb with 102400 MB of RAM
+
+Looking at the scheduler, when running, one can follows the job execution:
+
+```
+             JOBID                                          NAME     USER ST       TIME  NODES NODELIST(REASON)                       COMMENT NODELIST(REASON)
+           2457762          2b8db86f-90a2-4ad7-a292-2ef9989aaefd USER      R       0:03      1        hpcl9312rule_bowtie2_index_wildcards_C   #NR_NODE
+           2457763          2b8db86f-90a2-4ad7-a292-2ef9989aaefd USER      R       0:03      1        hpcl9312rule_star_index_wildcards_Caen   #NR_NODE
+           2457761          2b8db86f-90a2-4ad7-a292-2ef9989aaefd USER      R       0:04      1        hpcl9307rule_star_index_wildcards_Sacc   #NR_NODE
+           2457759          2b8db86f-90a2-4ad7-a292-2ef9989aaefd USER      R       0:07      1        hpcl9306rule_bowtie2_index_wildcards_S   #NR_NODE
+           2457764          2b8db86f-90a2-4ad7-a292-2ef9989aaefd USER      R       0:03      1        hpcl9320rule_chrom_size_wildcards_Caen   #NR_NODE
+           2457765          2b8db86f-90a2-4ad7-a292-2ef9989aaefd USER      R       0:03      1        hpcl9307rule_bwa_index_wildcards_Caeno   #NR_NODE
+           2457760          2b8db86f-90a2-4ad7-a292-2ef9989aaefd USER      R       0:04      1        hpcl9306rule_bwa_index_wildcards_Sacch   #NR_NODE
+```
+
+Each time the command is executed, the scheduler writes a log file into the `.snakemake/log/` folder. If errors occur, they can be found either in these log files or in the log file for the specific mapper tool under the organism's name, e.g. `genomes/logs/Saccharomyces_cerevisiae/star_index.log`.
+
+### Memory and threading
+
+There are two different layers to tune:
+
+- `--cores`: total workflow parallelism for the outer Snakemake run
+- `default_threads`: per-rule thread count used inside `STAR` genome generation and `bowtie2-build`
+
+Typical patterns:
+
+- 20-core workstation, one large STAR job at a time: set `default_threads: 20` and run `./scripts/bcfngs genomes build --cores 20`
+- 20-core workstation, allow two medium jobs in parallel: set `default_threads: 10` and run `./scripts/bcfngs genomes build --cores 20`
+- larger-memory node for STAR genome generation: increase `default_ram_bytes`
+
+For a permanent STAR memory change, edit:
+
+```yaml
+default_ram_bytes: 250000000000
+```
+
+# Build only one index type with direct Snakemake
+
+Replace each version placeholder with the matching value from `index_versions` in [`configs/genomes.yaml`](configs/genomes.yaml).
 
 ```bash
 snakemake -pr \
@@ -377,31 +424,6 @@ snakemake -pr \
 ```
 
 Adjust these examples to your local cluster conventions. The current `./scripts/bcfngs genomes build` command does not parse `--mem` or `--mem-per-cpu` directly.
-
-### Memory and threading
-
-There are two different layers to tune:
-
-- `--cores`: total workflow parallelism for the outer Snakemake run
-- `default_threads`: per-rule thread count used inside `STAR` genome generation and `bowtie2-build`
-
-Typical patterns:
-
-- 20-core workstation, one large STAR job at a time: set `default_threads: 20` and run `./scripts/bcfngs genomes build --cores 20`
-- 20-core workstation, allow two medium jobs in parallel: set `default_threads: 10` and run `./scripts/bcfngs genomes build --cores 20`
-- larger-memory node for STAR genome generation: increase `default_ram_bytes`
-
-For a permanent STAR memory change, edit:
-
-```yaml
-default_ram_bytes: 250000000000
-```
-
-### Build only one index type with direct Snakemake
-
-The wrapper always targets the full workflow. To build only one tool, target the desired output file directly.
-
-Replace each version placeholder with the matching value from `index_versions` in [`configs/genomes.yaml`](configs/genomes.yaml).
 
 Only STAR for `Homo_sapiens`:
 
@@ -432,7 +454,7 @@ snakemake -pr -j 20 \
 
 These commands still pull in prerequisite downloads, but they avoid rebuilding every index type.
 
-### Rebuild after a genome release change
+# Rebuild after a genome release change
 
 After [`check-updates`](#check-updates) reports a newer Ensembl release:
 
@@ -448,18 +470,11 @@ If you want a cautious rollout, start with one organism:
 ./scripts/bcfngs genomes build --cores 20 --organism Homo_sapiens
 ```
 
-### Rebuild after a tool version change
+## Rebuild after a tool version change
 
-When the genome sequence did not change but an indexer changed, update only the relevant version labels:
+When the genome sequence did not change but an indexer changed, the version label is taken from the tool version installed via conda.
 
-```yaml
-index_versions:
-  star: "2.7.11b"
-  bwa: "0.7.18"
-  bowtie2: "2.5.5"
-```
-
-Then rerun:
+to re-index the genomes with the new version, just rerun:
 
 ```bash
 ./scripts/bcfngs genomes plan
