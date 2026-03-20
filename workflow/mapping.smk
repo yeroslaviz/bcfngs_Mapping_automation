@@ -60,24 +60,56 @@ FASTQ_PATTERN_DEFS = [
         "glob": "*_R1.fastq.gz",
         "r1_suffix": "_R1.fastq.gz",
         "r2_suffix": "_R2.fastq.gz",
+        "read_cmd": "zcat",
+    },
+    {
+        "name": "aviti",
+        "glob": "*_R1.fastq",
+        "r1_suffix": "_R1.fastq",
+        "r2_suffix": "_R2.fastq",
+        "read_cmd": "cat",
     },
     {
         "name": "nova_seq",
         "glob": "*_R1_001.fastq.gz",
         "r1_suffix": "_R1_001.fastq.gz",
         "r2_suffix": "_R2_001.fastq.gz",
+        "read_cmd": "zcat",
+    },
+    {
+        "name": "nova_seq",
+        "glob": "*_R1_001.fastq",
+        "r1_suffix": "_R1_001.fastq",
+        "r2_suffix": "_R2_001.fastq",
+        "read_cmd": "cat",
     },
     {
         "name": "l1_pattern",
         "glob": "*_L1_R1.fastq.gz",
         "r1_suffix": "_L1_R1.fastq.gz",
         "r2_suffix": "_L1_R2.fastq.gz",
+        "read_cmd": "zcat",
+    },
+    {
+        "name": "l1_pattern",
+        "glob": "*_L1_R1.fastq",
+        "r1_suffix": "_L1_R1.fastq",
+        "r2_suffix": "_L1_R2.fastq",
+        "read_cmd": "cat",
     },
     {
         "name": "conc",
         "glob": "*.conc.R1.fastq.gz",
         "r1_suffix": ".conc.R1.fastq.gz",
         "r2_suffix": ".conc.R2.fastq.gz",
+        "read_cmd": "zcat",
+    },
+    {
+        "name": "conc",
+        "glob": "*.conc.R1.fastq",
+        "r1_suffix": ".conc.R1.fastq",
+        "r2_suffix": ".conc.R2.fastq",
+        "read_cmd": "cat",
     },
 ]
 
@@ -107,7 +139,7 @@ def detect_fastq_pattern():
 
     raise ValueError(
         f"No recognizable FASTQ pattern found in {FASTQ_DIR}. "
-        "Supported patterns: *_R1.fastq.gz, *_R1_001.fastq.gz, *_L1_R1.fastq.gz, *.conc.R1.fastq.gz"
+        "Supported patterns: *_R1.fastq(.gz), *_R1_001.fastq(.gz), *_L1_R1.fastq(.gz), *.conc.R1.fastq(.gz)"
     )
 
 
@@ -192,6 +224,7 @@ rule map_star:
         index=str(STAR_INDEX),
         ram=RAM_BYTES,
         keep=KEEP_INTERMEDIARY_FILES,
+        read_cmd=FASTQ_PATTERN["read_cmd"],
     shell:
         r"""
         mkdir -p "{params.outdir}" "$(dirname "{log}")"
@@ -201,7 +234,7 @@ rule map_star:
             --genomeDir "{params.index}" \
             --outFileNamePrefix "{params.prefix}" \
             --readFilesIn {input.reads} \
-            --readFilesCommand zcat \
+            --readFilesCommand {params.read_cmd} \
             --outSAMtype BAM SortedByCoordinate \
             --limitBAMsortRAM {params.ram} \
             --quantMode GeneCounts \

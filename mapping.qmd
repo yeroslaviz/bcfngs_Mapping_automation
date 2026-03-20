@@ -57,12 +57,12 @@ If the resolved mapper binary version does not match the stable symlink target, 
 
 ## FASTQ pattern auto-detection
 
-The workflow detects the input pattern directly from the FASTQ directory. The supported R1 patterns are:
+The workflow detects the input pattern directly from the FASTQ directory. Both compressed `.fastq.gz` and uncompressed `.fastq` inputs are supported. The supported R1 patterns are:
 
-1. `*_R1.fastq.gz`
-2. `*_R1_001.fastq.gz`
-3. `*_L1_R1.fastq.gz`
-4. `*.conc.R1.fastq.gz`
+1. `*_R1.fastq` or `*_R1.fastq.gz`
+2. `*_R1_001.fastq` or `*_R1_001.fastq.gz`
+3. `*_L1_R1.fastq` or `*_L1_R1.fastq.gz`
+4. `*.conc.R1.fastq` or `*.conc.R1.fastq.gz`
 
 For paired-end mode, the matching R2 files must also exist.
 
