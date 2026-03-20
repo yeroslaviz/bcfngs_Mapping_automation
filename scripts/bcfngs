@@ -163,6 +163,7 @@ EXECUTABLE_TO_TOOL = {
     for executable in spec.executables
 }
 RUNTIME_CACHE: dict[tuple[str, str, str, str, str], RuntimeEnvironment] = {}
+SHIM_LAYOUT_VERSION = 2
 
 
 def _run(
@@ -192,6 +193,19 @@ def _micromamba() -> str:
 
 def _ensure_dir(p: Path) -> None:
     p.mkdir(parents=True, exist_ok=True)
+
+
+def _write_exec_shim(path: Path, target: str) -> None:
+    launcher = "\n".join(
+        (
+            "#!/usr/bin/env bash",
+            "set -euo pipefail",
+            f"exec {shlex.quote(target)} \"$@\"",
+            "",
+        )
+    )
+    path.write_text(launcher, encoding="utf-8")
+    path.chmod(0o755)
 
 
 def _first_nonempty_line(text: str) -> str:
@@ -433,6 +447,7 @@ def _build_shim_dir(ctx: RunContext, tools: Mapping[str, ResolvedTool], base_env
     digest = hashlib.sha256(
         json.dumps(
             {
+                "shim_layout_version": SHIM_LAYOUT_VERSION,
                 "profile": ctx.profile,
                 "env_prefix": str(ctx.env_prefix),
                 "loaded_modules": _loaded_modules_from_env(base_env),
@@ -458,7 +473,7 @@ def _build_shim_dir(ctx: RunContext, tools: Mapping[str, ResolvedTool], base_env
             if link_path.exists() or link_path.is_symlink():
                 link_path.unlink()
             if target:
-                link_path.symlink_to(target)
+                _write_exec_shim(link_path, target)
     return shim_dir
 
 
