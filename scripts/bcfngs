@@ -668,6 +668,37 @@ def _load_yaml(ctx: RunContext, path: Path) -> dict:
     return json.loads(out.stdout)
 
 
+def _load_yaml_direct(env_prefix: Path, path: Path) -> dict:
+    env_python = env_prefix / "bin" / "python"
+    if env_python.exists():
+        out = _run(
+            [
+                str(env_python),
+                "-c",
+                "import sys,yaml,json; print(json.dumps(yaml.safe_load(open(sys.argv[1]))))",
+                str(path),
+            ],
+            check=False,
+            capture=True,
+        )
+        if out.returncode != 0:
+            details = (out.stderr or out.stdout or "").strip()
+            msg = f"Cannot read {path} for --list-org with {env_python}."
+            if details:
+                msg += f"\n{details}"
+            raise SystemExit(msg)
+        return json.loads(out.stdout)
+    try:
+        import yaml  # type: ignore[import-not-found]
+    except ImportError as exc:  # pragma: no cover - depends on host python
+        raise SystemExit(
+            f"Cannot read {path} for --list-org. No python executable was found in {env_prefix / 'bin'} "
+            "and the current python does not provide PyYAML."
+        ) from exc
+    with path.open() as handle:
+        return yaml.safe_load(handle)
+
+
 def _check_write_permission(path: Path) -> None:
     test_dir = path / ".bcfngs_write_test"
     try:
@@ -822,6 +853,37 @@ def _selected_orgs(cfg: dict, organism_arg: str | None) -> list[str]:
     if missing:
         raise SystemExit(f"Unknown organism(s): {', '.join(missing)}")
     return requested
+
+
+def _org_source_label(cfg: dict, org_key: str) -> str:
+    org = cfg["organisms"][org_key]
+    source = org.get("source", "ensembl")
+    if source == "ensemblgenomes" and org.get("division"):
+        return f"{source}/{org['division']}"
+    return source
+
+
+def cmd_list_org(env_prefix: Path) -> None:
+    genomes_cfg_path = REPO_ROOT / "configs" / "genomes.yaml"
+    cfg = _load_yaml_direct(env_prefix, genomes_cfg_path)
+    rows = [
+        (
+            org_key,
+            cfg["organisms"][org_key].get("assembly", ""),
+            _org_source_label(cfg, org_key),
+            _release_for_org(cfg, org_key),
+        )
+        for org_key in cfg["organisms"]
+    ]
+    headers = ("Organism", "Assembly", "Source", "Release")
+    widths = [
+        max(len(header), *(len(str(row[idx])) for row in rows))
+        for idx, header in enumerate(headers)
+    ]
+    print("Configured organisms:")
+    print("  " + "  ".join(header.ljust(widths[idx]) for idx, header in enumerate(headers)))
+    for row in rows:
+        print("  " + "  ".join(str(value).ljust(widths[idx]) for idx, value in enumerate(row)))
 
 
 def _prepare_genomes_config(
@@ -1552,13 +1614,25 @@ def _add_mapping_args(parser: argparse.ArgumentParser) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(prog="bcfngs")
-    parser.add_argument("--profile", choices=["micromamba", "modules"], default="micromamba")
-    parser.add_argument(
+    pre_parser = argparse.ArgumentParser(add_help=False)
+    pre_parser.add_argument("--profile", choices=["micromamba", "modules"], default="micromamba")
+    pre_parser.add_argument(
         "--env-prefix",
         default=str(DEFAULT_ENV_PREFIX),
         help="Micromamba environment prefix (default: cluster env if present, else .mamba/env).",
     )
+    pre_parser.add_argument(
+        "--list-org",
+        action="store_true",
+        help="List configured organism keys with assembly build and pinned source release, then exit.",
+    )
+
+    pre_args, _ = pre_parser.parse_known_args()
+    if pre_args.list_org:
+        cmd_list_org(Path(pre_args.env_prefix))
+        return
+
+    parser = argparse.ArgumentParser(prog="bcfngs", parents=[pre_parser])
 
     sub = parser.add_subparsers(dest="cmd", required=True)
 

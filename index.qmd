@@ -34,7 +34,7 @@ We prepared a script called [`bcfngs`](scripts/bcfngs). This script can take thr
 
 ```bash
 $ ./scripts/bcfngs --help
-usage: bcfngs [-h] [--profile {micromamba,modules}] [--env-prefix ENV_PREFIX] {env,genomes,mapping} ...
+usage: bcfngs [-h] [--profile {micromamba,modules}] [--env-prefix ENV_PREFIX] [--list-org] {env,genomes,mapping} ...
 
 positional arguments:
   {env,genomes,mapping}
@@ -44,9 +44,18 @@ options:
   --profile {micromamba,modules}
   --env-prefix ENV_PREFIX
                         Micromamba environment prefix (default: cluster env if present, else .mamba/env).
+  --list-org            List configured organism keys with assembly build and pinned source release, then exit.
 ```
 
 The first parameter, `bcfngs env` take care of creating and maintaining the environent. 
+
+To quickly see which organisms are configured in the repository, use:
+
+```bash
+./scripts/bcfngs --list-org
+```
+
+This prints the configured organism key together with the assembly/build name, source, and pinned release from [`configs/genomes.yaml`](configs/genomes.yaml).
 
 ```bash
 $ ./scripts/bcfngs env  --help
@@ -161,6 +170,10 @@ as well as which mappers we need
 7. hisat2
 
 # CHANGES
+
+### 20.03.2026
+
+- Added a top-level `./scripts/bcfngs --list-org` flag that prints the configured organism keys together with their assembly/build labels and pinned source releases from [`configs/genomes.yaml`](configs/genomes.yaml).
 
 ### 19.03.2026
 

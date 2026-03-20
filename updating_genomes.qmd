@@ -16,6 +16,14 @@ Environment setup is documented elsewhere. This page assumes `./scripts/bcfngs` 
 
 ## Command overview
 
+Before running any genome subcommand, you can list the configured organisms directly from the wrapper:
+
+```bash
+./scripts/bcfngs --list-org
+```
+
+This prints the organism key, assembly/build label, source, and pinned release defined in [`configs/genomes.yaml`](configs/genomes.yaml).
+
 `bcfngs genomes` currently exposes three subcommands:
 
 - `check-updates`: compare the pinned Ensembl release in [`configs/genomes.yaml`](configs/genomes.yaml) with the latest Ensembl release visible on `ftp.ensembl.org`
