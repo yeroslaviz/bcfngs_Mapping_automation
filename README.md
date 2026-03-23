@@ -28,6 +28,8 @@ this is all run on the `hpcl5002`.
 
 Mapping woill be done with the `STAR` aligner for a specific genome either in a paired-end or singel-end format. 
 
+The current mapping CLI, including mapper-specific extra args and reusable mapper-args config files, is documented in [`mapping.qmd`](/Users/yeroslaviz/Documents/Github/bcfngs_Mapping_automation/mapping.qmd).
+
 ### Changing parameters before mapping
 
 The following settng must be adjusted before running the script:
@@ -64,6 +66,5 @@ snakemake -nps /fs/pool/pool-bcfngs/scripts/Star.MappingQuant.SingleEndFastq.Sna
 # for paired-end samples
 snakemake -ps /fs/pool/pool-bcfngs/scripts/Star.MappingQuant.PairedEndFastq.Snakefile -j 50
 ```
-
 
 

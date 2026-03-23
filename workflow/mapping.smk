@@ -1,4 +1,5 @@
 import os
+import shlex
 from pathlib import Path
 
 
@@ -52,6 +53,41 @@ if BW_BIN_SIZE < 1:
 BW_NORMALIZATION = str(config.get("bw_normalization", "CPM")).strip()
 if not BW_NORMALIZATION:
     raise ValueError("bw_normalization must not be empty")
+
+
+def normalize_mapper_extra_args(raw_value, mapper):
+    if raw_value is None:
+        return ""
+    if not isinstance(raw_value, list):
+        raise ValueError(f"mapper_extra_args.{mapper} must be a list of strings.")
+
+    tokens = []
+    for idx, item in enumerate(raw_value, start=1):
+        if not isinstance(item, str):
+            raise ValueError(f"mapper_extra_args.{mapper}[{idx}] must be a string.")
+        if not item:
+            continue
+        tokens.append(item)
+    return f" {shlex.join(tokens)}" if tokens else ""
+
+
+RAW_MAPPER_EXTRA_ARGS = config.get("mapper_extra_args", {})
+if RAW_MAPPER_EXTRA_ARGS is None:
+    RAW_MAPPER_EXTRA_ARGS = {}
+if not isinstance(RAW_MAPPER_EXTRA_ARGS, dict):
+    raise ValueError("mapper_extra_args must be a mapping from mapper name to a list of tokens.")
+for mapper_name in RAW_MAPPER_EXTRA_ARGS:
+    if mapper_name not in ALLOWED_MAPPERS:
+        raise ValueError(f"Unsupported mapper in mapper_extra_args: {mapper_name}")
+    if RAW_MAPPER_EXTRA_ARGS[mapper_name] and mapper_name not in MAPPERS:
+        raise ValueError(
+            f"mapper_extra_args defines values for {mapper_name}, but that mapper is not selected in mappers."
+        )
+MAPPER_EXTRA_ARGS = {
+    mapper: normalize_mapper_extra_args(RAW_MAPPER_EXTRA_ARGS.get(mapper, []), mapper)
+    for mapper in ALLOWED_MAPPERS
+}
+
 
 FASTQ_PATTERN_DEFS = [
     {
@@ -223,6 +259,7 @@ rule map_star:
         index=str(STAR_INDEX),
         ram=RAM_BYTES,
         read_cmd=FASTQ_PATTERN["read_cmd"],
+        extra=MAPPER_EXTRA_ARGS["star"],
     shell:
         r"""
         mkdir -p "{params.outdir}" "$(dirname "{log}")"
@@ -230,7 +267,7 @@ rule map_star:
         {{
           rm -f "{params.prefix}"* "{output.bam}" "{output.counts}" "{output.sj}"
 
-          STAR --runThreadN {threads} \
+          STAR{params.extra} --runThreadN {threads} \
             --genomeDir "{params.index}" \
             --outFileNamePrefix "{params.prefix}" \
             --readFilesIn {input.reads} \
@@ -260,15 +297,16 @@ rule map_bwa:
         index=str(BWA_PREFIX),
         paired=(READ_MODE == "paired"),
         r2=r2_for_sample,
+        extra=MAPPER_EXTRA_ARGS["bwa"],
     shell:
         r"""
         mkdir -p "{params.outdir}" "$(dirname "{log}")"
         : > "{log}"
         if [ "{params.paired}" = "True" ]; then
-          bwa mem -t {threads} "{params.index}" "{input.r1}" "{params.r2}" 2>> "{log}" | \
+          bwa mem{params.extra} -t {threads} "{params.index}" "{input.r1}" "{params.r2}" 2>> "{log}" | \
             samtools sort -@ {threads} -o "{output.bam}" - >> "{log}" 2>&1
         else
-          bwa mem -t {threads} "{params.index}" "{input.r1}" 2>> "{log}" | \
+          bwa mem{params.extra} -t {threads} "{params.index}" "{input.r1}" 2>> "{log}" | \
             samtools sort -@ {threads} -o "{output.bam}" - >> "{log}" 2>&1
         fi
         """
@@ -287,15 +325,16 @@ rule map_bowtie2:
         index=str(BOWTIE2_PREFIX),
         paired=(READ_MODE == "paired"),
         r2=r2_for_sample,
+        extra=MAPPER_EXTRA_ARGS["bowtie2"],
     shell:
         r"""
         mkdir -p "{params.outdir}" "$(dirname "{log}")"
         : > "{log}"
         if [ "{params.paired}" = "True" ]; then
-          bowtie2 -p {threads} -x "{params.index}" -1 "{input.r1}" -2 "{params.r2}" 2>> "{log}" | \
+          bowtie2{params.extra} -p {threads} -x "{params.index}" -1 "{input.r1}" -2 "{params.r2}" 2>> "{log}" | \
             samtools sort -@ {threads} -o "{output.bam}" - >> "{log}" 2>&1
         else
-          bowtie2 -p {threads} -x "{params.index}" -U "{input.r1}" 2>> "{log}" | \
+          bowtie2{params.extra} -p {threads} -x "{params.index}" -U "{input.r1}" 2>> "{log}" | \
             samtools sort -@ {threads} -o "{output.bam}" - >> "{log}" 2>&1
         fi
         """

@@ -21,13 +21,16 @@ All available parameters can be listed using the `--help` command.
 $ ./scripts/bcfngs mapping plan|run --help
 usage: bcfngs mapping plan [-h] [--mapper MAPPER] [--paired-end | --single-end] [--project PROJECT] [--input FASTQ_DIR] [--output OUTDIR]
                            [--organism ORGANISM] [--threads THREADS] [--ram-bytes RAM_BYTES] [--star-index-version STAR_INDEX_VERSION]
-                           [--bwa-index-version BWA_INDEX_VERSION] [--bowtie2-index-version BOWTIE2_INDEX_VERSION] [--keep-intermediary-files]
-                           [--bw-bin-size BW_BIN_SIZE] [--bw-normalization BW_NORMALIZATION] [--executor {local,slurm}] [--jobs JOBS]
-                           [--latency-wait LATENCY_WAIT] [--slurm-partition SLURM_PARTITION] [--slurm-time SLURM_TIME]
-                           [--slurm-mail-user SLURM_MAIL_USER] [--slurm-mail-type SLURM_MAIL_TYPE] [--slurm-account SLURM_ACCOUNT]
-                           [--slurm-cpus-per-task SLURM_CPUS_PER_TASK] [--slurm-star-mem-mb SLURM_STAR_MEM_MB]
-                           [--slurm-aligner-mem-mb SLURM_ALIGNER_MEM_MB] [--slurm-index-mem-mb SLURM_INDEX_MEM_MB]
-                           [--slurm-bigwig-cpus SLURM_BIGWIG_CPUS] [--slurm-bigwig-mem-mb SLURM_BIGWIG_MEM_MB]
+                           [--bwa-index-version BWA_INDEX_VERSION] [--bowtie2-index-version BOWTIE2_INDEX_VERSION]
+                           [--mapper-args-config MAPPER_ARGS_CONFIG] [--extra-star-align-args EXTRA_STAR_ALIGN_ARGS]
+                           [--extra-bwa-args EXTRA_BWA_ARGS] [--extra-bowtie2-args EXTRA_BOWTIE2_ARGS] [--keep-intermediary-files]
+                           [--bw-bin-size BW_BIN_SIZE] [--bw-normalization BW_NORMALIZATION] [--executor {local,slurm}]
+                           [--jobs JOBS] [--latency-wait LATENCY_WAIT] [--slurm-partition SLURM_PARTITION]
+                           [--slurm-time SLURM_TIME] [--slurm-mail-user SLURM_MAIL_USER] [--slurm-mail-type SLURM_MAIL_TYPE]
+                           [--slurm-account SLURM_ACCOUNT] [--slurm-cpus-per-task SLURM_CPUS_PER_TASK]
+                           [--slurm-star-mem-mb SLURM_STAR_MEM_MB] [--slurm-aligner-mem-mb SLURM_ALIGNER_MEM_MB]
+                           [--slurm-index-mem-mb SLURM_INDEX_MEM_MB] [--slurm-bigwig-cpus SLURM_BIGWIG_CPUS]
+                           [--slurm-bigwig-mem-mb SLURM_BIGWIG_MEM_MB]
 
 ```
 
@@ -48,7 +51,61 @@ Common optional flags include:
 - `--star-index-version`
 - `--bwa-index-version`
 - `--bowtie2-index-version`
+- `--mapper-args-config`
+- `--extra-star-align-args`, `--extra-bwa-args`, `--extra-bowtie2-args`
 - `--paired-end` or `--single-end`
+
+## Mapper extra args
+
+Mapper-specific tuning arguments can be supplied either on the command line or via an external YAML config file.
+
+For CLI usage, pass one shell-quoted string per mapper:
+
+```bash
+./scripts/bcfngs mapping plan \
+  --mapper star \
+  --paired-end \
+  --project P000 \
+  --organism Caenorhabditis_elegans \
+  --input /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq \
+  --output /fs/pool/pool-bcfngs/mapping \
+  --extra-star-align-args "--alignIntronMax 1 --alignEndsType EndToEnd"
+```
+
+For reusable profiles, use one full argument per line under the selected mapper. A ready-to-copy template is provided in [`configs/mapper_args.example.yaml`](/Users/yeroslaviz/Documents/Github/bcfngs_Mapping_automation/configs/mapper_args.example.yaml).
+
+```yaml
+mappers:
+  star:
+    extra_args:
+      - "--alignIntronMax 1"
+      - "--alignEndsType EndToEnd"
+```
+
+Example run with an external mapper-args profile copied from the example template:
+
+```bash
+./scripts/bcfngs mapping plan \
+  --mapper star \
+  --paired-end \
+  --project P000 \
+  --organism Caenorhabditis_elegans \
+  --input /fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq \
+  --output /fs/pool/pool-bcfngs/mapping \
+  --mapper-args-config star_chipseq.config
+```
+
+Precedence rules:
+
+- workflow-managed mapper flags always stay fixed
+- CLI extra args are applied first
+- config-file extra args are applied after the CLI values and therefore win when the same mapper option is repeated
+
+Protected flags are rejected before submission. These include:
+
+- STAR: `--runThreadN`, `--genomeDir`, `--outFileNamePrefix`, `--readFilesIn`, `--readFilesCommand`, `--outSAMtype`, `--limitBAMsortRAM`, `--quantMode`, `--outReadsUnmapped`, `--outStd`
+- bwa: `-t`
+- bowtie2: `-p`, `-x`, `-1`, `-2`, `-U`, `-S`
 
 ## Required genome resources
 
@@ -126,6 +183,8 @@ Use `plan` first. This validates config and inputs, runs Snakemake lint, and per
   --output /fs/pool/pool-bcfngs/mapping
 ```
 
+To start from a reusable template, copy [`configs/mapper_args.example.yaml`](/Users/yeroslaviz/Documents/Github/bcfngs_Mapping_automation/configs/mapper_args.example.yaml), uncomment or add the mapper options you need, and pass it with `--mapper-args-config`.
+
 Example with an explicitly selected older STAR index:
 
 We first must make sure that the older version of the tool as a module is preloaded.
@@ -193,24 +252,39 @@ We can see that here, the STAR version is taken from the module, 2.7.10b.
 
 ## Direct Snakemake usage
 
-The workflow can also be called directly:
+The workflow can also be called directly. For mapper-specific extra args, a config file is easier than inline `--config` values because `mapper_extra_args` is structured data.
 
 ```bash
 snakemake \
   --printshellcmds \
   --dry-run \
   -s workflow/mapping.smk \
-  --config \
-    project=P000 \
-    organism=Caenorhabditis_elegans \
-    fastq_dir=/fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq \
-    outdir=/fs/pool/pool-bcfngs/mapping \
-    mappers=star,bwa \
-    read_mode=paired \
-    threads=16 \
-    ram_bytes=168632718037 \
-    bw_bin_size=10 \
-    bw_normalization=CPM
+  --configfile mapping-config.json
+```
+
+Example `mapping-config.json`:
+
+```json
+{
+  "project": "P000",
+  "organism": "Caenorhabditis_elegans",
+  "fastq_dir": "/fs/pool/pool-bcfngs/fastq_files/P000/P000_Testrun/conc.fastq",
+  "outdir": "/fs/pool/pool-bcfngs/mapping",
+  "mappers": "star,bwa",
+  "read_mode": "paired",
+  "threads": 16,
+  "ram_bytes": 168632718037,
+  "bw_bin_size": 10,
+  "bw_normalization": "CPM",
+  "mapper_extra_args": {
+    "star": [
+      "--alignIntronMax",
+      "1",
+      "--alignEndsType",
+      "EndToEnd"
+    ]
+  }
+}
 ```
 
 ## Notes
@@ -227,6 +301,8 @@ snakemake \
 
 - `--mapper`: comma-separated mapper list such as `star,bwa,bowtie2`
 - `--star-index-version`, `--bwa-index-version`, `--bowtie2-index-version`: require matching versioned indices instead of the stable symlinks
+- `--mapper-args-config`: load reusable mapper-specific extra args from YAML
+- `--extra-star-align-args`, `--extra-bwa-args`, `--extra-bowtie2-args`: add one shell-quoted mapper-specific extra-args string on the CLI
 - `--input`, `--output`: FASTQ input directory and output root directory
 - `--threads`: mapping threads per job, default `32`
 - `--ram-bytes`: STAR `--limitBAMsortRAM`, default `168632718037`

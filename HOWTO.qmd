@@ -29,6 +29,8 @@ This is all run on the `hpcl5002`.
 
 Mapping will be done with the `STAR` aligner for a specific genome either in a paired-end or single-end format.
 
+The current mapping CLI, including mapper-specific extra args and reusable mapper-args config files, is documented in [`mapping.qmd`](/Users/yeroslaviz/Documents/Github/bcfngs_Mapping_automation/mapping.qmd).
+
 ### Changing parameters before mapping
 
 The following setting must be adjusted before running the script:

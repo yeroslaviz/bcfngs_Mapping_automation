@@ -38,6 +38,32 @@ DEFAULT_SLURM_MEM_MB = 409600
 DEFAULT_MAPPING_PROJECT = "P000"
 DEFAULT_MAPPING_THREADS = 32
 DEFAULT_MAPPING_RAM_BYTES = 168632718037
+MAPPER_EXTRA_ARGS_FLAG = {
+    "star": "--extra-star-align-args",
+    "bwa": "--extra-bwa-args",
+    "bowtie2": "--extra-bowtie2-args",
+}
+MAPPER_EXTRA_ARGS_ATTR = {
+    "star": "extra_star_align_args",
+    "bwa": "extra_bwa_args",
+    "bowtie2": "extra_bowtie2_args",
+}
+MAPPER_PROTECTED_FLAGS = {
+    "star": {
+        "--runThreadN",
+        "--genomeDir",
+        "--outFileNamePrefix",
+        "--readFilesIn",
+        "--readFilesCommand",
+        "--outSAMtype",
+        "--limitBAMsortRAM",
+        "--quantMode",
+        "--outReadsUnmapped",
+        "--outStd",
+    },
+    "bwa": {"-t"},
+    "bowtie2": {"-p", "-x", "-1", "-2", "-U", "-S"},
+}
 
 
 @dataclass(frozen=True)
@@ -97,6 +123,7 @@ class MappingSettings:
     bw_normalization: str
     index_versions: dict[str, str]
     index_paths: dict[str, Path]
+    mapper_extra_args: dict[str, list[str]]
 
 
 TOOL_SPECS: dict[str, ToolSpec] = {
@@ -636,12 +663,12 @@ def cmd_env_update(ctx: RunContext, args: argparse.Namespace) -> None:
     _run([mm, "update", "-y", "-p", str(ctx.env_prefix), "-f", str(env_yml)])
 
 
-def _write_temp_config_json(data: dict) -> Path:
+def _write_temp_config_json(data: dict, *, prefix: str = "bcfngs-config-") -> Path:
     tmp_dir = REPO_ROOT / ".snakemake" / "bcfngs_tmp"
     _ensure_dir(tmp_dir)
     fh = tempfile.NamedTemporaryFile(
         mode="w",
-        prefix="bcfngs-genomes-",
+        prefix=prefix,
         suffix=".json",
         delete=False,
         dir=tmp_dir,
@@ -1141,7 +1168,7 @@ def cmd_genomes_plan(ctx: RunContext, args: argparse.Namespace) -> None:
         if lint_err:
             print(lint_err)
 
-    tmp_cfg_path = _write_temp_config_json(cfg)
+    tmp_cfg_path = _write_temp_config_json(cfg, prefix="bcfngs-genomes-")
     try:
         _run_tool(
             ctx,
@@ -1468,7 +1495,7 @@ def cmd_genomes_build(ctx: RunContext, args: argparse.Namespace) -> None:
     genomes_cfg, actual_versions, selected_versions, orgs = _prepare_genomes_config(ctx, args)
     print("Resolved tool versions:", json.dumps(actual_versions, indent=2))
     print("Using index version labels:", json.dumps(selected_versions, indent=2))
-    tmp_genomes_cfg_path = _write_temp_config_json(genomes_cfg)
+    tmp_genomes_cfg_path = _write_temp_config_json(genomes_cfg, prefix="bcfngs-genomes-")
     smk = REPO_ROOT / "workflow" / "genomes.smk"
 
     snakemake_cmd: list[str] = ["snakemake", "--printshellcmds"]
@@ -1570,6 +1597,168 @@ def _parse_mappers(raw: str) -> list[str]:
             seen.add(item)
             out.append(item)
     return out
+
+
+def _single_cli_value(raw: object, *, flag: str) -> str | None:
+    if raw is None:
+        return None
+    if isinstance(raw, list):
+        values = [str(item).strip() for item in raw if str(item).strip()]
+        if not values:
+            return None
+        if len(values) > 1:
+            raise SystemExit(f"{flag} may only be provided once.")
+        return values[0]
+    value = str(raw).strip()
+    return value or None
+
+
+def _token_matches_flag(token: str, flag: str) -> bool:
+    if flag.startswith("--"):
+        return token == flag or token.startswith(f"{flag}=")
+    if token == flag:
+        return True
+    return len(flag) == 2 and flag.startswith("-") and token.startswith(flag) and len(token) > len(flag)
+
+
+def _parse_extra_args_entry(raw: str, *, mapper: str, source: str) -> list[str]:
+    try:
+        tokens = shlex.split(raw)
+    except ValueError as exc:
+        raise SystemExit(f"Could not parse extra args for mapper {mapper} from {source}: {exc}") from exc
+    if not tokens:
+        raise SystemExit(f"Empty extra-args entry for mapper {mapper} in {source}.")
+    if tokens[0] == "--":
+        raise SystemExit(f"Unsupported '--' token in extra args for mapper {mapper} from {source}.")
+    if not tokens[0].startswith("-"):
+        raise SystemExit(
+            f"Each extra-args entry for mapper {mapper} must start with an option flag; got {tokens[0]!r} in {source}."
+        )
+    return tokens
+
+
+def _parse_cli_extra_args(raw: str, *, mapper: str) -> list[list[str]]:
+    try:
+        tokens = shlex.split(raw)
+    except ValueError as exc:
+        raise SystemExit(f"Could not parse {MAPPER_EXTRA_ARGS_FLAG[mapper]}: {exc}") from exc
+    if not tokens:
+        return []
+
+    groups: list[list[str]] = []
+    current: list[str] = []
+    for token in tokens:
+        if token == "--":
+            raise SystemExit(f"Unsupported '--' token in {MAPPER_EXTRA_ARGS_FLAG[mapper]}.")
+        if token.startswith("-"):
+            if current:
+                groups.append(current)
+            current = [token]
+            continue
+        if not current:
+            raise SystemExit(f"{MAPPER_EXTRA_ARGS_FLAG[mapper]} must start with an option flag; got {token!r}.")
+        current.append(token)
+    if current:
+        groups.append(current)
+    return groups
+
+
+def _validate_extra_arg_groups(mapper: str, groups: Iterable[list[str]]) -> None:
+    protected = MAPPER_PROTECTED_FLAGS[mapper]
+    for group in groups:
+        if not group:
+            continue
+        token = group[0]
+        for flag in protected:
+            if _token_matches_flag(token, flag):
+                raise SystemExit(
+                    f"Protected mapper flag {flag!r} may not be supplied via extra args for {mapper}. "
+                    "This workflow manages that setting itself."
+                )
+
+
+def _load_mapper_args_config(ctx: RunContext, path: Path) -> dict[str, list[list[str]]]:
+    if not path.exists():
+        raise SystemExit(f"Mapper args config file not found: {path}")
+    if not path.is_file():
+        raise SystemExit(f"Mapper args config path is not a file: {path}")
+
+    raw_cfg = _load_yaml(ctx, path)
+    if raw_cfg is None:
+        raw_cfg = {}
+    if not isinstance(raw_cfg, dict):
+        raise SystemExit(f"Mapper args config {path} must contain a top-level mapping.")
+
+    raw_mappers = raw_cfg.get("mappers", {})
+    if raw_mappers is None:
+        raw_mappers = {}
+    if not isinstance(raw_mappers, dict):
+        raise SystemExit(f"Mapper args config {path} must define 'mappers' as a mapping.")
+
+    out: dict[str, list[list[str]]] = {mapper: [] for mapper in ALLOWED_MAPPERS}
+    for mapper, mapper_cfg in raw_mappers.items():
+        mapper_name = str(mapper).strip().lower()
+        if mapper_name not in ALLOWED_MAPPERS:
+            raise SystemExit(
+                f"Unsupported mapper section {mapper!r} in {path}. Allowed values: {', '.join(sorted(ALLOWED_MAPPERS))}"
+            )
+        if mapper_cfg is None:
+            continue
+        if not isinstance(mapper_cfg, dict):
+            raise SystemExit(f"Mapper section {mapper!r} in {path} must be a mapping.")
+        raw_entries = mapper_cfg.get("extra_args", [])
+        if raw_entries is None:
+            raw_entries = []
+        if not isinstance(raw_entries, list):
+            raise SystemExit(
+                f"Mapper args config {path} requires mappers.{mapper_name}.extra_args to be a list of strings."
+            )
+        for idx, entry in enumerate(raw_entries, start=1):
+            if not isinstance(entry, str):
+                raise SystemExit(
+                    f"Mapper args config {path} requires mappers.{mapper_name}.extra_args[{idx}] to be a string."
+                )
+            if not entry.strip():
+                continue
+            out[mapper_name].append(
+                _parse_extra_args_entry(
+                    entry,
+                    mapper=mapper_name,
+                    source=f"{path} (mappers.{mapper_name}.extra_args[{idx}])",
+                )
+            )
+    return out
+
+
+def _resolve_mapper_extra_args(ctx: RunContext, args: argparse.Namespace, mappers: list[str]) -> dict[str, list[str]]:
+    selected_mappers = set(mappers)
+    cli_groups: dict[str, list[list[str]]] = {mapper: [] for mapper in ALLOWED_MAPPERS}
+    for mapper, attr in MAPPER_EXTRA_ARGS_ATTR.items():
+        value = _single_cli_value(getattr(args, attr, None), flag=MAPPER_EXTRA_ARGS_FLAG[mapper])
+        if not value:
+            continue
+        if mapper not in selected_mappers:
+            raise SystemExit(f"{MAPPER_EXTRA_ARGS_FLAG[mapper]} may only be used when --mapper includes {mapper}.")
+        cli_groups[mapper] = _parse_cli_extra_args(value, mapper=mapper)
+
+    config_path_raw = _single_cli_value(getattr(args, "mapper_args_config", None), flag="--mapper-args-config")
+    file_groups: dict[str, list[list[str]]] = {mapper: [] for mapper in ALLOWED_MAPPERS}
+    if config_path_raw:
+        file_groups = _load_mapper_args_config(ctx, Path(config_path_raw).expanduser())
+        for mapper, groups in file_groups.items():
+            if groups and mapper not in selected_mappers:
+                raise SystemExit(
+                    f"Mapper args config {config_path_raw} defines extra args for {mapper}, "
+                    f"but --mapper does not include {mapper}."
+                )
+
+    merged: dict[str, list[str]] = {}
+    for mapper in ALLOWED_MAPPERS:
+        groups = cli_groups[mapper] + file_groups[mapper]
+        _validate_extra_arg_groups(mapper, groups)
+        tokens = [token for group in groups for token in group]
+        merged[mapper] = tokens
+    return merged
 
 
 def _slurm_time_to_minutes(s: str) -> int:
@@ -1700,6 +1889,7 @@ def _resolve_mapping_settings(ctx: RunContext, args: argparse.Namespace) -> Mapp
 
     mappers = _parse_mappers(args.mapper)
     read_mode = "paired" if args.paired_end else "single"
+    mapper_extra_args = _resolve_mapper_extra_args(ctx, args, mappers)
 
     threads = _as_int(args.threads, field="threads", minimum=1)
     ram_bytes = _as_int(args.ram_bytes, field="ram_bytes", minimum=1)
@@ -1766,40 +1956,48 @@ def _resolve_mapping_settings(ctx: RunContext, args: argparse.Namespace) -> Mapp
         bw_normalization=bw_normalization,
         index_versions=index_versions,
         index_paths=index_paths,
+        mapper_extra_args=mapper_extra_args,
     )
 
 
-def _mapping_config_kv(settings: MappingSettings) -> list[str]:
-    config_kv = [
-        f"project={settings.project}",
-        f"organism={settings.organism}",
-        f"fastq_dir={settings.fastq_dir}",
-        f"outdir={settings.outdir}",
-        f"genomes_root={settings.genomes_root}",
-        f"mappers={','.join(settings.mappers)}",
-        f"read_mode={settings.read_mode}",
-        f"threads={settings.threads}",
-        f"ram_bytes={settings.ram_bytes}",
-        f"bw_bin_size={settings.bw_bin_size}",
-        f"bw_normalization={settings.bw_normalization}",
-    ]
+def _mapping_config(settings: MappingSettings) -> dict:
+    config_data = {
+        "project": settings.project,
+        "organism": settings.organism,
+        "fastq_dir": str(settings.fastq_dir),
+        "outdir": str(settings.outdir),
+        "genomes_root": str(settings.genomes_root),
+        "mappers": ",".join(settings.mappers),
+        "read_mode": settings.read_mode,
+        "threads": settings.threads,
+        "ram_bytes": settings.ram_bytes,
+        "bw_bin_size": settings.bw_bin_size,
+        "bw_normalization": settings.bw_normalization,
+        "mapper_extra_args": settings.mapper_extra_args,
+    }
     if "star" in settings.index_paths:
-        config_kv.append(f"star_index_dir={settings.index_paths['star']}")
+        config_data["star_index_dir"] = str(settings.index_paths["star"])
     if "bwa" in settings.index_paths:
-        config_kv.append(f"bwa_index_prefix={settings.index_paths['bwa'] / settings.organism}")
+        config_data["bwa_index_prefix"] = str(settings.index_paths["bwa"] / settings.organism)
     if "bowtie2" in settings.index_paths:
-        config_kv.append(f"bowtie2_index_prefix={settings.index_paths['bowtie2'] / settings.organism}")
-    return config_kv
+        config_data["bowtie2_index_prefix"] = str(settings.index_paths["bowtie2"] / settings.organism)
+    return config_data
 
 
-def _mapping_snakemake_cmd(settings: MappingSettings, args: argparse.Namespace, *, dry_run: bool) -> list[str]:
+def _mapping_snakemake_cmd(
+    settings: MappingSettings,
+    args: argparse.Namespace,
+    *,
+    dry_run: bool,
+    config_path: Path,
+) -> list[str]:
     cmd = [
         "snakemake",
         "--printshellcmds",
         "-s",
         str(settings.workflow_path),
-        "--config",
-        *_mapping_config_kv(settings),
+        "--configfile",
+        str(config_path),
         "--latency-wait",
         str(args.latency_wait),
     ]
@@ -1861,14 +2059,14 @@ def _mapping_snakemake_cmd(settings: MappingSettings, args: argparse.Namespace, 
     return cmd
 
 
-def _run_mapping_lint(ctx: RunContext, settings: MappingSettings) -> None:
+def _run_mapping_lint(ctx: RunContext, settings: MappingSettings, config_path: Path) -> None:
     cmd = [
         "snakemake",
         "--lint",
         "-s",
         str(settings.workflow_path),
-        "--config",
-        *_mapping_config_kv(settings),
+        "--configfile",
+        str(config_path),
     ]
     lint_cp = _run_tool(ctx, cmd, check=False, capture=True)
     if lint_cp.returncode != 0:
@@ -1899,6 +2097,7 @@ def _print_mapping_summary(settings: MappingSettings, args: argparse.Namespace) 
                 "bw_normalization": settings.bw_normalization,
                 "index_versions": settings.index_versions,
                 "index_paths": {tool: str(path) for tool, path in settings.index_paths.items()},
+                "mapper_extra_args": {tool: shlex.join(tokens) for tool, tokens in settings.mapper_extra_args.items()},
             },
             indent=2,
         ),
@@ -1911,8 +2110,12 @@ def cmd_mapping_plan(ctx: RunContext, args: argparse.Namespace) -> None:
     _print_tool_report(ctx, _mapping_report_tools(mappers))
     settings = _resolve_mapping_settings(ctx, args)
     _print_mapping_summary(settings, args)
-    _run_mapping_lint(ctx, settings)
-    _run_tool(ctx, _mapping_snakemake_cmd(settings, args, dry_run=True))
+    tmp_mapping_cfg_path = _write_temp_config_json(_mapping_config(settings), prefix="bcfngs-mapping-")
+    try:
+        _run_mapping_lint(ctx, settings, tmp_mapping_cfg_path)
+        _run_tool(ctx, _mapping_snakemake_cmd(settings, args, dry_run=True, config_path=tmp_mapping_cfg_path))
+    finally:
+        tmp_mapping_cfg_path.unlink(missing_ok=True)
 
 
 def cmd_mapping_run(ctx: RunContext, args: argparse.Namespace) -> None:
@@ -1921,7 +2124,11 @@ def cmd_mapping_run(ctx: RunContext, args: argparse.Namespace) -> None:
     _print_tool_report(ctx, _mapping_report_tools(mappers))
     settings = _resolve_mapping_settings(ctx, args)
     _print_mapping_summary(settings, args)
-    _run_tool(ctx, _mapping_snakemake_cmd(settings, args, dry_run=False))
+    tmp_mapping_cfg_path = _write_temp_config_json(_mapping_config(settings), prefix="bcfngs-mapping-")
+    try:
+        _run_tool(ctx, _mapping_snakemake_cmd(settings, args, dry_run=False, config_path=tmp_mapping_cfg_path))
+    finally:
+        tmp_mapping_cfg_path.unlink(missing_ok=True)
 
 
 def _add_index_version_args(parser: argparse.ArgumentParser) -> None:
@@ -1980,6 +2187,30 @@ def _add_mapping_args(parser: argparse.ArgumentParser) -> None:
         help=f"STAR --limitBAMsortRAM value in bytes (default: {DEFAULT_MAPPING_RAM_BYTES}).",
     )
     _add_index_version_args(parser)
+    parser.add_argument(
+        "--mapper-args-config",
+        action="append",
+        default=None,
+        help="Optional YAML file with mapper-specific extra args, e.g. mappers.star.extra_args.",
+    )
+    parser.add_argument(
+        "--extra-star-align-args",
+        action="append",
+        default=None,
+        help='Single shell-quoted STAR extra-args string, e.g. "--alignIntronMax 1 --alignEndsType EndToEnd".',
+    )
+    parser.add_argument(
+        "--extra-bwa-args",
+        action="append",
+        default=None,
+        help='Single shell-quoted bwa extra-args string, e.g. "-k 1".',
+    )
+    parser.add_argument(
+        "--extra-bowtie2-args",
+        action="append",
+        default=None,
+        help='Single shell-quoted bowtie2 extra-args string, e.g. "--very-sensitive".',
+    )
     parser.add_argument(
         "--keep-intermediary-files",
         action="store_true",
