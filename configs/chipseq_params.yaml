@@ -1,0 +1,13 @@
+mappers:
+  star:
+    extra_args: []
+    # Example:
+    # extra_args:
+       - "--alignIntronMax 1"
+       - "--alignEndsType EndToEnd"
+
+  bwa:
+    extra_args: []
+
+  bowtie2:
+    extra_args: []
