@@ -7,18 +7,29 @@ This page documents the current mapping workflow in this project.
 
 ## Overview
 
-- Genome download and indexing are handled by `./scripts/bcfngs genomes ...`.
-- Mapping is now implemented in [`workflow/mapping.smk`](/Users/yeroslaviz/Documents/Github/bcfngs_Mapping_automation/workflow/mapping.smk).
-- The recommended entry point is [`./scripts/bcfngs`](/Users/yeroslaviz/Documents/Github/bcfngs_Mapping_automation/scripts/bcfngs), using `mapping plan` for validation and dry-run and `mapping run` for execution.
-- The workflow supports `star`, `bwa`, and `bowtie2`.
+- Genome download and indexing are handled by `./scripts/bcfngs genomes ...`. See [updateing_genomes](updating_genomes.qmd) for more.
+- Mapping is implemented in [`workflow/mapping.smk`](/Users/yeroslaviz/Documents/Github/bcfngs_Mapping_automation/workflow/mapping.smk).
+- The [`./scripts/bcfngs`](/Users/yeroslaviz/Documents/Github/bcfngs_Mapping_automation/scripts/bcfngs) is used with the subcommand `mapping plan` for validation and dry-run and `mapping run` for execution.
+- The workflow supports `star`, `bwa`, and `bowtie2`. Further mapping tools are coming ...
 - For every selected mapper, the workflow creates BAM, BAM index, and bigWig output files.
 
-If `star` is selected, the workflow also writes:
-
-- `<sample>.counts.tab`
-- `<sample>.SJ.out.tab`
-
 ## Required CLI settings
+
+All available parameters can be listed using the `--help` command.
+
+```bash
+$ ./scripts/bcfngs mapping plan|run --help
+usage: bcfngs mapping plan [-h] [--mapper MAPPER] [--paired-end | --single-end] [--project PROJECT] [--input FASTQ_DIR] [--output OUTDIR]
+                           [--organism ORGANISM] [--threads THREADS] [--ram-bytes RAM_BYTES] [--star-index-version STAR_INDEX_VERSION]
+                           [--bwa-index-version BWA_INDEX_VERSION] [--bowtie2-index-version BOWTIE2_INDEX_VERSION] [--keep-intermediary-files]
+                           [--bw-bin-size BW_BIN_SIZE] [--bw-normalization BW_NORMALIZATION] [--executor {local,slurm}] [--jobs JOBS]
+                           [--latency-wait LATENCY_WAIT] [--slurm-partition SLURM_PARTITION] [--slurm-time SLURM_TIME]
+                           [--slurm-mail-user SLURM_MAIL_USER] [--slurm-mail-type SLURM_MAIL_TYPE] [--slurm-account SLURM_ACCOUNT]
+                           [--slurm-cpus-per-task SLURM_CPUS_PER_TASK] [--slurm-star-mem-mb SLURM_STAR_MEM_MB]
+                           [--slurm-aligner-mem-mb SLURM_ALIGNER_MEM_MB] [--slurm-index-mem-mb SLURM_INDEX_MEM_MB]
+                           [--slurm-bigwig-cpus SLURM_BIGWIG_CPUS] [--slurm-bigwig-mem-mb SLURM_BIGWIG_MEM_MB]
+
+```
 
 Per-run settings are passed on the command line:
 
@@ -48,12 +59,13 @@ Depending on the mapper selection, it expects:
 - default `star`: `<genomes_root>/<organism>/starIndex/SA`
 - default `bwa`: `<genomes_root>/<organism>/bwaIndex/<organism>.bwt`
 - default `bowtie2`: `<genomes_root>/<organism>/bowtie2Index/<organism>.1.bt2`
-- explicit versions: `<genomes_root>/<organism>/starIndex-<version>/...`, `bwaIndex-<version>/...`, `bowtie2Index-<version>/...`
+- explicit versions: `<genomes_root>/<organism>/<assembly>-starIndex-<version>/...`, `<assembly>-bwaIndex-<version>/...`, `<assembly>-bowtie2Index-<version>/...`
 - all runs: `<genomes_root>/<organism>.chromSize`
 
 If one of these files is missing, the run stops before any mapping jobs are submitted.
 
 If the resolved mapper binary version does not match the stable symlink target, the wrapper now fails before submission and asks you to pass the matching explicit version flag.
+If `configs/genomes.yaml` was updated to a different assembly than the last built indices, the wrapper also stops and asks you to rebuild the genome resources first.
 
 ## FASTQ pattern auto-detection
 

@@ -741,22 +741,76 @@ def cmd_genomes_check_updates(ctx: RunContext, args: argparse.Namespace) -> None
     _print_tool_report(ctx, ("python", "curl"))
     genomes_cfg = REPO_ROOT / "configs" / "genomes.yaml"
     cfg = _load_yaml(ctx, genomes_cfg)
+    source_keys: list[tuple[str, str | None]] = []
+    for org_key in cfg["organisms"]:
+        source_key = _org_source_key(cfg, org_key)
+        if source_key not in source_keys:
+            source_keys.append(source_key)
 
-    try:
-        html = _run_tool(ctx, ["curl", "-fsSL", "https://ftp.ensembl.org/pub/"], capture=True).stdout
-        releases = [int(m.group(1)) for m in re.finditer(r"release-(\d+)/", html)]
-        latest = max(releases) if releases else None
-    except subprocess.CalledProcessError:
-        latest = None
+    latest_by_source = {
+        source_key: _latest_release_for_source(ctx, *source_key)
+        for source_key in source_keys
+    }
 
-    current = int(cfg["releases"]["ensembl"])
-    if latest is None:
-        print(f"Ensembl latest release: (unavailable; network blocked?)  current pinned: {current}")
-    else:
+    for source, division in source_keys:
+        label = _source_release_label(source, division)
+        current = _current_pinned_release(cfg, source, division)
+        latest = latest_by_source[(source, division)]
+        if current is None:
+            continue
+        if latest is None:
+            print(f"{label} latest release: (unavailable; network blocked?)  current pinned: {current}")
+            continue
         status = "OK" if latest == current else "UPDATE_AVAILABLE"
-        print(f"Ensembl latest release: {latest}  current pinned: {current}  status: {status}")
+        print(f"{label} latest release: {latest}  current pinned: {current}  status: {status}")
         if latest != current:
-            print(f"Suggested bump: set releases.ensembl to {latest} in configs/genomes.yaml")
+            if source == "ensemblgenomes" and division:
+                print(f"Suggested bump: set releases.ensemblgenomes.{division} to {latest} in configs/genomes.yaml")
+            else:
+                print(f"Suggested bump: set releases.ensembl to {latest} in configs/genomes.yaml")
+
+    print("Assembly availability at latest visible release:")
+    for org_key in cfg["organisms"]:
+        source, division = _org_source_key(cfg, org_key)
+        latest = latest_by_source[(source, division)]
+        label = _source_release_label(source, division)
+        if latest is None:
+            print(
+                f"  - {org_key}: assembly {_assembly_for_org(cfg, org_key)}  "
+                f"source: {label}  status: CHECK_UNAVAILABLE"
+            )
+            continue
+
+        assembly_status = _assembly_status_for_org(ctx, cfg, org_key, latest)
+        status = str(assembly_status["status"])
+        current_assembly = str(assembly_status["current_assembly"])
+        line = (
+            f"  - {org_key}: assembly {current_assembly}  "
+            f"source: {label} {latest}  status: {status}"
+        )
+        if status == "ASSEMBLY_UPDATE_AVAILABLE":
+            available = [str(item) for item in assembly_status["available_assemblies"]]
+            line += f"  available: {_format_values(available)}"
+        elif status == "ASSEMBLY_PARTIAL_MATCH":
+            fasta_assemblies = [str(item) for item in assembly_status["fasta_assemblies"]]
+            gtf_assemblies = [str(item) for item in assembly_status["gtf_assemblies"]]
+            line += (
+                f"  FASTA: {_format_values(fasta_assemblies)}"
+                f"  GTF: {_format_values(gtf_assemblies)}"
+            )
+        elif status == "ASSEMBLY_NOT_FOUND":
+            fasta_assemblies = [str(item) for item in assembly_status["fasta_assemblies"]]
+            gtf_assemblies = [str(item) for item in assembly_status["gtf_assemblies"]]
+            line += (
+                f"  FASTA: {_format_values(fasta_assemblies)}"
+                f"  GTF: {_format_values(gtf_assemblies)}"
+            )
+        print(line)
+
+        if status == "ASSEMBLY_UPDATE_AVAILABLE":
+            available = [str(item) for item in assembly_status["available_assemblies"]]
+            if len(available) == 1:
+                print(f"    Suggested assembly update: set organisms.{org_key}.assembly to {available[0]}")
 
 
 def _species_prefix(species: str) -> str:
@@ -774,13 +828,17 @@ def _release_for_org(cfg: dict, org_key: str) -> str:
     return str(cfg["releases"]["ensembl"])
 
 
-def _source_root_for_org(cfg: dict, org_key: str) -> str:
+def _assembly_for_org(cfg: dict, org_key: str) -> str:
+    return str(cfg["organisms"][org_key]["assembly"])
+
+
+def _source_root_for_org(cfg: dict, org_key: str, release: str | None = None) -> str:
     org = cfg["organisms"][org_key]
     if org.get("source") == "ensemblgenomes":
         division = org["division"]
-        rel = _release_for_org(cfg, org_key)
+        rel = release or _release_for_org(cfg, org_key)
         return f"https://ftp.ensemblgenomes.ebi.ac.uk/pub/{division}/release-{rel}"
-    rel = _release_for_org(cfg, org_key)
+    rel = release or _release_for_org(cfg, org_key)
     return f"https://ftp.ensembl.org/pub/release-{rel}"
 
 
@@ -798,7 +856,7 @@ def _fasta_url_for_org(cfg: dict, org_key: str) -> str:
         return _normalize_ensemblgenomes_url(org["fasta_url"])
     root = _source_root_for_org(cfg, org_key)
     species = org["species"]
-    assembly = org["assembly"]
+    assembly = _assembly_for_org(cfg, org_key)
     fasta_kind = org.get("fasta_kind", "dna.toplevel")
     prefix = _species_prefix(species)
     return f"{root}/fasta/{species}/dna/{prefix}.{assembly}.{fasta_kind}.fa.gz"
@@ -810,10 +868,11 @@ def _gtf_url_for_org(cfg: dict, org_key: str) -> str:
         return _normalize_ensemblgenomes_url(org["gtf_url"])
     root = _source_root_for_org(cfg, org_key)
     species = org["species"]
-    assembly = org["assembly"]
+    assembly = _assembly_for_org(cfg, org_key)
     rel = _release_for_org(cfg, org_key)
+    gtf_kind = org.get("gtf_kind", "gtf")
     prefix = _species_prefix(species)
-    return f"{root}/gtf/{species}/{prefix}.{assembly}.{rel}.gtf.gz"
+    return f"{root}/gtf/{species}/{prefix}.{assembly}.{rel}.{gtf_kind}.gz"
 
 
 def _genomes_urls_from_cfg(cfg: dict) -> list[tuple[str, str, str]]:
@@ -822,6 +881,143 @@ def _genomes_urls_from_cfg(cfg: dict) -> list[tuple[str, str, str]]:
         urls.append((org_key, "FASTA", _fasta_url_for_org(cfg, org_key)))
         urls.append((org_key, "GTF", _gtf_url_for_org(cfg, org_key)))
     return urls
+
+
+def _source_release_label(source: str, division: str | None = None) -> str:
+    if source == "ensemblgenomes":
+        return f"EnsemblGenomes {division}"
+    return "Ensembl"
+
+
+def _latest_release_index_url(source: str, division: str | None = None) -> str:
+    if source == "ensemblgenomes":
+        if not division:
+            raise ValueError("division is required for ensemblgenomes release checks")
+        return f"https://ftp.ensemblgenomes.ebi.ac.uk/pub/{division}/"
+    return "https://ftp.ensembl.org/pub/"
+
+
+def _current_pinned_release(cfg: dict, source: str, division: str | None = None) -> int | None:
+    releases = cfg.get("releases", {})
+    if source == "ensemblgenomes":
+        if not division:
+            return None
+        division_releases = releases.get("ensemblgenomes", {})
+        value = division_releases.get(division)
+        return int(value) if value is not None else None
+    value = releases.get("ensembl")
+    return int(value) if value is not None else None
+
+
+def _org_source_key(cfg: dict, org_key: str) -> tuple[str, str | None]:
+    org = cfg["organisms"][org_key]
+    return str(org.get("source", "ensembl")), org.get("division")
+
+
+def _fetch_url_text(ctx: RunContext, url: str) -> str | None:
+    try:
+        return _run_tool(ctx, ["curl", "-fsSL", url], capture=True).stdout
+    except subprocess.CalledProcessError:
+        return None
+
+
+def _latest_release_for_source(ctx: RunContext, source: str, division: str | None = None) -> int | None:
+    html = _fetch_url_text(ctx, _latest_release_index_url(source, division))
+    if html is None:
+        return None
+    releases = [int(m.group(1)) for m in re.finditer(r"release-(\d+)/", html)]
+    return max(releases) if releases else None
+
+
+def _listing_filenames(html: str) -> set[str]:
+    return {
+        match.group(1)
+        for match in re.finditer(r'href="([^"/][^"]+)"', html)
+        if match.group(1) not in {".", ".."}
+    }
+
+
+def _assemblies_from_fasta_listing(cfg: dict, org_key: str, html: str) -> list[str]:
+    org = cfg["organisms"][org_key]
+    prefix = _species_prefix(org["species"])
+    fasta_kind = org.get("fasta_kind", "dna.toplevel")
+    suffix = f".{fasta_kind}.fa.gz"
+    assemblies = {
+        name[len(prefix) + 1 : -len(suffix)]
+        for name in _listing_filenames(html)
+        if name.startswith(f"{prefix}.") and name.endswith(suffix)
+    }
+    return sorted((assembly for assembly in assemblies if assembly), key=_version_key)
+
+
+def _assemblies_from_gtf_listing(cfg: dict, org_key: str, release: int, html: str) -> list[str]:
+    org = cfg["organisms"][org_key]
+    prefix = _species_prefix(org["species"])
+    gtf_kind = org.get("gtf_kind", "gtf")
+    suffix = f".{release}.{gtf_kind}.gz"
+    assemblies = {
+        name[len(prefix) + 1 : -len(suffix)]
+        for name in _listing_filenames(html)
+        if name.startswith(f"{prefix}.") and name.endswith(suffix)
+    }
+    return sorted((assembly for assembly in assemblies if assembly), key=_version_key)
+
+
+def _format_values(values: Iterable[str], *, limit: int = 5) -> str:
+    ordered = [value for value in values if value]
+    if not ordered:
+        return "(none)"
+    preview = ordered[:limit]
+    suffix = "" if len(ordered) <= limit else f", +{len(ordered) - limit} more"
+    return ", ".join(preview) + suffix
+
+
+def _assembly_status_for_org(
+    ctx: RunContext,
+    cfg: dict,
+    org_key: str,
+    latest_release: int,
+) -> dict[str, object]:
+    org = cfg["organisms"][org_key]
+    current_assembly = _assembly_for_org(cfg, org_key)
+    release_str = str(latest_release)
+    fasta_listing = _fetch_url_text(
+        ctx,
+        f"{_source_root_for_org(cfg, org_key, release_str)}/fasta/{org['species']}/dna/",
+    )
+    gtf_listing = _fetch_url_text(
+        ctx,
+        f"{_source_root_for_org(cfg, org_key, release_str)}/gtf/{org['species']}/",
+    )
+    if fasta_listing is None or gtf_listing is None:
+        return {
+            "status": "CHECK_UNAVAILABLE",
+            "current_assembly": current_assembly,
+            "fasta_assemblies": [],
+            "gtf_assemblies": [],
+            "available_assemblies": [],
+        }
+
+    fasta_assemblies = _assemblies_from_fasta_listing(cfg, org_key, fasta_listing)
+    gtf_assemblies = _assemblies_from_gtf_listing(cfg, org_key, latest_release, gtf_listing)
+    available_assemblies = sorted(set(fasta_assemblies) & set(gtf_assemblies), key=_version_key)
+
+    if current_assembly in available_assemblies:
+        status = "OK"
+    elif available_assemblies:
+        status = "ASSEMBLY_UPDATE_AVAILABLE"
+    elif current_assembly in fasta_assemblies or current_assembly in gtf_assemblies:
+        status = "ASSEMBLY_PARTIAL_MATCH"
+    else:
+        status = "ASSEMBLY_NOT_FOUND"
+
+    return {
+        "status": status,
+        "current_assembly": current_assembly,
+        "fasta_assemblies": fasta_assemblies,
+        "gtf_assemblies": gtf_assemblies,
+        "available_assemblies": available_assemblies,
+    }
 
 
 def _snakemake_available_executors(ctx: RunContext) -> set[str]:
@@ -971,19 +1167,46 @@ def _tool_index_dirname(tool_key: str) -> str:
     }[tool_key]
 
 
-def _tool_versioned_dir(genomes_root: Path, organism: str, tool_key: str, version: str) -> Path:
-    return genomes_root / organism / f"{_tool_index_dirname(tool_key)}-{version}"
+def _tool_versioned_dirname(tool_key: str, version: str, *, assembly: str | None = None) -> str:
+    base = f"{_tool_index_dirname(tool_key)}-{version}"
+    if assembly:
+        return f"{assembly}-{base}"
+    return base
+
+
+def _tool_versioned_dir(
+    genomes_root: Path,
+    organism: str,
+    tool_key: str,
+    version: str,
+    *,
+    assembly: str | None = None,
+) -> Path:
+    return genomes_root / organism / _tool_versioned_dirname(tool_key, version, assembly=assembly)
+
+
+def _tool_versioned_dir_candidates(
+    genomes_root: Path,
+    organism: str,
+    tool_key: str,
+    version: str,
+    *,
+    assembly: str | None = None,
+) -> list[Path]:
+    candidates: list[Path] = []
+    if assembly:
+        candidates.append(_tool_versioned_dir(genomes_root, organism, tool_key, version, assembly=assembly))
+    legacy = _tool_versioned_dir(genomes_root, organism, tool_key, version)
+    if legacy not in candidates:
+        candidates.append(legacy)
+    return candidates
 
 
 def _tool_stable_link(genomes_root: Path, organism: str, tool_key: str) -> Path:
     return genomes_root / organism / _tool_index_dirname(tool_key)
 
 
-def _tool_expected_index_path(genomes_root: Path, organism: str, tool_key: str, version: str | None = None) -> Path:
-    if version:
-        base = _tool_versioned_dir(genomes_root, organism, tool_key, version)
-    else:
-        base = _tool_stable_link(genomes_root, organism, tool_key)
+def _tool_index_resource_path(base: Path, organism: str, tool_key: str) -> Path:
     if tool_key == "star":
         return base / "SA"
     if tool_key == "bwa":
@@ -991,11 +1214,62 @@ def _tool_expected_index_path(genomes_root: Path, organism: str, tool_key: str, 
     return base / f"{organism}.1.bt2"
 
 
-def _version_from_index_dirname(tool_key: str, path: Path) -> str | None:
-    prefix = f"{_tool_index_dirname(tool_key)}-"
-    if path.name.startswith(prefix):
-        return path.name[len(prefix) :]
+def _tool_expected_index_paths(
+    genomes_root: Path,
+    organism: str,
+    tool_key: str,
+    version: str | None = None,
+    *,
+    assembly: str | None = None,
+) -> list[Path]:
+    if version:
+        bases = _tool_versioned_dir_candidates(genomes_root, organism, tool_key, version, assembly=assembly)
+    else:
+        bases = [_tool_stable_link(genomes_root, organism, tool_key)]
+    return [_tool_index_resource_path(base, organism, tool_key) for base in bases]
+
+
+def _tool_existing_versioned_dir(
+    genomes_root: Path,
+    organism: str,
+    tool_key: str,
+    version: str,
+    *,
+    assembly: str | None = None,
+) -> Path | None:
+    for candidate in _tool_versioned_dir_candidates(genomes_root, organism, tool_key, version, assembly=assembly):
+        if _tool_index_resource_path(candidate, organism, tool_key).exists():
+            return candidate
     return None
+
+
+def _index_dir_metadata(tool_key: str, path: Path) -> tuple[str | None, str] | None:
+    dirname = _tool_index_dirname(tool_key)
+    legacy_prefix = f"{dirname}-"
+    if path.name.startswith(legacy_prefix):
+        version = path.name[len(legacy_prefix) :]
+        return (None, version) if version else None
+    marker = f"-{dirname}-"
+    if marker not in path.name:
+        return None
+    assembly, version = path.name.split(marker, 1)
+    if not assembly or not version:
+        return None
+    return assembly, version
+
+
+def _version_from_index_dirname(tool_key: str, path: Path) -> str | None:
+    metadata = _index_dir_metadata(tool_key, path)
+    if metadata is None:
+        return None
+    return metadata[1]
+
+
+def _assembly_from_index_dirname(tool_key: str, path: Path) -> str | None:
+    metadata = _index_dir_metadata(tool_key, path)
+    if metadata is None:
+        return None
+    return metadata[0]
 
 
 def _stable_link_version(link_path: Path, tool_key: str) -> str | None:
@@ -1006,6 +1280,16 @@ def _stable_link_version(link_path: Path, tool_key: str) -> str | None:
     except OSError:
         return None
     return _version_from_index_dirname(tool_key, target)
+
+
+def _stable_link_assembly(link_path: Path, tool_key: str) -> str | None:
+    if not link_path.exists() or not link_path.is_symlink():
+        return None
+    try:
+        target = link_path.resolve()
+    except OSError:
+        return None
+    return _assembly_from_index_dirname(tool_key, target)
 
 
 def _version_key(version: str) -> tuple[tuple[int, object], ...]:
@@ -1028,21 +1312,35 @@ def _update_symlink(link_path: Path, target: Path) -> None:
     os.replace(tmp_link, link_path)
 
 
-def _scan_index_versions(genomes_root: Path, organism: str, tool_key: str) -> dict[str, Path]:
+def _scan_index_versions(
+    genomes_root: Path,
+    organism: str,
+    tool_key: str,
+    *,
+    assembly: str | None = None,
+) -> dict[str, Path]:
     organism_dir = genomes_root / organism
-    prefix = f"{_tool_index_dirname(tool_key)}-"
     found: dict[str, Path] = {}
     if not organism_dir.exists():
         return found
     for candidate in organism_dir.iterdir():
         if not candidate.is_dir():
             continue
-        version = _version_from_index_dirname(tool_key, candidate)
-        if version is None:
+        metadata = _index_dir_metadata(tool_key, candidate)
+        if metadata is None:
             continue
-        expected = _tool_expected_index_path(genomes_root, organism, tool_key, version)
+        candidate_assembly, version = metadata
+        if assembly is not None and candidate_assembly not in {None, assembly}:
+            continue
+        expected = _tool_index_resource_path(candidate, organism, tool_key)
         if expected.exists():
-            found[version] = candidate
+            current = found.get(version)
+            if current is None:
+                found[version] = candidate
+                continue
+            current_assembly = _assembly_from_index_dirname(tool_key, current)
+            if assembly is not None and candidate_assembly == assembly and current_assembly != assembly:
+                found[version] = candidate
     return found
 
 
@@ -1064,6 +1362,12 @@ def _load_existing_manifest(manifest_path: Path) -> dict:
         return {}
 
 
+def _manifest_assembly(genomes_root: Path, organism: str) -> str | None:
+    manifest = _load_existing_manifest(genomes_root / organism / MANIFEST_FILE_NAME)
+    assembly = manifest.get("assembly")
+    return str(assembly) if assembly else None
+
+
 def _write_index_manifest(
     cfg: dict,
     genomes_root: Path,
@@ -1077,13 +1381,14 @@ def _write_index_manifest(
     manifest_path = organism_dir / MANIFEST_FILE_NAME
     existing = _load_existing_manifest(manifest_path)
     org_cfg = cfg["organisms"][organism]
+    current_assembly = _assembly_for_org(cfg, organism)
 
     stable_targets: dict[str, dict[str, str | None]] = {}
     index_builds: dict[str, dict[str, dict]] = {}
     existing_builds = existing.get("index_builds", {})
 
     for tool_key in INDEXED_TOOLS:
-        scanned = _scan_index_versions(genomes_root, organism, tool_key)
+        scanned = _scan_index_versions(genomes_root, organism, tool_key, assembly=current_assembly)
         stable_version = _stable_link_version(_tool_stable_link(genomes_root, organism, tool_key), tool_key)
         stable_targets[tool_key] = {
             "version": stable_version,
@@ -1106,7 +1411,7 @@ def _write_index_manifest(
 
     manifest = {
         "organism": organism,
-        "assembly": org_cfg["assembly"],
+        "assembly": current_assembly,
         "source": {
             "provider": org_cfg.get("source", "ensembl"),
             "division": org_cfg.get("division"),
@@ -1136,8 +1441,9 @@ def _postprocess_genomes_build(
     genomes_root = Path(cfg["genomes_root"]).expanduser()
     build_timestamp = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
     for organism in organisms:
+        current_assembly = _assembly_for_org(cfg, organism)
         for tool_key in INDEXED_TOOLS:
-            versions = _scan_index_versions(genomes_root, organism, tool_key)
+            versions = _scan_index_versions(genomes_root, organism, tool_key, assembly=current_assembly)
             if not versions:
                 continue
             latest_version = max(versions, key=_version_key)
@@ -1305,6 +1611,7 @@ def _resolve_mapping_index_paths(
     ctx: RunContext,
     genomes_root: Path,
     organism: str,
+    assembly: str,
     mappers: list[str],
     args: argparse.Namespace,
 ) -> tuple[dict[str, str], dict[str, Path]]:
@@ -1325,7 +1632,22 @@ def _resolve_mapping_index_paths(
                     f"{TOOL_SPECS[tool_key].display_name} binary version {actual_version!r}."
                 )
             selected_versions[tool_key] = requested_version
-            selected_paths[tool_key] = _tool_versioned_dir(genomes_root, organism, tool_key, requested_version)
+            selected_paths[tool_key] = (
+                _tool_existing_versioned_dir(
+                    genomes_root,
+                    organism,
+                    tool_key,
+                    requested_version,
+                    assembly=assembly,
+                )
+                or _tool_versioned_dir(
+                    genomes_root,
+                    organism,
+                    tool_key,
+                    requested_version,
+                    assembly=assembly,
+                )
+            )
         else:
             stable_link = _tool_stable_link(genomes_root, organism, tool_key)
             stable_version = _stable_link_version(stable_link, tool_key)
@@ -1343,10 +1665,17 @@ def _resolve_mapping_index_paths(
             selected_versions[tool_key] = stable_version
             selected_paths[tool_key] = stable_link
 
-        expected = _tool_expected_index_path(genomes_root, organism, tool_key, selected_versions[tool_key] if requested_version else None)
-        if not expected.exists():
+        expected_candidates = _tool_expected_index_paths(
+            genomes_root,
+            organism,
+            tool_key,
+            selected_versions[tool_key] if requested_version else None,
+            assembly=assembly if requested_version else None,
+        )
+        expected = next((path for path in expected_candidates if path.exists()), None)
+        if expected is None:
             raise SystemExit(
-                f"Missing required {TOOL_SPECS[tool_key].display_name} index resource: {expected}"
+                f"Missing required {TOOL_SPECS[tool_key].display_name} index resource: {expected_candidates[0]}"
             )
     return selected_versions, selected_paths
 
@@ -1383,7 +1712,31 @@ def _resolve_mapping_settings(ctx: RunContext, args: argparse.Namespace) -> Mapp
     if not genomes_root.exists():
         raise SystemExit(f"Configured genomes_root does not exist: {genomes_root}")
 
-    index_versions, index_paths = _resolve_mapping_index_paths(ctx, genomes_root, organism, mappers, args)
+    configured_assembly = _assembly_for_org(genomes_cfg, organism)
+    manifest_assembly = _manifest_assembly(genomes_root, organism)
+    if manifest_assembly and manifest_assembly != configured_assembly:
+        raise SystemExit(
+            f"Configured assembly {configured_assembly!r} for {organism} does not match the last built "
+            f"assembly {manifest_assembly!r} recorded in {genomes_root / organism / MANIFEST_FILE_NAME}. "
+            "Rebuild the genome indices before mapping."
+        )
+    for tool_key in mappers:
+        stable_assembly = _stable_link_assembly(_tool_stable_link(genomes_root, organism, tool_key), tool_key)
+        if stable_assembly and stable_assembly != configured_assembly:
+            raise SystemExit(
+                f"Stable {_tool_index_dirname(tool_key)} target for {organism} points to assembly "
+                f"{stable_assembly!r}, but configs/genomes.yaml now requests {configured_assembly!r}. "
+                "Rebuild the genome indices before mapping."
+            )
+
+    index_versions, index_paths = _resolve_mapping_index_paths(
+        ctx,
+        genomes_root,
+        organism,
+        configured_assembly,
+        mappers,
+        args,
+    )
 
     missing_indices: list[str] = []
     if "star" in mappers and not (index_paths["star"] / "SA").exists():

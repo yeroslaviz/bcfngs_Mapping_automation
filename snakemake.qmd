@@ -90,7 +90,7 @@ Mapping no longer uses a dedicated `configs/run.yaml` file. Pass the project set
 
 - ~~set `index_versions.star`, `index_versions.bwa`, `index_versions.bowtie2` (these strings are used in output folder names)~~
 
-Index version are now recognized automatically via the `bcfngs` script.
+Index version are now recognized automatically via the `bcfngs` script, and versioned index directories are named with the assembly prefix, for example `GRCh38-starIndex-2.7.11b`.
 
 3. Rebuild:
 

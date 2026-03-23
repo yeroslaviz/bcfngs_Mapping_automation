@@ -11,9 +11,6 @@ GENOMES_ROOT = config["genomes_root"]
 DEFAULT_THREADS = int(config.get("default_threads", 16))
 DEFAULT_RAM = int(config.get("default_ram_bytes", 0))
 INDEX_VERSIONS = config.get("index_versions", {})
-STAR_VER = INDEX_VERSIONS.get("star", "unknown")
-BWA_VER = INDEX_VERSIONS.get("bwa", "unknown")
-BOWTIE2_VER = INDEX_VERSIONS.get("bowtie2", "unknown")
 BWA_INDEX_DEFAULT_ALGO = str(config.get("bwa_index_algorithm", "is"))
 BWA_INDEX_DEFAULT_MEM_MB = int(config.get("bwa_index_mem_mb", 16000))
 
@@ -82,9 +79,10 @@ def gtf_url(wc):
     species = org["species"]
     assembly = org["assembly"]
     rel = _release_for_org(wc.org)
+    gtf_kind = org.get("gtf_kind", "gtf")
     prefix = _species_prefix(species)
     # Example: .../gtf/homo_sapiens/Homo_sapiens.GRCh38.116.gtf.gz
-    return f"{root}/gtf/{species}/{prefix}.{assembly}.{rel}.gtf.gz"
+    return f"{root}/gtf/{species}/{prefix}.{assembly}.{rel}.{gtf_kind}.gz"
 
 
 def sources_dir(wc):
@@ -96,9 +94,31 @@ def sources_dir(wc):
     return os.path.join(GENOMES_ROOT, "sources", wc, f"{src}-release-{rel}")
 
 
+def source_basename(org_key: str):
+    assembly = ORGANISMS[org_key]["assembly"]
+    return f"{org_key}.{assembly}"
+
+
+def source_fasta_path(org_key: str):
+    return os.path.join(sources_dir(org_key), f"{source_basename(org_key)}.fa")
+
+
+def source_gtf_path(org_key: str):
+    return os.path.join(sources_dir(org_key), f"{source_basename(org_key)}.gtf")
+
+
+def tool_index_dirname(tool: str):
+    return {
+        "star": "starIndex",
+        "bwa": "bwaIndex",
+        "bowtie2": "bowtie2Index",
+    }[tool]
+
+
 def versioned_index_dir(tool: str, wc):
     ver = INDEX_VERSIONS.get(tool, "unknown")
-    return os.path.join(GENOMES_ROOT, wc, f"{tool}Index-{ver}")
+    assembly = ORGANISMS[wc]["assembly"]
+    return os.path.join(GENOMES_ROOT, wc, f"{assembly}-{tool_index_dirname(tool)}-{ver}")
 
 
 def bwa_index_algorithm(wc):
@@ -119,8 +139,8 @@ rule all:
 
 rule download_sources:
     output:
-        fasta=os.path.join(GENOMES_ROOT, "sources", "{org}", "{src_rel}", "{org}.fa"),
-        gtf=os.path.join(GENOMES_ROOT, "sources", "{org}", "{src_rel}", "{org}.gtf"),
+        fasta=lambda wc: source_fasta_path(wc.org),
+        gtf=lambda wc: source_gtf_path(wc.org),
     log:
         os.path.join(GENOMES_ROOT, "logs", "{org}", "{src_rel}", "download_sources.log"),
     conda:
@@ -146,10 +166,10 @@ rule download_sources:
 
 rule star_index:
     input:
-        fasta=lambda wc: os.path.join(sources_dir(wc.org), f"{wc.org}.fa"),
-        gtf=lambda wc: os.path.join(sources_dir(wc.org), f"{wc.org}.gtf"),
+        fasta=lambda wc: source_fasta_path(wc.org),
+        gtf=lambda wc: source_gtf_path(wc.org),
     output:
-        sa=os.path.join(GENOMES_ROOT, "{org}", f"starIndex-{STAR_VER}", "SA"),
+        sa=lambda wc: os.path.join(versioned_index_dir("star", wc.org), "SA"),
     log:
         os.path.join(GENOMES_ROOT, "logs", "{org}", "star_index.log"),
     conda:
@@ -178,9 +198,9 @@ rule star_index:
 
 rule bwa_index:
     input:
-        fasta=lambda wc: os.path.join(sources_dir(wc.org), f"{wc.org}.fa"),
+        fasta=lambda wc: source_fasta_path(wc.org),
     output:
-        bwt=os.path.join(GENOMES_ROOT, "{org}", f"bwaIndex-{BWA_VER}", "{org}.bwt"),
+        bwt=lambda wc: os.path.join(versioned_index_dir("bwa", wc.org), f"{wc.org}.bwt"),
     log:
         os.path.join(GENOMES_ROOT, "logs", "{org}", "bwa_index.log"),
     conda:
@@ -204,9 +224,9 @@ rule bwa_index:
 
 rule bowtie2_index:
     input:
-        fasta=lambda wc: os.path.join(sources_dir(wc.org), f"{wc.org}.fa"),
+        fasta=lambda wc: source_fasta_path(wc.org),
     output:
-        bt2=os.path.join(GENOMES_ROOT, "{org}", f"bowtie2Index-{BOWTIE2_VER}", "{org}.1.bt2"),
+        bt2=lambda wc: os.path.join(versioned_index_dir("bowtie2", wc.org), f"{wc.org}.1.bt2"),
     log:
         os.path.join(GENOMES_ROOT, "logs", "{org}", "bowtie2_index.log"),
     conda:
@@ -227,7 +247,7 @@ rule bowtie2_index:
 
 rule chrom_size:
     input:
-        fasta=lambda wc: os.path.join(sources_dir(wc.org), f"{wc.org}.fa"),
+        fasta=lambda wc: source_fasta_path(wc.org),
     output:
         chrom=os.path.join(GENOMES_ROOT, "{org}.chromSize"),
     log:

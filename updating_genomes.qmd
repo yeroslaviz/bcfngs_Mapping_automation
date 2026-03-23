@@ -164,9 +164,9 @@ These are the main `configs/genomes.yaml` fields referenced by the three command
 | `releases.ensemblgenomes.metazoa` | `62` | `plan`, `build` | Used for `ensemblgenomes` organisms such as `Drosophila_pseudoobscura`. |
 | `default_threads` | `16` | `build` | Used by `STAR` genome generation and `bowtie2-build`. |
 | `default_ram_bytes` | `168632718037` | `build` | Passed to `STAR --limitGenomeGenerateRAM`. |
-| `index_versions.star` | `""` | `build` | Controls versioned output paths such as `starIndex-<version>`. |
-| `index_versions.bwa` | `""` | `build` | Controls versioned output paths such as `bwaIndex-<version>`. |
-| `index_versions.bowtie2` | `""` | `build` | Controls versioned output paths such as `bowtie2Index-<version>`. |
+| `index_versions.star` | `""` | `build` | Controls versioned output paths such as `<assembly>-starIndex-<version>`. |
+| `index_versions.bwa` | `""` | `build` | Controls versioned output paths such as `<assembly>-bwaIndex-<version>`. |
+| `index_versions.bowtie2` | `""` | `build` | Controls versioned output paths such as `<assembly>-bowtie2Index-<version>`. |
 | `organisms.*` | all configured organisms | `plan`, `build` | Scientific-name keys such as `Homo_sapiens`, `Mus_musculus`, `Drosophila_melanogaster`. |
 | `organisms.*.sa_index` | organism-specific | `build` | Passed to `STAR --genomeSAindexNbases`. |
 | `organisms.*.fasta_url` / `gtf_url` | optional explicit URLs | `plan`, `build` | Used for organisms that do not fit the generated Ensembl filename pattern. |
@@ -179,10 +179,10 @@ These are the main `configs/genomes.yaml` fields referenced by the three command
 |---|---|---|---|
 | Shared wrapper parameters | see [Shared wrapper parameters](#shared-wrapper-parameters) | CLI | `--profile` and `--env-prefix` still apply here. |
 | Command-specific flags | none | CLI | This subcommand has no extra runtime flags beyond `-h/--help`. |
-| Compared release pin | `releases.ensembl: 115` | [`configs/genomes.yaml`](configs/genomes.yaml) | This is the pinned release compared to the latest Ensembl release found on `https://ftp.ensembl.org/pub/`. |
-| Network target | `https://ftp.ensembl.org/pub/` | internal behavior | If it is unreachable, the command reports the current pin but cannot confirm the latest release. |
+| Compared release pin | `releases.ensembl: 115` | [`configs/genomes.yaml`](configs/genomes.yaml) | This is the pinned main Ensembl release compared to the latest release found on `https://ftp.ensembl.org/pub/`. |
+| Network target | `https://ftp.ensembl.org/pub/` plus EnsemblGenomes division roots | internal behavior | If a source root is unreachable, the command reports the current pin but cannot confirm the latest release for that source. |
 | Writes to disk | none | internal behavior | Report only. No files are edited. |
-| Not checked automatically | `releases.ensemblgenomes.*`, explicit `fasta_url`, explicit `gtf_url` | config | Review these manually when working with EnsemblGenomes or custom URLs. |
+| Assembly check | per organism | internal behavior | `check-updates` now also checks whether the configured assembly label is still available in the latest visible source release and reports candidate assemblies when it is not. |
 
 ### Micromamba / conda-style environment
 
@@ -197,6 +197,8 @@ Typical output looks like:
 ```text
 Ensembl latest release: 117  current pinned: 116  status: UPDATE_AVAILABLE
 Suggested bump: set releases.ensembl to 117 in configs/genomes.yaml
+Assembly availability at latest visible release:
+  - Homo_sapiens: assembly GRCh38  source: Ensembl 117  status: OK
 ```
 
 ### Modules profile
@@ -214,8 +216,9 @@ For `check-updates`, the modules profile usually does not change the result. It 
 
 1. Edit [`configs/genomes.yaml`](configs/genomes.yaml).
 2. Bump `releases.ensembl`, for example `116` to `117`.
-3. Review any organism entries that use explicit `fasta_url` or `gtf_url`.
-4. Continue with [`plan`](#plan) and then [`build`](#build).
+3. Review the reported assembly status lines and update `organisms.*.assembly` if a newer source release uses a different build label.
+4. Review any organism entries that use explicit `fasta_url` or `gtf_url`.
+5. Continue with [`plan`](#plan) and then [`build`](#build).
 
 If you are updating an EnsemblGenomes organism such as `Drosophila_pseudoobscura`, also review `releases.ensemblgenomes` plus the explicit URLs in its organism block.
 
@@ -303,7 +306,7 @@ snakemake -npr \
 | `--star-index-version`, `--bwa-index-version`, `--bowtie2-index-version` | resolved binary version | CLI | If set, each flag must match the actual resolved binary version for that tool. |
 | `default_threads` | `16` | [`configs/genomes.yaml`](configs/genomes.yaml) | Used by `STAR` genome generation and `bowtie2-build`. This is separate from `--cores`. |
 | `default_ram_bytes` | `168632718037` | [`configs/genomes.yaml`](configs/genomes.yaml) | Passed to `STAR --limitGenomeGenerateRAM`. |
-| `index_versions.*` | resolved at runtime | wrapper behavior | Controls versioned output paths such as `starIndex-<version>`. |
+| `index_versions.*` | resolved at runtime | wrapper behavior | Controls versioned output paths such as `<assembly>-starIndex-<version>`. |
 | `organisms.*.sa_index` | organism-specific | [`configs/genomes.yaml`](configs/genomes.yaml) | Controls STAR suffix-array sizing. |
 | Stable symlink outputs | `starIndex`, `bwaIndex`, `bowtie2Index` | wrapper behavior | Repointed after build to the highest built version available for that organism and tool. |
 | Per-organism manifest | `index-manifest.json` | wrapper behavior | Written under each organism directory with assembly, source release, tool versions, stable targets, and discovered versioned builds. |
@@ -431,7 +434,7 @@ Only STAR for `Homo_sapiens`:
 snakemake -pr -j 20 \
   -s workflow/genomes.smk \
   --configfile configs/genomes.yaml \
-  /fs/pool/pool-bcfngs/genomes/Homo_sapiens/starIndex-<STAR_VERSION>/SA
+  /fs/pool/pool-bcfngs/genomes/Homo_sapiens/<ASSEMBLY>-starIndex-<STAR_VERSION>/SA
 ```
 
 Only bwa for `Homo_sapiens`:
@@ -440,7 +443,7 @@ Only bwa for `Homo_sapiens`:
 snakemake -pr -j 20 \
   -s workflow/genomes.smk \
   --configfile configs/genomes.yaml \
-  /fs/pool/pool-bcfngs/genomes/Homo_sapiens/bwaIndex-<BWA_VERSION>/Homo_sapiens.bwt
+  /fs/pool/pool-bcfngs/genomes/Homo_sapiens/<ASSEMBLY>-bwaIndex-<BWA_VERSION>/Homo_sapiens.bwt
 ```
 
 Only bowtie2 for `Homo_sapiens`:
@@ -449,7 +452,7 @@ Only bowtie2 for `Homo_sapiens`:
 snakemake -pr -j 20 \
   -s workflow/genomes.smk \
   --configfile configs/genomes.yaml \
-  /fs/pool/pool-bcfngs/genomes/Homo_sapiens/bowtie2Index-<BOWTIE2_VERSION>/Homo_sapiens.1.bt2
+  /fs/pool/pool-bcfngs/genomes/Homo_sapiens/<ASSEMBLY>-bowtie2Index-<BOWTIE2_VERSION>/Homo_sapiens.1.bt2
 ```
 
 These commands still pull in prerequisite downloads, but they avoid rebuilding every index type.
@@ -487,7 +490,7 @@ Successful builds update the stable symlinks automatically to the highest built 
 - `/fs/pool/pool-bcfngs/genomes/<Organism>/bwaIndex`
 - `/fs/pool/pool-bcfngs/genomes/<Organism>/bowtie2Index`
 
-These stable names point to versioned directories such as `starIndex-2.7.11b`.
+These stable names point to versioned directories such as `GRCh38-starIndex-2.7.11b`.
 
 Each organism directory also gets an `index-manifest.json` file recording:
 
