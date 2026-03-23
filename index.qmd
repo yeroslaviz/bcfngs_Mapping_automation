@@ -171,6 +171,14 @@ as well as which mappers we need
 
 # CHANGES
 
+### 23.03.2026
+
+- Added mapper-specific extra-args support for mapping runs via `--extra-star-align-args`, `--extra-bwa-args`, and `--extra-bowtie2-args` in [`scripts/bcfngs`](scripts/bcfngs).
+- Added `--mapper-args-config` support so reusable YAML profiles can provide mapper-specific arguments, with config-file values taking precedence over CLI-supplied extra args.
+- Updated [`workflow/mapping.smk`](workflow/mapping.smk) to consume structured `mapper_extra_args` values and inject them safely into the `STAR`, `bwa`, and `bowtie2` commands while keeping workflow-managed flags protected.
+- Added [`configs/mapper_args.example.yaml`](configs/mapper_args.example.yaml) as a ready-to-copy template for reusable mapper-args profiles.
+- Updated the mapping documentation to describe the new CLI flags, YAML profile format, precedence rules, protected options, and example usage.
+
 ### 20.03.2026
 
 - Added a top-level `./scripts/bcfngs --list-org` flag that prints the configured organism keys together with their assembly/build labels and pinned source releases from [`configs/genomes.yaml`](configs/genomes.yaml).
