@@ -11,6 +11,9 @@ GENOMES_ROOT = config["genomes_root"]
 DEFAULT_THREADS = int(config.get("default_threads", 16))
 DEFAULT_RAM = int(config.get("default_ram_bytes", 0))
 INDEX_VERSIONS = config.get("index_versions", {})
+STAR_VER = INDEX_VERSIONS.get("star", "unknown")
+BWA_VER = INDEX_VERSIONS.get("bwa", "unknown")
+BOWTIE2_VER = INDEX_VERSIONS.get("bowtie2", "unknown")
 BWA_INDEX_DEFAULT_ALGO = str(config.get("bwa_index_algorithm", "is"))
 BWA_INDEX_DEFAULT_MEM_MB = int(config.get("bwa_index_mem_mb", 16000))
 
@@ -107,6 +110,20 @@ def source_gtf_path(org_key: str):
     return os.path.join(sources_dir(org_key), f"{source_basename(org_key)}.gtf")
 
 
+def source_fasta_path_for_wc(wc):
+    assembly = ORGANISMS[wc.org]["assembly"]
+    if wc.assembly != assembly:
+        raise ValueError(f"Assembly mismatch for {wc.org}: expected {assembly}, got {wc.assembly}")
+    return source_fasta_path(wc.org)
+
+
+def source_gtf_path_for_wc(wc):
+    assembly = ORGANISMS[wc.org]["assembly"]
+    if wc.assembly != assembly:
+        raise ValueError(f"Assembly mismatch for {wc.org}: expected {assembly}, got {wc.assembly}")
+    return source_gtf_path(wc.org)
+
+
 def tool_index_dirname(tool: str):
     return {
         "star": "starIndex",
@@ -139,8 +156,8 @@ rule all:
 
 rule download_sources:
     output:
-        fasta=lambda wc: source_fasta_path(wc.org),
-        gtf=lambda wc: source_gtf_path(wc.org),
+        fasta=os.path.join(GENOMES_ROOT, "sources", "{org}", "{src_rel}", "{org}.{assembly}.fa"),
+        gtf=os.path.join(GENOMES_ROOT, "sources", "{org}", "{src_rel}", "{org}.{assembly}.gtf"),
     log:
         os.path.join(GENOMES_ROOT, "logs", "{org}", "{src_rel}", "download_sources.log"),
     conda:
@@ -166,17 +183,17 @@ rule download_sources:
 
 rule star_index:
     input:
-        fasta=lambda wc: source_fasta_path(wc.org),
-        gtf=lambda wc: source_gtf_path(wc.org),
+        fasta=source_fasta_path_for_wc,
+        gtf=source_gtf_path_for_wc,
     output:
-        sa=lambda wc: os.path.join(versioned_index_dir("star", wc.org), "SA"),
+        sa=os.path.join(GENOMES_ROOT, "{org}", f"{{assembly}}-starIndex-{STAR_VER}", "SA"),
     log:
         os.path.join(GENOMES_ROOT, "logs", "{org}", "star_index.log"),
     conda:
         "../env/environment.yml"
     threads: DEFAULT_THREADS
     params:
-        outdir=lambda wc: versioned_index_dir("star", wc.org),
+        outdir=lambda wc: os.path.join(GENOMES_ROOT, wc.org, f"{wc.assembly}-starIndex-{STAR_VER}"),
         sa_index=lambda wc: ORGANISMS[wc.org]["sa_index"],
         ram=lambda wc: DEFAULT_RAM,
     shell:
@@ -198,9 +215,9 @@ rule star_index:
 
 rule bwa_index:
     input:
-        fasta=lambda wc: source_fasta_path(wc.org),
+        fasta=source_fasta_path_for_wc,
     output:
-        bwt=lambda wc: os.path.join(versioned_index_dir("bwa", wc.org), f"{wc.org}.bwt"),
+        bwt=os.path.join(GENOMES_ROOT, "{org}", f"{{assembly}}-bwaIndex-{BWA_VER}", "{org}.bwt"),
     log:
         os.path.join(GENOMES_ROOT, "logs", "{org}", "bwa_index.log"),
     conda:
@@ -209,8 +226,8 @@ rule bwa_index:
     resources:
         mem_mb=bwa_index_mem_mb
     params:
-        outdir=lambda wc: versioned_index_dir("bwa", wc.org),
-        prefix=lambda wc: os.path.join(versioned_index_dir("bwa", wc.org), wc.org),
+        outdir=lambda wc: os.path.join(GENOMES_ROOT, wc.org, f"{wc.assembly}-bwaIndex-{BWA_VER}"),
+        prefix=lambda wc: os.path.join(GENOMES_ROOT, wc.org, f"{wc.assembly}-bwaIndex-{BWA_VER}", wc.org),
         algo=bwa_index_algorithm,
     shell:
         r"""
@@ -224,17 +241,17 @@ rule bwa_index:
 
 rule bowtie2_index:
     input:
-        fasta=lambda wc: source_fasta_path(wc.org),
+        fasta=source_fasta_path_for_wc,
     output:
-        bt2=lambda wc: os.path.join(versioned_index_dir("bowtie2", wc.org), f"{wc.org}.1.bt2"),
+        bt2=os.path.join(GENOMES_ROOT, "{org}", f"{{assembly}}-bowtie2Index-{BOWTIE2_VER}", "{org}.1.bt2"),
     log:
         os.path.join(GENOMES_ROOT, "logs", "{org}", "bowtie2_index.log"),
     conda:
         "../env/environment.yml"
     threads: DEFAULT_THREADS
     params:
-        outdir=lambda wc: versioned_index_dir("bowtie2", wc.org),
-        prefix=lambda wc: os.path.join(versioned_index_dir("bowtie2", wc.org), wc.org),
+        outdir=lambda wc: os.path.join(GENOMES_ROOT, wc.org, f"{wc.assembly}-bowtie2Index-{BOWTIE2_VER}"),
+        prefix=lambda wc: os.path.join(GENOMES_ROOT, wc.org, f"{wc.assembly}-bowtie2Index-{BOWTIE2_VER}", wc.org),
     shell:
         r"""
         mkdir -p "{params.outdir}" "$(dirname "{log}")"
