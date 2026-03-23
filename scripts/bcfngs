@@ -705,8 +705,15 @@ def _load_yaml(ctx: RunContext, path: Path) -> dict:
     out = _run_tool(
         ctx,
         ["python", "-c", "import sys,yaml,json; print(json.dumps(yaml.safe_load(open(sys.argv[1]))))", str(path)],
+        check=False,
         capture=True,
     )
+    if out.returncode != 0:
+        details = (out.stderr or out.stdout or "").strip()
+        msg = f"Could not parse YAML file: {path}"
+        if details:
+            msg += f"\n{details}"
+        raise SystemExit(msg)
     return json.loads(out.stdout)
 
 
