@@ -159,7 +159,7 @@ rule download_sources:
         fasta=os.path.join(GENOMES_ROOT, "sources", "{org}", "{src_rel}", "{org}.{assembly}.fa"),
         gtf=os.path.join(GENOMES_ROOT, "sources", "{org}", "{src_rel}", "{org}.{assembly}.gtf"),
     log:
-        os.path.join(GENOMES_ROOT, "logs", "{org}", "{src_rel}", "download_sources.log"),
+        os.path.join(GENOMES_ROOT, "logs", "{org}", "{src_rel}", "download_sources.{assembly}.log"),
     conda:
         "../env/environment.yml"
     params:
@@ -188,7 +188,7 @@ rule star_index:
     output:
         sa=os.path.join(GENOMES_ROOT, "{org}", f"{{assembly}}-starIndex-{STAR_VER}", "SA"),
     log:
-        os.path.join(GENOMES_ROOT, "logs", "{org}", "star_index.log"),
+        os.path.join(GENOMES_ROOT, "logs", "{org}", "star_index.{assembly}.log"),
     conda:
         "../env/environment.yml"
     threads: DEFAULT_THREADS
@@ -219,7 +219,7 @@ rule bwa_index:
     output:
         bwt=os.path.join(GENOMES_ROOT, "{org}", f"{{assembly}}-bwaIndex-{BWA_VER}", "{org}.bwt"),
     log:
-        os.path.join(GENOMES_ROOT, "logs", "{org}", "bwa_index.log"),
+        os.path.join(GENOMES_ROOT, "logs", "{org}", "bwa_index.{assembly}.log"),
     conda:
         "../env/environment.yml"
     threads: 1
@@ -245,7 +245,7 @@ rule bowtie2_index:
     output:
         bt2=os.path.join(GENOMES_ROOT, "{org}", f"{{assembly}}-bowtie2Index-{BOWTIE2_VER}", "{org}.1.bt2"),
     log:
-        os.path.join(GENOMES_ROOT, "logs", "{org}", "bowtie2_index.log"),
+        os.path.join(GENOMES_ROOT, "logs", "{org}", "bowtie2_index.{assembly}.log"),
     conda:
         "../env/environment.yml"
     threads: DEFAULT_THREADS
