@@ -1,10 +1,8 @@
 mappers:
   star:
     extra_args: []
-    # Example:
-    # extra_args:
-    #   - "--alignIntronMax 1"
-    #   - "--alignEndsType EndToEnd"
+       - "--alignIntronMax 1"
+       - "--alignEndsType EndToEnd"
 
   bwa:
     extra_args: []
